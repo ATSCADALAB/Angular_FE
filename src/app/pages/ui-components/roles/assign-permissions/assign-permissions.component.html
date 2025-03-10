@@ -1,0 +1,45 @@
+<mat-card class="modal-card">
+  <mat-card-header class="header">
+    <mat-card-title>Assign Permissions</mat-card-title>
+    <span class="spacer"></span>
+  </mat-card-header>
+
+  <mat-card-content class="content">
+    <div class="table-container">
+      <table mat-table [dataSource]="categories" class="permission-table">
+        <!-- Cột Category -->
+        <ng-container matColumnDef="category">
+          <th mat-header-cell *matHeaderCellDef>Category</th>
+          <td mat-cell *matCellDef="let category">
+            <span class="category-name">{{ category.name }}</span>
+          </td>
+        </ng-container>
+
+        <!-- Cột cho từng Permission -->
+        <ng-container *ngFor="let permission of permissions" [matColumnDef]="permission.name ?? 'unknown'">
+          <th mat-header-cell *matHeaderCellDef>{{ permission.name }}</th>
+          <td mat-cell *matCellDef="let category">
+            <mat-checkbox
+              *ngIf="category.id && permission.id"
+              [(ngModel)]="permissionAssignments[category.id][permission.id]"
+              color="primary"
+              class="permission-checkbox"
+            ></mat-checkbox>
+          </td>
+        </ng-container>
+
+        <!-- Định nghĩa cột -->
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="permission-row"></tr>
+      </table>
+    </div>
+
+    <div class="actions">
+      <button mat-flat-button (click)="closeModal()">Cancel</button>
+      <button mat-flat-button color="primary" (click)="savePermissions()" [disabled]="isSaving">
+        <mat-spinner *ngIf="isSaving" diameter="20"></mat-spinner>
+        <span *ngIf="!isSaving">Save Permissions</span>
+      </button>
+    </div>
+  </mat-card-content>
+</mat-card>

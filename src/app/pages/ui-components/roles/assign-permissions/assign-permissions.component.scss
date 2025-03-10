@@ -1,0 +1,103 @@
+.modal-card {
+  width: 700px;
+  max-height: 80vh;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.header {
+  background-color: #f5f5f5;
+  padding: 16px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.header mat-card-title {
+  font-size: 20px;
+  font-weight: 500;
+  color: #333;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+.content {
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.table-container {
+  margin-bottom: 24px;
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+}
+
+.permission-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.permission-table th, .permission-table td {
+  padding: 12px;
+  text-align: center;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.permission-table th {
+  background-color: #f5f5f5;
+  font-weight: 600;
+  color: #555;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.permission-row:hover {
+  background-color: #f9f9f9;
+  cursor: pointer;
+}
+
+.category-name {
+  font-weight: 500;
+  color: #333;
+}
+
+.permission-checkbox {
+  transition: transform 0.2s ease;
+}
+
+.permission-checkbox:hover {
+  transform: scale(1.1);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.actions button {
+  padding: 8px 16px;
+  border-radius: 4px;
+}
+
+.actions button[mat-flat-button] {
+  font-weight: 500;
+}
+
+.actions button[color="primary"] {
+  background-color: #1976d2;
+  color: white;
+}
+
+.actions button[color="primary"]:disabled {
+  background-color: #cccccc;
+}
+
+mat-spinner {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 8px;
+}
