@@ -28,6 +28,21 @@ export const navItems: NavItem[] = [
     route: '/ui-components/categories',
   },
   {
+    displayName: 'Distribuitors',
+    iconName: 'rosette',
+    route: '/ui-components/distributors',
+  },
+  {
+    displayName: 'Products',
+    iconName: 'rosette',
+    route: '/ui-components/products',
+  },
+  {
+    displayName: 'Product Information',
+    iconName: 'rosette',
+    route: '/ui-components/product-informations',
+  },
+  {
     displayName: 'Permissions',
     iconName: 'rosette',
     route: '/ui-components/permissions',
