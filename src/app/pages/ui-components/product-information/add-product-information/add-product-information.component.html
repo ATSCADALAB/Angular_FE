@@ -1,0 +1,43 @@
+<mat-card class="cardWithShadow theme-card modal-card">
+    <mat-card-header>
+      <mat-card-title class="m-b-0">Create Product Information</mat-card-title>
+      <span class="flex-1-auto"></span>
+      <button mat-flat-button matTooltipPosition="left" class="m-l-8" matTooltipHideDelay="100000" (click)="closeModal()">
+        <span color="warn">Close</span>
+      </button>
+    </mat-card-header>
+    <mat-card-content class="b-t-1">
+      <form [formGroup]="dataForm" autocomplete="off" novalidate (ngSubmit)="createData(dataForm.value)">
+        <mat-form-field class="w-100" appearance="outline">
+          <mat-label>Product Code</mat-label>
+          <input matInput formControlName="productCode" />
+          <mat-error *ngIf="validateControl('productCode') && hasError('productCode', 'required')">Product Code is required</mat-error>
+          <mat-error *ngIf="validateControl('productCode') && hasError('productCode', 'maxlength')">Product Code must not exceed 50 characters</mat-error>
+        </mat-form-field>
+  
+        <mat-form-field class="w-100" appearance="outline">
+          <mat-label>Product Name</mat-label>
+          <input matInput formControlName="productName" />
+          <mat-error *ngIf="validateControl('productName') && hasError('productName', 'required')">Product Name is required</mat-error>
+          <mat-error *ngIf="validateControl('productName') && hasError('productName', 'maxlength')">Product Name must not exceed 200 characters</mat-error>
+        </mat-form-field>
+  
+        <mat-form-field class="w-100" appearance="outline">
+          <mat-label>Unit</mat-label>
+          <input matInput formControlName="unit" />
+          <mat-error *ngIf="validateControl('unit') && hasError('unit', 'required')">Unit is required</mat-error>
+          <mat-error *ngIf="validateControl('unit') && hasError('unit', 'maxlength')">Unit must not exceed 20 characters</mat-error>
+        </mat-form-field>
+  
+        <mat-form-field class="w-100" appearance="outline">
+          <mat-label>Weight</mat-label>
+          <input matInput type="number" formControlName="weight" />
+          <mat-error *ngIf="validateControl('weight') && hasError('weight', 'required')">Weight is required</mat-error>
+          <mat-error *ngIf="validateControl('weight') && hasError('weight', 'min')">Weight must be a positive number</mat-error>
+        </mat-form-field>
+        <button mat-flat-button color="primary" [disabled]="!dataForm.valid">
+          Save
+        </button>
+      </form>
+    </mat-card-content>
+  </mat-card>

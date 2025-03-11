@@ -49,9 +49,13 @@ export class SidebarComponent implements OnInit {
             '/ui-components/users': 'Users',
             '/ui-components/categories': 'Categories',
             '/ui-components/permissions': 'Permissions',
+            '/ui-components/distributors': 'Distributors',
+            '/ui-components/products': 'Products',
+            '/ui-components/product-informations': 'Product Informations',
             '/ui-components/lists': 'Customers',
             '/ui-components/audits': 'Logs',
-            '/ui-components/about': 'About'
+            '/ui-components/about': 'About',
+
           };
 
           const category = routeToCategoryMap[item.route];
