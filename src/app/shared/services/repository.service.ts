@@ -1,5 +1,6 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
 
@@ -36,5 +37,14 @@ export class RepositoryService {
     return {
       headers: new HttpHeaders({'Content-Type': 'application/json'})
     }
+  }
+
+  // Thêm phương thức download để tải file
+  public download(route: string): Observable<Blob> {
+    return this.http.get(this.createCompleteRoute(route, environment.apiUrl), { responseType: 'blob' });
+  }
+ // Thêm phương thức upload để gửi file
+ public upload(route: string, formData: FormData): Observable<any> {
+  return this.http.post(this.createCompleteRoute(route, environment.apiUrl), formData);
   }
 }

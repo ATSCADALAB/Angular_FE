@@ -7,11 +7,26 @@ import { DetailsComponent } from './lists/details/details.component';
 import { AboutComponent } from './about/about.component';
 import { CategoriesComponent } from './categories/categories.component';
 import { PermissionsComponent } from './permissions/permissions.component';
+import { ProductsComponent } from './products/products.component';
+import { ProductInformationsComponent } from './product-information/product-informations.component';
+import { DistributorsComponent } from './distributors/distributors.component';
 
 export const UiComponentsRoutes: Routes = [
   {
     path: '',
     children: [
+      {
+        path: 'products',
+        component: ProductsComponent,
+      },
+      {
+        path: 'product-informations',
+        component: ProductInformationsComponent,
+      },
+      {
+        path: 'distributors',
+        component: DistributorsComponent,
+      },
       {
         path: 'lists',
         component: AppListsComponent,

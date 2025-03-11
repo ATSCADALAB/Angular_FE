@@ -1,0 +1,73 @@
+<mat-card class="cardWithShadow theme-card modal-card">
+    <mat-card-header>
+      <mat-card-title class="m-b-0">Update Product</mat-card-title>
+      <span class="flex-1-auto"></span>
+      <button mat-flat-button matTooltipPosition="left" class="m-l-8" matTooltipHideDelay="100000" (click)="closeModal()">
+        <span color="warn">Close</span>
+      </button>
+    </mat-card-header>
+    <mat-card-content class="b-t-1">
+      <form [formGroup]="dataForm" autocomplete="off" novalidate (ngSubmit)="createData(dataForm.value)">
+        <mat-form-field class="w-100" appearance="outline">
+          <mat-label>Tag ID</mat-label>
+          <input matInput formControlName="tagID" />
+          <mat-error *ngIf="validateControl('tagID') && hasError('tagID', 'required')">Tag ID is required</mat-error>
+          <mat-error *ngIf="validateControl('tagID') && hasError('tagID', 'maxlength')">Tag ID must not exceed 50 characters</mat-error>
+        </mat-form-field>
+  
+        <mat-form-field class="w-100" appearance="outline">
+          <mat-label>Shipment Date</mat-label>
+          <input matInput [matDatepicker]="shipmentPicker" formControlName="shipmentDate" />
+          <mat-datepicker-toggle matSuffix [for]="shipmentPicker"></mat-datepicker-toggle>
+          <mat-datepicker #shipmentPicker></mat-datepicker>
+          <mat-error *ngIf="validateControl('shipmentDate') && hasError('shipmentDate', 'required')">Shipment Date is required</mat-error>
+        </mat-form-field>
+  
+        <mat-form-field class="w-100" appearance="outline">
+          <mat-label>Product Date</mat-label>
+          <input matInput [matDatepicker]="productPicker" formControlName="productDate" />
+          <mat-datepicker-toggle matSuffix [for]="productPicker"></mat-datepicker-toggle>
+          <mat-datepicker #productPicker></mat-datepicker>
+          <mat-error *ngIf="validateControl('productDate') && hasError('productDate', 'required')">Product Date is required</mat-error>
+        </mat-form-field>
+  
+        <mat-form-field class="w-100" appearance="outline">
+          <mat-label>Delivery</mat-label>
+          <input matInput formControlName="delivery" />
+          <mat-error *ngIf="validateControl('delivery') && hasError('delivery', 'required')">Delivery is required</mat-error>
+          <mat-error *ngIf="validateControl('delivery') && hasError('delivery', 'maxlength')">Delivery must not exceed 200 characters</mat-error>
+        </mat-form-field>
+  
+        <mat-form-field class="w-100" appearance="outline">
+          <mat-label>Stock Out</mat-label>
+          <input matInput formControlName="stockOut" />
+          <mat-error *ngIf="validateControl('stockOut') && hasError('stockOut', 'required')">Stock Out is required</mat-error>
+          <mat-error *ngIf="validateControl('stockOut') && hasError('stockOut', 'maxlength')">Stock Out must not exceed 200 characters</mat-error>
+        </mat-form-field>
+  
+        <mat-form-field class="w-100" appearance="outline">
+          <mat-label>Distributor</mat-label>
+          <mat-select formControlName="distributorId">
+            <mat-option *ngFor="let distributor of distributors" [value]="distributor.id">
+              {{ distributor.distributorName }}
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="validateControl('distributorId') && hasError('distributorId', 'required')">Distributor is required</mat-error>
+        </mat-form-field>
+  
+        <mat-form-field class="w-100" appearance="outline">
+          <mat-label>Product Information</mat-label>
+          <mat-select formControlName="productInformationId">
+            <mat-option *ngFor="let productInfo of productInformations" [value]="productInfo.id">
+              {{ productInfo.productCode }} - {{ productInfo.productName }}
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="validateControl('productInformationId') && hasError('productInformationId', 'required')">Product Information is required</mat-error>
+        </mat-form-field>
+  
+        <button mat-flat-button color="primary" [disabled]="!dataForm.valid">
+          Save
+        </button>
+      </form>
+    </mat-card-content>
+  </mat-card>

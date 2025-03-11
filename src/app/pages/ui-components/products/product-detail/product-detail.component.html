@@ -1,0 +1,57 @@
+<mat-card class="cardWithShadow theme-card modal-card">
+    <mat-card-header>
+      <mat-card-title class="m-b-0">Product Details</mat-card-title>
+      <span class="flex-1-auto"></span>
+      <button mat-flat-button matTooltipPosition="left" class="m-l-8" matTooltipHideDelay="100000" (click)="closeModal()">
+        <mat-icon color="warn">close</mat-icon>
+      </button>
+    </mat-card-header>
+  
+    <mat-card-content class="b-t-1">
+      <div class="detail-container">
+        <mat-form-field class="w-100" appearance="outline">
+          <mat-label>Tag ID</mat-label>
+          <input matInput [value]="product.tagID" readonly />
+        </mat-form-field>
+  
+        <mat-form-field class="w-100" appearance="outline">
+          <mat-label>Shipment Date</mat-label>
+          <input matInput [value]="product.shipmentDate | date: 'short'" readonly />
+        </mat-form-field>
+  
+        <mat-form-field class="w-100" appearance="outline">
+          <mat-label>Product Date</mat-label>
+          <input matInput [value]="product.productDate | date: 'short'" readonly />
+        </mat-form-field>
+  
+        <mat-form-field class="w-100" appearance="outline">
+          <mat-label>Delivery</mat-label>
+          <input matInput [value]="product.delivery" readonly />
+        </mat-form-field>
+  
+        <mat-form-field class="w-100" appearance="outline">
+          <mat-label>Stock Out</mat-label>
+          <input matInput [value]="product.stockOut" readonly />
+        </mat-form-field>
+  
+        <mat-form-field class="w-100" appearance="outline">
+          <mat-label>Active</mat-label>
+          <input matInput [value]="product.isActive ? 'Yes' : 'No'" readonly />
+        </mat-form-field>
+  
+        <mat-form-field class="w-100" appearance="outline">
+          <mat-label>Distributor</mat-label>
+          <input matInput [value]="product.distributor?.distributorName || 'N/A'" readonly />
+        </mat-form-field>
+  
+        <mat-form-field class="w-100" appearance="outline">
+          <mat-label>Product Information</mat-label>
+          <input matInput [value]="product.productInformation?.productCode + ' - ' + product.productInformation?.productName || 'N/A'" readonly />
+        </mat-form-field>
+      </div>
+  
+      <button mat-flat-button color="primary" (click)="closeModal()">
+        Close
+      </button>
+    </mat-card-content>
+  </mat-card>

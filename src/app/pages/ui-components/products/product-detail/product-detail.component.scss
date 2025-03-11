@@ -1,0 +1,13 @@
+.detail-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px; /* Khoảng cách giữa các field */
+  }
+  
+  mat-form-field {
+    width: 100%;
+  }
+  
+  button {
+    margin-top: 16px;
+  }

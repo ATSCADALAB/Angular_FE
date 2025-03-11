@@ -28,6 +28,16 @@ import { PermissionsComponent } from './permissions/permissions.component';
 import { AddPermissionComponent } from './permissions/add-permission/add-permission.component';
 import { UpdatePermissionComponent } from './permissions/update-permission/update-permission.component';
 import { AssignPermissionsComponent } from './roles/assign-permissions/assign-permissions.component';
+import { AddDistributorComponent } from './distributors/add-distributor/add-distributor.component';
+import { UpdateDistributorComponent } from './distributors/update-distributor/update-distributor.component';
+import { DistributorsComponent } from './distributors/distributors.component';
+import { ProductsComponent } from './products/products.component';
+import { AddProductComponent } from './products/add-product/add-product.component';
+import { UpdateProductComponent } from './products/update-product/update-product.component';
+import { ProductInformationsComponent } from './product-information/product-informations.component';
+import { AddProductInformationComponent } from './product-information/add-product-information/add-product-information.component';
+import { UpdateProductInformationComponent } from './product-information/update-product-information/update-product-information.component';
+import { ProductDetailComponent } from './products/product-detail/product-detail.component';
 
 @NgModule({
   imports: [
@@ -66,7 +76,17 @@ import { AssignPermissionsComponent } from './roles/assign-permissions/assign-pe
     PermissionsComponent,
     AddPermissionComponent,
     UpdatePermissionComponent,
-    AssignPermissionsComponent
+    AssignPermissionsComponent,
+    AddDistributorComponent,
+    UpdateDistributorComponent,
+    DistributorsComponent,
+    ProductsComponent,
+    AddProductComponent,
+    UpdateProductComponent,
+    ProductDetailComponent,
+    ProductInformationsComponent,
+    AddProductInformationComponent,
+    UpdateProductInformationComponent
   ],
 })
 export class UicomponentsModule {}
