@@ -10,11 +10,21 @@ import { PermissionsComponent } from './permissions/permissions.component';
 import { ProductsComponent } from './products/products.component';
 import { ProductInformationsComponent } from './product-information/product-informations.component';
 import { DistributorsComponent } from './distributors/distributors.component';
+import { OrdersComponent } from './orders/order.component';
+import { OrderDetailsComponent } from './orders/order-detail/order-details.component';
 
 export const UiComponentsRoutes: Routes = [
   {
     path: '',
     children: [
+      {
+        path: 'order-details/:id',
+        component: OrderDetailsComponent,
+      },
+      {
+        path: 'orders',
+        component: OrdersComponent,
+      },
       {
         path: 'products',
         component: ProductsComponent,

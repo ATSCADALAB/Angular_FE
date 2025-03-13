@@ -55,10 +55,12 @@ export class SidebarComponent implements OnInit {
             '/ui-components/lists': 'Customers',
             '/ui-components/audits': 'Logs',
             '/ui-components/about': 'About',
+            '/ui-components/orders': 'Orders',
 
           };
 
           const category = routeToCategoryMap[item.route];
+          console.log(category);
           if (!category) {
             return false; // Nếu route không ánh xạ với danh mục nào, không hiển thị
           }

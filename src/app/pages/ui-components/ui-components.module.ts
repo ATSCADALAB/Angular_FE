@@ -38,6 +38,10 @@ import { ProductInformationsComponent } from './product-information/product-info
 import { AddProductInformationComponent } from './product-information/add-product-information/add-product-information.component';
 import { UpdateProductInformationComponent } from './product-information/update-product-information/update-product-information.component';
 import { ProductDetailComponent } from './products/product-detail/product-detail.component';
+import { AddOrderComponent } from './orders/add-order/add-order.component';
+import { UpdateOrderComponent } from './orders/update-order/update-order.component';
+import { OrdersComponent } from './orders/order.component';
+import { OrderDetailsComponent } from './orders/order-detail/order-details.component';
 
 @NgModule({
   imports: [
@@ -86,7 +90,11 @@ import { ProductDetailComponent } from './products/product-detail/product-detail
     ProductDetailComponent,
     ProductInformationsComponent,
     AddProductInformationComponent,
-    UpdateProductInformationComponent
+    UpdateProductInformationComponent,
+    AddOrderComponent,
+    UpdateOrderComponent,
+    OrdersComponent,
+    OrderDetailsComponent
   ],
 })
 export class UicomponentsModule {}

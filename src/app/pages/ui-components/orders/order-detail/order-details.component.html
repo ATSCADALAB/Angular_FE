@@ -1,0 +1,117 @@
+<mat-card class="order-card" *ngIf="order">
+  <!-- Header -->
+  <mat-card-header class="order-header">
+    <mat-card-title>Order Code: {{ order.code }}</mat-card-title>
+  </mat-card-header>
+
+  <!-- Content -->
+  <mat-card-content class="order-content">
+    <!-- General Information -->
+    <div class="info-section">
+      <h3 class="section-title">General Information</h3>
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="label">Export Date:</span>
+          <span class="value">{{ order.exportDate | date: 'dd/MM/yyyy' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="label">Status:</span>
+          <span class="value" [ngClass]="getStatusClass(order.status)">
+            {{ getStatusText(order.status) }}
+          </span>
+        </div>
+        <div class="info-item">
+          <span class="label">Vehicle Number:</span>
+          <span class="value">{{ order.vehicleNumber }}</span>
+        </div>
+        <div class="info-item">
+          <span class="label">Driver Count:</span>
+          <span class="value">{{ order.quantityVehicle }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Driver Information -->
+    <div class="info-section">
+      <h3 class="section-title">Driver Information</h3>
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="label">Driver Name:</span>
+          <span class="value">{{ order.driverName }}</span>
+        </div>
+        <div class="info-item">
+          <span class="label">Phone Number:</span>
+          <span class="value">{{ order.driverPhoneNumber }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Product Information -->
+    <div class="info-section">
+      <h3 class="section-title">Product Information</h3>
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="label">Product Name:</span>
+          <span class="value">{{ order.productInformation.productName }}</span>
+        </div>
+        <div class="info-item">
+          <span class="label">Quantity (Bags):</span>
+          <span class="value">{{ order.unitOrder }} bags</span>
+        </div>
+        <div class="info-item">
+          <span class="label">Weight (Kg):</span>
+          <span class="value">{{ order.weightOrder }} kg</span>
+        </div>
+        <div class="info-item">
+          <span class="label">Manufacture Date:</span>
+          <span class="value">
+            {{order.manufactureDate | date: 'dd/MM/yyyy' }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Distributor Information -->
+    <div class="info-section">
+      <h3 class="section-title">Distributor Information</h3>
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="label">Distributor Name:</span>
+          <span class="value">{{ order.distributor.distributorName }}</span>
+        </div>
+        <div class="info-item">
+          <span class="label">Area:</span>
+          <span class="value">{{ order.distributor.area }}</span>
+        </div>
+        <div class="info-item">
+          <span class="label">Address:</span>
+          <span class="value">{{ order.distributor.address }}</span>
+        </div>
+      </div>
+    </div>
+  </mat-card-content>
+
+  <!-- Actions -->
+  <mat-card-actions class="order-actions">
+    <mat-form-field appearance="outline" class="line-select">
+      <mat-label>Select Line</mat-label>
+      <mat-select [(ngModel)]="selectedLine" [disabled]="order.status === 2 || isStarting">
+        <mat-option *ngFor="let line of lines" [value]="line">Line {{ line }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <button mat-raised-button color="primary" (click)="goBack()">Back</button>
+    <button 
+      mat-raised-button 
+      color="accent" 
+      (click)="startOrder()" 
+      [disabled]="order.status === 2 || isStarting || !selectedLine"
+    >
+      {{ isStarting ? 'Starting...' : 'Start' }}
+    </button>
+  </mat-card-actions>
+</mat-card>
+
+<div class="no-data" *ngIf="!order">
+  <mat-spinner></mat-spinner>
+  <p>Loading order details...</p>
+</div>
