@@ -1,65 +1,62 @@
 <mat-card class="cardWithShadow theme-card modal-card">
-    <mat-card-header>
-      <mat-card-title class="m-b-0">Update Distributor</mat-card-title>
-      <span class="flex-1-auto"></span>
-      <button mat-flat-button matTooltipPosition="left" class="m-l-8" matTooltipHideDelay="100000" (click)="closeModal()">
-        <span color="warn">Close</span>
+  <mat-card-header>
+    <mat-card-title class="m-b-0">Update Distributor</mat-card-title>
+    <span class="flex-1-auto"></span>
+    <button mat-flat-button matTooltipPosition="left" class="m-l-8" matTooltipHideDelay="100000" (click)="closeModal()">
+      <span color="warn">Close</span>
+    </button>
+  </mat-card-header>
+  <mat-card-content class="b-t-1">
+    <form [formGroup]="dataForm" autocomplete="off" novalidate (ngSubmit)="updateData(dataForm.value)">
+      <mat-form-field class="w-100" appearance="outline">
+        <mat-label>Distributor Code</mat-label>
+        <input matInput formControlName="distributorCode" />
+        <mat-error *ngIf="validateControl('distributorCode') && hasError('distributorCode', 'required')">Distributor Code is required</mat-error>
+        <mat-error *ngIf="validateControl('distributorCode') && hasError('distributorCode', 'maxlength')">Distributor Code must not exceed 50 characters</mat-error>
+      </mat-form-field>
+
+      <mat-form-field class="w-100" appearance="outline">
+        <mat-label>Distributor Name</mat-label>
+        <input matInput formControlName="distributorName" />
+        <mat-error *ngIf="validateControl('distributorName') && hasError('distributorName', 'required')">Distributor Name is required</mat-error>
+        <mat-error *ngIf="validateControl('distributorName') && hasError('distributorName', 'maxlength')">Distributor Name must not exceed 100 characters</mat-error>
+      </mat-form-field>
+
+      <mat-form-field class="w-100" appearance="outline">
+        <mat-label>Address</mat-label>
+        <input matInput formControlName="address" />
+        <mat-error *ngIf="validateControl('address') && hasError('address', 'required')">Address is required</mat-error>
+        <mat-error *ngIf="validateControl('address') && hasError('address', 'maxlength')">Address must not exceed 200 characters</mat-error>
+      </mat-form-field>
+
+      <mat-form-field class="w-100" appearance="outline">
+        <mat-label>Contact Source</mat-label>
+        <input matInput formControlName="contactSource" />
+        <mat-error *ngIf="validateControl('contactSource') && hasError('contactSource', 'maxlength')">Contact Source must not exceed 100 characters</mat-error>
+      </mat-form-field>
+
+      <mat-form-field class="w-100" appearance="outline">
+        <mat-label>Phone Number</mat-label>
+        <input matInput formControlName="phoneNumber" />
+        <mat-error *ngIf="validateControl('phoneNumber') && hasError('phoneNumber', 'required')">Phone Number is required</mat-error>
+        <mat-error *ngIf="validateControl('phoneNumber') && hasError('phoneNumber', 'maxlength')">Phone Number must not exceed 20 characters</mat-error>
+      </mat-form-field>
+
+      <mat-form-field class="w-100" appearance="outline">
+        <mat-label>Area</mat-label>
+        <mat-select formControlName="areaId">
+          <mat-option *ngFor="let area of areas" [value]="area.id">
+            {{ area.areaName }}
+          </mat-option>
+        </mat-select>
+        <mat-error *ngIf="validateControl('areaId') && hasError('areaId', 'required')">Area is required</mat-error>
+      </mat-form-field>
+
+      <mat-checkbox formControlName="isActive">Active</mat-checkbox>
+
+      <button mat-flat-button color="primary" [disabled]="!dataForm.valid">
+        Save
       </button>
-    </mat-card-header>
-    <mat-card-content class="b-t-1">
-      <form [formGroup]="dataForm" autocomplete="off" novalidate (ngSubmit)="createData(dataForm.value)">
-        <mat-form-field class="w-100" appearance="outline">
-          <mat-label>Distributor Code</mat-label>
-          <input matInput formControlName="distributorCode" />
-          <mat-error *ngIf="validateControl('distributorCode') && hasError('distributorCode', 'required')">Distributor Code is required</mat-error>
-          <mat-error *ngIf="validateControl('distributorCode') && hasError('distributorCode', 'maxlength')">Maximum length is 50 characters</mat-error>
-        </mat-form-field>
-  
-        <mat-form-field class="w-100" appearance="outline">
-          <mat-label>Distributor Name</mat-label>
-          <input matInput formControlName="distributorName" />
-          <mat-error *ngIf="validateControl('distributorName') && hasError('distributorName', 'required')">Distributor Name is required</mat-error>
-          <mat-error *ngIf="validateControl('distributorName') && hasError('distributorName', 'maxlength')">Maximum length is 100 characters</mat-error>
-        </mat-form-field>
-  
-        <mat-form-field class="w-100" appearance="outline">
-          <mat-label>Address</mat-label>
-          <input matInput formControlName="address" />
-          <mat-error *ngIf="validateControl('address') && hasError('address', 'required')">Address is required</mat-error>
-          <mat-error *ngIf="validateControl('address') && hasError('address', 'maxlength')">Maximum length is 200 characters</mat-error>
-        </mat-form-field>
-  
-        <mat-form-field class="w-100" appearance="outline">
-          <mat-label>Phone Number</mat-label>
-          <input matInput formControlName="phoneNumber" />
-          <mat-error *ngIf="validateControl('phoneNumber') && hasError('phoneNumber', 'required')">Phone Number is required</mat-error>
-          <mat-error *ngIf="validateControl('phoneNumber') && hasError('phoneNumber', 'pattern')">Please enter a valid phone number</mat-error>
-          <mat-error *ngIf="validateControl('phoneNumber') && hasError('phoneNumber', 'maxlength')">Maximum length is 20 characters</mat-error>
-        </mat-form-field>
-  
-        <mat-form-field class="w-100" appearance="outline">
-          <mat-label>Contact Source</mat-label>
-          <input matInput formControlName="contactSource" />
-          <mat-error *ngIf="validateControl('contactSource') && hasError('contactSource', 'maxlength')">Maximum length is 100 characters</mat-error>
-        </mat-form-field>
-  
-        <mat-form-field class="w-100" appearance="outline">
-          <mat-label>Area</mat-label>
-          <input matInput formControlName="area" />
-          <mat-error *ngIf="validateControl('area') && hasError('area', 'required')">Area is required</mat-error>
-          <mat-error *ngIf="validateControl('area') && hasError('area', 'maxlength')">Maximum length is 50 characters</mat-error>
-        </mat-form-field>
-  
-        <mat-form-field class="w-100" appearance="outline">
-          <mat-label>Note</mat-label>
-          <textarea matInput formControlName="note"></textarea>
-          <mat-error *ngIf="validateControl('note') && hasError('note', 'maxlength')">Maximum length is 500 characters</mat-error>
-        </mat-form-field>
-  
-  
-        <button mat-flat-button color="primary" [disabled]="!dataForm.valid">
-          Save
-        </button>
-      </form>
-    </mat-card-content>
-  </mat-card>
+    </form>
+  </mat-card-content>
+</mat-card>

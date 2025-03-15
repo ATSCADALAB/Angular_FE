@@ -6,16 +6,11 @@ import { MaterialModule } from '../../material.module';
 import { TablerIconsModule } from 'angular-tabler-icons';
 import * as TablerIcons from 'angular-tabler-icons/icons';
 import { UiComponentsRoutes } from './ui-components.routing';
-import { AppListsComponent } from './lists/lists.component';
 import { MatNativeDateModule } from '@angular/material/core';
 import { UsersComponent } from './users/users.component';
 import { RolesComponent } from './roles/roles.component';
 import { AuditsComponent } from './audits/audits.component';
 import { ToastrModule } from 'ngx-toastr';
-import { AddCustomerComponent } from './lists/add-customer/add-customer.component';
-import { UpdateCustomerComponent } from './lists/update-customer/update-customer.component';
-import { DetailsComponent } from './lists/details/details.component';
-import { AddAccountComponent } from './lists/add-account/add-account.component';
 import { AddUserComponent } from './users/add-user/add-user.component';
 import { UpdateUserComponent } from './users/update-user/update-user.component';
 import { AddRoleComponent } from './roles/add-role/add-role.component';
@@ -38,10 +33,15 @@ import { ProductInformationsComponent } from './product-information/product-info
 import { AddProductInformationComponent } from './product-information/add-product-information/add-product-information.component';
 import { UpdateProductInformationComponent } from './product-information/update-product-information/update-product-information.component';
 import { ProductDetailComponent } from './products/product-detail/product-detail.component';
-import { AddOrderComponent } from './orders/add-order/add-order.component';
-import { UpdateOrderComponent } from './orders/update-order/update-order.component';
+// import { AddOrderComponent } from './orders/add-order/add-order.component';
+// import { UpdateOrderComponent } from './orders/update-order/update-order.component';
 import { OrdersComponent } from './orders/order.component';
-import { OrderDetailsComponent } from './orders/order-detail/order-details.component';
+import { AreasComponent } from './areas/areas.component';
+import { AddAreaComponent } from './areas/add-area/add-area.component';
+import { UpdateAreaComponent } from './areas/update-area/update-area.component';
+import { AddLineComponent } from './lines/add-line/add-line.component';
+import { UpdateLineComponent } from './lines/update-line/update-line.component';
+import { LinesComponent } from './lines/lines.component';
 
 @NgModule({
   imports: [
@@ -61,14 +61,9 @@ import { OrderDetailsComponent } from './orders/order-detail/order-details.compo
     })
   ],
   declarations: [
-    AppListsComponent,
     UsersComponent,
     RolesComponent,
     AuditsComponent,
-    AddCustomerComponent,
-    UpdateCustomerComponent,
-    DetailsComponent,
-    AddAccountComponent,
     AddUserComponent,
     UpdateUserComponent,
     AddRoleComponent,
@@ -91,10 +86,18 @@ import { OrderDetailsComponent } from './orders/order-detail/order-details.compo
     ProductInformationsComponent,
     AddProductInformationComponent,
     UpdateProductInformationComponent,
-    AddOrderComponent,
-    UpdateOrderComponent,
+    // AddOrderComponent,
+    // UpdateOrderComponent,
     OrdersComponent,
-    OrderDetailsComponent
+    OrdersComponent,
+    //Ares
+    AreasComponent,
+    AddAreaComponent,
+    UpdateAreaComponent,
+    //Lines
+    AddLineComponent,
+    UpdateLineComponent,
+    LinesComponent
   ],
 })
 export class UicomponentsModule {}

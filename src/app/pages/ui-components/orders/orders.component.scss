@@ -102,3 +102,27 @@
   gap: 16px;
   margin-bottom: 16px;
 }
+.status-link {
+  text-decoration: none; // Loại bỏ gạch chân
+  cursor: pointer; // Giữ con trỏ chuột dạng pointer
+}
+
+.status-link:hover {
+  text-decoration: none; // Đảm bảo không thêm gạch chân khi hover
+}
+
+.status-not-completed {
+  color: red;
+}
+
+.status-in-progress {
+  color: orange;
+}
+
+.status-completed {
+  color: green;
+}
+
+.m-l-8 {
+  margin-left: 8px;
+}

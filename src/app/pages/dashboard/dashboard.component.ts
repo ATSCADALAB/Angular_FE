@@ -44,15 +44,15 @@ export class AppDashboardComponent {
   }
 
   public getCustomers() {
-    this.repoService.getData('api/customers').subscribe(
-      (res) => {
-        this.customers = res as CustomerDto[];
-        this.totalCustomers = this.customers.length;
-      },
-      (err) => {
-        console.log(err);
-      }
-    );
+    // this.repoService.getData('api/customers').subscribe(
+    //   (res) => {
+    //     this.customers = res as CustomerDto[];
+    //     this.totalCustomers = this.customers.length;
+    //   },
+    //   (err) => {
+    //     console.log(err);
+    //   }
+    // );
   }
 
   public getAuditLog() {

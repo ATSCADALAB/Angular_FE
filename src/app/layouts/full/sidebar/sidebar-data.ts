@@ -13,6 +13,16 @@ export const navItems: NavItem[] = [
     navCap: 'Administration',
   },
   {
+    displayName: 'Lines',
+    iconName: 'poker-chip',
+    route: '/ui-components/lines',
+  },
+  {
+    displayName: 'Areas',
+    iconName: 'poker-chip',
+    route: '/ui-components/areas',
+  },
+  {
     displayName: 'Orders',
     iconName: 'poker-chip',
     route: '/ui-components/orders',
@@ -43,7 +53,7 @@ export const navItems: NavItem[] = [
     route: '/ui-components/products',
   },
   {
-    displayName: 'Product Information',
+    displayName: 'ProductInformations',
     iconName: 'rosette',
     route: '/ui-components/product-informations',
   },
@@ -51,11 +61,6 @@ export const navItems: NavItem[] = [
     displayName: 'Permissions',
     iconName: 'rosette',
     route: '/ui-components/permissions',
-  },
-  {
-    displayName: 'Customers',
-    iconName: 'list',
-    route: '/ui-components/lists',
   },
   {
     displayName: 'Audit logs',

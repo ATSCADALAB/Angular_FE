@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatDialog } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
@@ -7,9 +7,8 @@ import { Subscription } from 'rxjs';
 import { RepositoryService } from 'src/app/shared/services/repository.service';
 import { DialogService } from 'src/app/shared/services/dialog.service';
 import { DataService } from 'src/app/shared/services/data.service';
-import { ImportResponse, OrderDto } from 'src/app/_interface/order';
-import { AddOrderComponent } from './add-order/add-order.component';
-import { UpdateOrderComponent } from './update-order/update-order.component';
+import { Router } from '@angular/router';
+import { OrderWithDetails } from 'src/app/_interface/order';
 
 @Component({
   selector: 'app-orders',
@@ -18,111 +17,83 @@ import { UpdateOrderComponent } from './update-order/update-order.component';
 })
 export class OrdersComponent implements OnInit, AfterViewInit {
   displayedColumns: string[] = [
-    'action',
-    'status',
-    'code',
-    'exportDate',
-    'quantityVehicle',
-    'vehicleNumber',
-    'driverName',
-    'driverPhoneNumber',
-    'weightOrder',
-    'unitOrder',
-    'manufactureDate',
-    'productName',
-    'distributorName',
-    'area'
+    'action', 'status', 'code', 'exportDate', 'quantityVehicle', 'vehicleNumber',
+    'driverName', 'driverPhoneNumber', 'weightOrder', 'unitOrder', 'manufactureDate',
+    'productName', 'distributorName', 'area'
   ];
-  public dataSource = new MatTableDataSource<OrderDto>();
+  public dataSource = new MatTableDataSource<OrderWithDetails>();
+  importReport: { successfulImports: number; duplicateRows: number } | null = null;
 
-  @ViewChild('fileInput') fileInput: any; // Tham chiếu đến input file
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
+  @ViewChild('fileInput') fileInput!: ElementRef;
   private refreshSubscription!: Subscription;
-  importReport: ImportResponse | null = null; // Lưu báo cáo import
-  statusFilter: number | string = ''; // Giá trị status được chọn
-  searchText: string = ''; // Lưu giá trị search text
+
   constructor(
     private repoService: RepositoryService,
     private dialog: MatDialog,
     private dialogService: DialogService,
-    private dataService: DataService
+    private dataService: DataService,
+    private router: Router
   ) {
     this.refreshSubscription = this.dataService.refreshTab1$.subscribe(() => {
-      this.getOrders();
+      this.getOrdersWithDetails();
     });
   }
 
   ngOnInit(): void {
-    this.getOrders();
+    this.getOrdersWithDetails();
   }
 
-  public getOrders() {
-    this.repoService.getData('api/orders').subscribe(
-      (res) => {
-        this.dataSource.data = res as OrderDto[];
-      },
-      (err) => {
-        console.log(err);
-      }
-    );
+  ngAfterViewInit(): void {
+    this.dataSource.sort = this.sort;
+    this.dataSource.paginator = this.paginator;
   }
 
-  addOrder() {
-    const popup = this.dialog.open(AddOrderComponent, {
-      width: '600px',
-      height: '700px',
-      enterAnimationDuration: '100ms',
-      exitAnimationDuration: '100ms'
-    });
+  ngOnDestroy(): void {
+    this.refreshSubscription.unsubscribe();
   }
 
-  updateOrder(id: string) {
-    const popup = this.dialog.open(UpdateOrderComponent, {
-      width: '600px',
-      height: '700px',
-      enterAnimationDuration: '100ms',
-      exitAnimationDuration: '100ms',
-      data: { id }
-    });
-  }
-
-  deleteOrder(id: string) {
-    this.dialogService
-      .openConfirmDialog('Are you sure you want to delete this order?')
-      .afterClosed()
-      .subscribe((res) => {
-        if (res) {
-          const deleteUri: string = `api/orders/${id}`;
-          this.repoService.delete(deleteUri).subscribe(
-            () => {
-              this.dialogService
-                .openSuccessDialog('The order has been deleted successfully.')
-                .afterClosed()
-                .subscribe(() => {
-                  this.getOrders();
-                });
-            },
-            (err) => {
-              console.log(err);
-            }
-          );
+  public getOrdersWithDetails(): void {
+    this.repoService.getData('api/orders/with-details')
+      .subscribe(
+        (res) => {
+          this.dataSource.data = res as OrderWithDetails[];
+        },
+        (err) => {
+          console.error('Error fetching orders:', err);
+          this.dialogService.openErrorDialog('Error fetching orders: ' + err.message);
         }
-      });
+      );
   }
 
-  triggerFileInput() {
+  getStatusText(status: number): string {
+    switch (status) {
+      case 0: return 'Pending';
+      case 1: return 'Completed';
+      case 2: return 'Cancelled';
+      default: return 'Unknown';
+    }
+  }
+
+  getStatusClass(status: number): string {
+    switch (status) {
+      case 0: return 'status-pending';
+      case 1: return 'status-completed';
+      case 2: return 'status-cancelled';
+      default: return '';
+    }
+  }
+
+  triggerFileInput(): void {
     this.fileInput.nativeElement.click();
   }
 
-  onFileChange(event: any) {
+  onFileChange(event: any): void {
     const file = event.target.files[0];
     if (!file) return;
 
-    const validTypes = [
-      'application/vnd.ms-excel',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    ];
+    const validTypes = ['application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
     if (!validTypes.includes(file.type)) {
       this.dialogService.openErrorDialog('Please select a valid Excel file (.xlsx or .xls).');
       return;
@@ -132,13 +103,15 @@ export class OrdersComponent implements OnInit, AfterViewInit {
     formData.append('file', file, file.name);
 
     this.repoService.upload('api/orders/import', formData).subscribe(
-      (res: ImportResponse) => {
-        this.importReport = res;
-        this.dialogService
-          .openSuccessDialog('Orders imported successfully.')
+      (res: any) => {
+        this.importReport = {
+          successfulImports: res.successCount,
+          duplicateRows: res.skippedCount
+        };
+        this.dialogService.openSuccessDialog('Orders imported successfully.')
           .afterClosed()
           .subscribe(() => {
-            this.getOrders();
+            this.getOrdersWithDetails();
           });
       },
       (error) => {
@@ -146,10 +119,10 @@ export class OrdersComponent implements OnInit, AfterViewInit {
       }
     );
 
-    event.target.value = ''; // Reset input file
+    event.target.value = '';
   }
 
-  downloadTemplate() {
+  downloadTemplate(): void {
     this.repoService.download('api/orders/template').subscribe(
       (response: Blob) => {
         const url = window.URL.createObjectURL(response);
@@ -167,39 +140,32 @@ export class OrdersComponent implements OnInit, AfterViewInit {
     );
   }
 
-  ngAfterViewInit(): void {
-    this.dataSource.sort = this.sort;
-    this.dataSource.paginator = this.paginator;
+  updateOrder(id: string): void {
+    console.log('Update order:', id);
+    // Có thể thêm logic mở dialog hoặc điều hướng
+    // this.router.navigate(['/ui-components/update-order', id]);
   }
 
-  public doFilter = (value: string) => {
+  deleteOrder(id: string): void {
+    this.dialogService.openConfirmDialog('Are you sure you want to delete this order?')
+      .afterClosed()
+      .subscribe(result => {
+        if (result) {
+          this.repoService.delete(`api/orders/${id}`).subscribe(
+            () => {
+              this.dialogService.openSuccessDialog('Order deleted successfully.')
+                .afterClosed()
+                .subscribe(() => this.getOrdersWithDetails());
+            },
+            (error) => {
+              this.dialogService.openErrorDialog('Error deleting order: ' + error.message);
+            }
+          );
+        }
+      });
+  }
+
+  public doFilter(value: string): void {
     this.dataSource.filter = value.trim().toLocaleLowerCase();
-  }
-  
-  getStatusText(status: number): string {
-    switch (status) {
-      case 0:
-        return 'Not Completed';
-      case 1:
-        return 'In Progress';
-      case 2:
-        return 'Completed';
-      default:
-        return 'Unknown';
-    }
-  }
-
-  // Hàm trả về class CSS dựa trên trạng thái
-  getStatusClass(status: number): string {
-    switch (status) {
-      case 0:
-        return 'status-not-completed';
-      case 1:
-        return 'status-in-progress';
-      case 2:
-        return 'status-completed';
-      default:
-        return 'status-unknown';
-    }
   }
 }
