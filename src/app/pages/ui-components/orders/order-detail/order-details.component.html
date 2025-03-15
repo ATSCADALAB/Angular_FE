@@ -65,7 +65,7 @@
         <div class="info-item">
           <span class="label">Manufacture Date:</span>
           <span class="value">
-            {{order.manufactureDate | date: 'dd/MM/yyyy' }}
+            {{ order.manufactureDate | date: 'dd/MM/yyyy' }}
           </span>
         </div>
       </div>
@@ -89,22 +89,43 @@
         </div>
       </div>
     </div>
+
+    <!-- Order Line Detail -->
+    <div class="info-section" *ngIf="orderLineDetails">
+      <h3 class="section-title">Assigned Line</h3>
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="label">Sequence Number:</span>
+          <span class="value">{{ orderLineDetails.sequenceNumber }}</span>
+        </div>
+        <div class="info-item">
+          <span class="label">Line:</span>
+          <span class="value">{{ orderLineDetails.line }}</span>
+        </div>
+        <div class="info-item">
+          <span class="label">Created At:</span>
+          <span class="value">{{ orderLineDetails.createdAt | date: 'dd/MM/yyyy HH:mm:ss' }}</span>
+        </div>
+      </div>
+    </div>
   </mat-card-content>
 
-  <!-- Actions -->
   <mat-card-actions class="order-actions">
-    <mat-form-field appearance="outline" class="line-select">
+    <!-- Ẩn combobox nếu đã có OrderLineDetail -->
+    <mat-form-field *ngIf="!hasAssignedLine()" appearance="outline" class="line-select">
       <mat-label>Select Line</mat-label>
       <mat-select [(ngModel)]="selectedLine" [disabled]="order.status === 2 || isStarting">
-        <mat-option *ngFor="let line of lines" [value]="line">Line {{ line }}</mat-option>
+        <mat-option *ngFor="let line of lines" [value]="line">
+          Line {{ line }}
+        </mat-option>
       </mat-select>
     </mat-form-field>
     <button mat-raised-button color="primary" (click)="goBack()">Back</button>
-    <button 
-      mat-raised-button 
-      color="accent" 
-      (click)="startOrder()" 
-      [disabled]="order.status === 2 || isStarting || !selectedLine"
+    <button
+      mat-raised-button
+      color="accent"
+      (click)="startOrder()"
+      [disabled]="hasAssignedLine() || order.status === 2 || isStarting || !selectedLine"
     >
       {{ isStarting ? 'Starting...' : 'Start' }}
     </button>

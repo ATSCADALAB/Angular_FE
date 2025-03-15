@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RepositoryService } from 'src/app/shared/services/repository.service';
-import { OrderDto, OrderLineDetailCreationDto } from 'src/app/_interface/order';
+import { OrderDto, OrderLineDetailCreationDto, OrderLineDetailDto } from 'src/app/_interface/order';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
@@ -12,20 +12,22 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 export class OrderDetailsComponent implements OnInit {
   orderId: string | null = null;
   order: OrderDto | null = null;
-  selectedLine: number | null = null; // Biến lưu giá trị Line được chọn
-  lines: number[] = [1, 2, 3, 4]; // Danh sách Line từ 1 đến 4
-  isStarting: boolean = false; // Trạng thái khi đang gọi API
+  selectedLine: number | null = null;
+  lines: number[] = [1, 2, 3, 4];
+  isStarting: boolean = false;
+  orderLineDetails: OrderLineDetailDto | null = null;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private repoService: RepositoryService,
-    private snackBar: MatSnackBar // Thêm MatSnackBar để hiển thị thông báo
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
     this.orderId = this.route.snapshot.paramMap.get('id');
     if (this.orderId) {
+      // Load thông tin Order
       this.repoService.getData(`api/orders/${this.orderId}`).subscribe(
         (res) => {
           this.order = res as OrderDto;
@@ -34,7 +36,34 @@ export class OrderDetailsComponent implements OnInit {
           console.log(err);
         }
       );
+
+      // Load OrderLineDetail
+      this.loadOrderLineDetails();
     }
+  }
+
+  // Hàm load OrderLineDetail
+  loadOrderLineDetails(): void {
+    if (this.orderId) {
+      this.repoService.getData(`api/OrderLineDetails/${this.orderId}`).subscribe(
+        (res) => {
+          this.orderLineDetails = res as OrderLineDetailDto;
+          console.log('Order line details:', this.orderLineDetails);
+          if (this.orderLineDetails) {
+            this.selectedLine = this.orderLineDetails.line;
+          }
+        },
+        (err) => {
+          console.log('Error loading order line details:', err);
+          this.orderLineDetails = null;
+        }
+      );
+    }
+  }
+
+  // Kiểm tra xem Order đã được gán Line chưa
+  hasAssignedLine(): boolean {
+    return this.orderLineDetails !== null;
   }
 
   getStatusText(status: number): string {
@@ -76,18 +105,20 @@ export class OrderDetailsComponent implements OnInit {
     if (this.order && this.orderId) {
       this.isStarting = true;
       const orderLineDetailData: OrderLineDetailCreationDto = {
-        OrderId: this.orderId!,
-        Line: this.selectedLine!
+        OrderId: this.orderId,
+        Line: this.selectedLine
       };
 
       this.repoService.create('api/OrderLineDetails', orderLineDetailData).subscribe(
         (res) => {
           this.isStarting = false;
           this.snackBar.open('Order started successfully.', 'Close', { duration: 3000 });
+          this.ngOnInit();
         },
         (err) => {
           this.isStarting = false;
           this.snackBar.open('Failed to start order.', 'Close', { duration: 3000 });
+          console.log(err);
         }
       );
     }

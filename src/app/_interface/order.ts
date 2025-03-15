@@ -44,3 +44,10 @@ export interface OrderLineDetailCreationDto {
   OrderId: string;
   Line: number;
 }
+export interface OrderLineDetailDto {
+  id: string; // Guid từ backend
+  sequenceNumber: number;
+  orderId: string;
+  line: number;
+  createdAt: string;
+}
