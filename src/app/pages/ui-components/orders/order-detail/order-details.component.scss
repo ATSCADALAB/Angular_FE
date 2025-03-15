@@ -1,6 +1,7 @@
+
 .order-card {
   width: 100%;
-  margin: 24px 16px;
+  // margin: 24px 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
   overflow: hidden;
@@ -24,6 +25,7 @@ mat-card-subtitle {
 
 .order-content {
   padding: 24px;
+  background-color: #d8d9d917;
 }
 
 .info-section {
@@ -40,6 +42,7 @@ mat-card-subtitle {
 }
 
 .info-grid {
+  margin-top:5px;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 20px;
@@ -50,7 +53,7 @@ mat-card-subtitle {
   justify-content: space-between;
   align-items: center;
   padding: 14px 16px;
-  background-color: #fafafa;
+  background-color: #fdfdfd;
   border-radius: 4px;
   transition: background-color 0.2s;
 }
@@ -72,15 +75,21 @@ mat-card-subtitle {
 }
 
 .order-actions {
-  padding: 16px 24px;
-  background-color: #f5f5f5;
-  text-align: right;
   display: flex;
+  gap: 10px;
   justify-content: flex-end;
-  gap: 20px; /* Tăng gap để thoáng hơn */
-  align-items: center;
+  padding: 16px;
+  background: #f5f5f5;
+  border-radius: 8px;
 }
-
+.line-select {
+  flex: 1;
+  max-width: 200px;
+}
+button mat-progress-spinner {
+  margin-right: 5px;
+  vertical-align: middle;
+}
 .modern-select {
   width: 200px; /* Tăng độ rộng cho dropdown */
   background-color: #ffffff;
@@ -163,13 +172,118 @@ mat-spinner {
 .status-unknown {
   color: #757575;
 }
+.sensor-table th, .sensor-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
 
+.sensor-table th {
+  background-color: #f4f4f4;
+  font-weight: bold;
+}
+
+.sensor-group {
+  margin-bottom: 20px;
+}
+
+.sensor-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 8px;
+}
+
+.completed {
+  color: green;
+}
+
+.running {
+  color: red;
+}
+
+.sensor-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* Thiết lập kiểu cho tiêu đề */
+.sensor-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #007bff;
+  color: white;
+  padding: 10px 15px;
+  border-radius: 5px;
+  font-size: 18px;
+  font-weight: bold;
+  position: relative;
+}
+
+/* Nút toggle đẹp hơn */
+.toggle-btn {
+  background-color: transparent;
+  border: none;
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+}
+
+/* Mũi tên chuyển động */
+.toggle-btn span {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-left: 5px;
+  transition: transform 0.3s ease-in-out;
+}
+
+.arrow-up {
+  transform: rotate(0deg);
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  padding: 3px;
+  transform: rotate(-45deg);
+}
+
+.arrow-down {
+  transform: rotate(45deg);
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  padding: 3px;
+}
+
+/* Hiệu ứng ẩn/hiện bảng */
+.collapsed {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out;
+}
+
+
+.running-text {
+  margin-left: auto; /* Đẩy sang phải */
+  font-weight: bold;
+  color: #ffffff; /* Màu vàng */
+}
+.running-bg {
+  background: yellowgreen; /* Màu vàng khi đang chạy */
+  color: white;
+}
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .info-grid {
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   }
-
   mat-card-title {
     font-size: 28px;
   }
@@ -196,4 +310,8 @@ mat-spinner {
     height: 40px;
     font-size: 14px;
   }
+
+
+
+  
 }

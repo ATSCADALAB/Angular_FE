@@ -1,50 +1,116 @@
-<mat-card class="order-card" *ngIf="order">
-  <!-- Header -->
-  <mat-card-header class="order-header">
-    <mat-card-title>Order Code: {{ order.code }}</mat-card-title>
-  </mat-card-header>
+<div class="bg-page">
+  <mat-card class="order-card" *ngIf="order">
+    <!-- Header -->
+    <mat-card-header class="order-header" [ngClass]="{ 'running-bg': isRunning }">
+      <mat-card-title class="order-title">
+        Order Code: {{ order.code }} 
+        <p *ngIf="isRunning" class="running-text">
+         Running | Qty (Bags): 75 / {{ order.unitOrder }}
+        </p>
+      </mat-card-title>
 
-  <!-- Content -->
-  <mat-card-content class="order-content">
-    <!-- General Information -->
-    <div class="info-section">
-      <h3 class="section-title">General Information</h3>
-      <div class="info-grid">
-        <div class="info-item">
-          <span class="label">Export Date:</span>
-          <span class="value">{{ order.exportDate | date: 'dd/MM/yyyy' }}</span>
+    </mat-card-header>
+
+    <!-- Sensor -->
+    <mat-card-content class="order-content">
+      <!-- Giá trị cảm biến -->
+      <!-- <div class="info-section" *ngIf="isRunning">
+        <h3 class="section-title running">Running Sensor</h3>
+        <div class="info-grid" *ngIf="runningSensor">
+          <div class="info-item">
+            <span class="label">Quantity:</span>
+            <p >{{ runningSensor.value }}</p>
+          </div>
+          <div class="info-item">
+            <span class="label">Line:</span>
+            <p>{{ runningSensor.line }}</p>
+          </div>
+          <div class="info-item">
+            <span class="label">Time:</span>
+            <p>{{currentTime }}</p>
+          </div>
         </div>
-        <div class="info-item">
-          <span class="label">Status:</span>
-          <span class="value" [ngClass]="getStatusClass(order.status)">
-            {{ getStatusText(order.status) }}
-          </span>
+      </div> 
+      <div class="info-section">
+        <h3 class="sensor-title completed">
+          Completed Sensor
+          <button class="toggle-btn" (click)="isCollapsed = !isCollapsed">
+            {{ isCollapsed ? 'Show' : 'Hide' }}
+            <span [ngClass]="{'arrow-up': !isCollapsed, 'arrow-down': isCollapsed}"></span>
+          </button>
+        </h3>
+        <div class="info-grid" [ngClass]="{'collapsed': isCollapsed}">
+          <table class="sensor-table">
+            <thead>
+              <tr>
+                <th>Quantity</th>
+                <th>Line</th>
+                <th>Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of completedSensors">
+                <td>{{ item.value }}</td>
+                <td>{{ item.line }}</td>
+                <td>{{ item.time | date: 'dd/MM/yyyy HH:mm' }}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-        <div class="info-item">
-          <span class="label">Vehicle Number:</span>
-          <span class="value">{{ order.vehicleNumber }}</span>
+      </div>  -->
+      
+      
+
+      <!-- General Information -->
+      <div class="info-section">
+        <h3 class="section-title">General Information</h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="label">Export Date:</span>
+            <span class="value">{{ order.exportDate | date: 'dd/MM/yyyy' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Status:</span>
+            <span class="value" [ngClass]="getStatusClass(order.status)">
+              {{ getStatusText(order.status) }}
+            </span>
+          </div>
+          
         </div>
-        <div class="info-item">
-          <span class="label">Driver Count:</span>
-          <span class="value">{{ order.quantityVehicle }}</span>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="label">Quantity (Bags):</span>
+            <span class="value">{{ order.unitOrder }} bags</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Weight (Kg):</span>
+            <span class="value">{{ order.weightOrder }} kg</span>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Driver Information -->
-    <div class="info-section">
-      <h3 class="section-title">Driver Information</h3>
-      <div class="info-grid">
-        <div class="info-item">
-          <span class="label">Driver Name:</span>
-          <span class="value">{{ order.driverName }}</span>
-        </div>
-        <div class="info-item">
-          <span class="label">Phone Number:</span>
-          <span class="value">{{ order.driverPhoneNumber }}</span>
+      <!-- Driver Information -->
+      <div class="info-section">
+        <h3 class="section-title">Driver Information</h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="label">Driver Name:</span>
+            <span class="value">{{ order.driverName }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Phone Number:</span>
+            <span class="value">{{ order.driverPhoneNumber }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Vehicle Number:</span>
+            <span class="value">{{ order.vehicleNumber }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Driver Count:</span>
+            <span class="value">{{ order.quantityVehicle }}</span>
+          </div>
         </div>
       </div>
-    </div>
 
     <!-- Product Information -->
     <div class="info-section">
@@ -67,27 +133,29 @@
           <span class="value">
             {{ order.manufactureDate | date: 'dd/MM/yyyy' }}
           </span>
-        </div>
-      </div>
-    </div>
 
-    <!-- Distributor Information -->
-    <div class="info-section">
-      <h3 class="section-title">Distributor Information</h3>
-      <div class="info-grid">
-        <div class="info-item">
-          <span class="label">Distributor Name:</span>
-          <span class="value">{{ order.distributor.distributorName }}</span>
-        </div>
-        <div class="info-item">
-          <span class="label">Area:</span>
-          <span class="value">{{ order.distributor.area }}</span>
-        </div>
-        <div class="info-item">
-          <span class="label">Address:</span>
-          <span class="value">{{ order.distributor.address }}</span>
         </div>
       </div>
+
+      <!-- Distributor Information -->
+      <div class="info-section">
+        <h3 class="section-title">Distributor Information</h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="label">Distributor Name:</span>
+            <span class="value">{{ order.distributor.distributorName }} - {{ order.distributor.area }}</span>
+          </div>
+          <!-- <div class="info-item">
+            <span class="label">Area:</span>
+            <span class="value"></span> 
+          </div> -->
+          <div class="info-item">
+            <span class="label">Address:</span>
+            <span class="value">{{ order.distributor.address }}</span>
+          </div>
+        </div>
+      </div>
+
     </div>
 
     <!-- Order Line Detail -->
@@ -131,3 +199,4 @@
     </button>
   </mat-card-actions>
 </mat-card>
+

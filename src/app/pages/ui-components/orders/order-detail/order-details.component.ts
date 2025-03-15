@@ -1,3 +1,5 @@
+
+
 // import { Component, OnInit } from '@angular/core';
 // import { ActivatedRoute, Router } from '@angular/router';
 // import { RepositoryService } from 'src/app/shared/services/repository.service';
@@ -42,6 +44,7 @@
 //     }
 //   }
 
+
 //   // Hàm load OrderLineDetail
 //   loadOrderLineDetails(): void {
 //     if (this.orderId) {
@@ -61,6 +64,7 @@
 //     }
 //   }
 
+
 //   // Kiểm tra xem Order đã được gán Line chưa
 //   hasAssignedLine(): boolean {
 //     return this.orderLineDetails !== null;
@@ -79,6 +83,7 @@
 //     }
 //   }
 
+
 //   getStatusClass(status: number): string {
 //     switch (status) {
 //       case 0:
@@ -91,6 +96,7 @@
 //         return 'status-unknown';
 //     }
 //   }
+
 
 //   goBack(): void {
 //     this.router.navigate(['/ui-components/orders']);
@@ -124,3 +130,4 @@
 //     }
 //   }
 // }
+

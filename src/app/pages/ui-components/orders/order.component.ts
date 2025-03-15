@@ -7,8 +7,10 @@ import { Subscription } from 'rxjs';
 import { RepositoryService } from 'src/app/shared/services/repository.service';
 import { DialogService } from 'src/app/shared/services/dialog.service';
 import { DataService } from 'src/app/shared/services/data.service';
+
 import { Router } from '@angular/router';
 import { OrderWithDetails } from 'src/app/_interface/order';
+
 
 @Component({
   selector: 'app-orders',
@@ -16,6 +18,7 @@ import { OrderWithDetails } from 'src/app/_interface/order';
   styleUrls: ['./orders.component.scss']
 })
 export class OrdersComponent implements OnInit, AfterViewInit {
+  
   displayedColumns: string[] = [
     'action', 'status', 'code', 'exportDate', 'quantityVehicle', 'vehicleNumber',
     'driverName', 'driverPhoneNumber', 'weightOrder', 'unitOrder', 'manufactureDate',
@@ -30,6 +33,7 @@ export class OrdersComponent implements OnInit, AfterViewInit {
   private refreshSubscription!: Subscription;
 
   constructor(
+    
     private repoService: RepositoryService,
     private dialog: MatDialog,
     private dialogService: DialogService,
@@ -42,7 +46,9 @@ export class OrdersComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
+
     this.getOrdersWithDetails();
+
   }
 
   ngAfterViewInit(): void {
