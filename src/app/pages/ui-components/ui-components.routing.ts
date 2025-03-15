@@ -1,26 +1,39 @@
 import { Routes } from '@angular/router';
-import { AppListsComponent } from './lists/lists.component';
 import { UsersComponent } from './users/users.component';
 import { RolesComponent } from './roles/roles.component';
 import { AuditsComponent } from './audits/audits.component';
-import { DetailsComponent } from './lists/details/details.component';
 import { AboutComponent } from './about/about.component';
 import { CategoriesComponent } from './categories/categories.component';
 import { PermissionsComponent } from './permissions/permissions.component';
 import { ProductsComponent } from './products/products.component';
 import { ProductInformationsComponent } from './product-information/product-informations.component';
-import { DistributorsComponent } from './distributors/distributors.component';
 import { OrdersComponent } from './orders/order.component';
-import { OrderDetailsComponent } from './orders/order-detail/order-details.component';
+// import { OrderDetailsComponent } from './orders/order-detail/order-details.component';
+import { AreasComponent } from './areas/areas.component';
+import { LinesComponent } from './lines/lines.component';
+import { DistributorsComponent } from './distributors/distributors.component';
+import { ReportComponent } from './report/report.component';
 
 export const UiComponentsRoutes: Routes = [
   {
     path: '',
     children: [
       {
-        path: 'order-details/:id',
-        component: OrderDetailsComponent,
+        path: 'reports',
+        component: ReportComponent,
       },
+      {
+        path: 'lines',
+        component: LinesComponent,
+      },
+      {
+        path: 'areas',
+        component: AreasComponent,
+      },
+      // {
+      //   path: 'order-details/:id',
+      //   component: OrderDetailsComponent,
+      // },
       {
         path: 'orders',
         component: OrdersComponent,
@@ -36,10 +49,6 @@ export const UiComponentsRoutes: Routes = [
       {
         path: 'distributors',
         component: DistributorsComponent,
-      },
-      {
-        path: 'lists',
-        component: AppListsComponent,
       },
       {
         path: 'users',
@@ -64,10 +73,6 @@ export const UiComponentsRoutes: Routes = [
       {
         path: 'about',
         component: AboutComponent,
-      },
-      {
-        path: 'customer-details/:id',
-        component: DetailsComponent,
       },
     ],
   },

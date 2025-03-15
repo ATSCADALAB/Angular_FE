@@ -5,37 +5,28 @@ import { ToastrService } from 'ngx-toastr';
 import { RepositoryService } from 'src/app/shared/services/repository.service';
 import { DialogService } from 'src/app/shared/services/dialog.service';
 import { DataService } from 'src/app/shared/services/data.service';
-import { DistributorForCreationDto } from 'src/app/_interface/distributor';
-import { AreaDto } from 'src/app/_interface/area';
+import { AreaForCreationDto } from 'src/app/_interface/area';
 
 @Component({
-  selector: 'app-add-distributor',
-  templateUrl: './add-distributor.component.html'
+  selector: 'app-add-area',
+  templateUrl: './add-area.component.html'
 })
-export class AddDistributorComponent implements OnInit {
+export class AddAreaComponent implements OnInit {
   dataForm!: FormGroup;
-  areas: AreaDto[] = [];
 
   constructor(
     private repoService: RepositoryService,
     private dataService: DataService,
     private toastr: ToastrService,
     private dialogService: DialogService,
-    private dialogRef: MatDialogRef<AddDistributorComponent>
+    private dialogRef: MatDialogRef<AddAreaComponent>
   ) {}
 
   ngOnInit() {
     this.dataForm = new FormGroup({
-      distributorCode: new FormControl('', [Validators.required, Validators.maxLength(50)]),
-      distributorName: new FormControl('', [Validators.required, Validators.maxLength(100)]),
-      address: new FormControl('', [Validators.required, Validators.maxLength(200)]),
-      contactSource: new FormControl('', [Validators.maxLength(100)]),
-      phoneNumber: new FormControl('', [Validators.required, Validators.maxLength(20)]),
-      areaId: new FormControl(null, [Validators.required]),
-      isActive: new FormControl(true)
+      areaCode: new FormControl('', [Validators.required, Validators.maxLength(50)]),
+      areaName: new FormControl('', [Validators.required, Validators.maxLength(100)])
     });
-
-    this.getAreas();
   }
 
   public validateControl = (controlName: string) => {
@@ -53,20 +44,15 @@ export class AddDistributorComponent implements OnInit {
   };
 
   private executeDataCreation = (dataFormValue: any) => {
-    let data: DistributorForCreationDto = {
-      distributorCode: dataFormValue.distributorCode,
-      distributorName: dataFormValue.distributorName,
-      address: dataFormValue.address,
-      contactSource: dataFormValue.contactSource,
-      phoneNumber: dataFormValue.phoneNumber,
-      areaId: dataFormValue.areaId,
-      isActive: dataFormValue.isActive
+    let data: AreaForCreationDto = {
+      areaCode: dataFormValue.areaCode,
+      areaName: dataFormValue.areaName
     };
 
-    const apiUri: string = `api/distributors`;
+    const apiUri: string = `api/areas`;
     this.repoService.create(apiUri, data).subscribe(
       () => {
-        this.dialogService.openSuccessDialog("The distributor has been added successfully.")
+        this.dialogService.openSuccessDialog("The area has been added successfully.")
           .afterClosed()
           .subscribe(() => {
             this.dataService.triggerRefreshTab1();
@@ -82,18 +68,6 @@ export class AddDistributorComponent implements OnInit {
       }
     );
   };
-
-  public getAreas() {
-    this.repoService.getData('api/areas')
-      .subscribe(
-        (res) => {
-          this.areas = res as AreaDto[];
-        },
-        (err) => {
-          this.toastr.error(err);
-        }
-      );
-  }
 
   closeModal() {
     this.dialogRef.close();

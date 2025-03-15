@@ -51,11 +51,14 @@ export class SidebarComponent implements OnInit {
             '/ui-components/permissions': 'Permissions',
             '/ui-components/distributors': 'Distributors',
             '/ui-components/products': 'Products',
-            '/ui-components/product-informations': 'Product Informations',
+            '/ui-components/product-informations': 'ProductInformations',
             '/ui-components/lists': 'Customers',
             '/ui-components/audits': 'Logs',
             '/ui-components/about': 'About',
             '/ui-components/orders': 'Orders',
+            '/ui-components/areas': 'Areas',
+            '/ui-components/lines': 'Lines',
+            '/ui-components/reports': 'Reports',
 
           };
 

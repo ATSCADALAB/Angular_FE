@@ -1,0 +1,145 @@
+<mat-card class="cardWithShadow theme-card">
+    <mat-card-header>
+      <mat-card-title class="m-b-0">Reports</mat-card-title>
+      <span class="flex-1-auto"></span>
+      <!-- Có thể thêm nút xuất Excel nếu cần -->
+    </mat-card-header>
+  
+    <mat-card-content class="b-t-1">
+      <mat-tab-group>
+        <!-- Báo cáo sản phẩm hàng ngày -->
+        <mat-tab label="Product Daily">
+          <div class="table-responsive m-t-16">
+            <table mat-table [dataSource]="productReport" class="w-100">
+              <ng-container matColumnDef="date">
+                <th mat-header-cell *matHeaderCellDef>Date</th>
+                <td mat-cell *matCellDef="let element">{{ element.date }}</td>
+              </ng-container>
+              <ng-container matColumnDef="productName">
+                <th mat-header-cell *matHeaderCellDef>Product Name</th>
+                <td mat-cell *matCellDef="let element">{{ element.productName }}</td>
+              </ng-container>
+              <ng-container matColumnDef="totalOrders">
+                <th mat-header-cell *matHeaderCellDef>Total Orders</th>
+                <td mat-cell *matCellDef="let element">{{ element.totalOrders }}</td>
+              </ng-container>
+              <ng-container matColumnDef="totalWeight">
+                <th mat-header-cell *matHeaderCellDef>Total Weight (kg)</th>
+                <td mat-cell *matCellDef="let element">{{ element.totalWeight }}</td>
+              </ng-container>
+              <ng-container matColumnDef="totalUnits">
+                <th mat-header-cell *matHeaderCellDef>Total Units (bags)</th>
+                <td mat-cell *matCellDef="let element">{{ element.totalUnits }}</td>
+              </ng-container>
+              <tr mat-header-row *matHeaderRowDef="['date', 'productName', 'totalOrders', 'totalWeight', 'totalUnits']"></tr>
+              <tr mat-row *matRowDef="let row; columns: ['date', 'productName', 'totalOrders', 'totalWeight', 'totalUnits']"></tr>
+            </table>
+          </div>
+        </mat-tab>
+  
+        <!-- Báo cáo theo phương tiện -->
+        <mat-tab label="Vehicle">
+          <div class="table-responsive m-t-16">
+            <table mat-table [dataSource]="vehicleReport" class="w-100">
+              <ng-container matColumnDef="vehicleNumber">
+                <th mat-header-cell *matHeaderCellDef>Vehicle Number</th>
+                <td mat-cell *matCellDef="let element">{{ element.vehicleNumber }}</td>
+              </ng-container>
+              <ng-container matColumnDef="totalOrders">
+                <th mat-header-cell *matHeaderCellDef>Total Orders</th>
+                <td mat-cell *matCellDef="let element">{{ element.totalOrders }}</td>
+              </ng-container>
+              <ng-container matColumnDef="totalWeight">
+                <th mat-header-cell *matHeaderCellDef>Total Weight (kg)</th>
+                <td mat-cell *matCellDef="let element">{{ element.totalWeight }}</td>
+              </ng-container>
+              <ng-container matColumnDef="totalUnits">
+                <th mat-header-cell *matHeaderCellDef>Total Units (bags)</th>
+                <td mat-cell *matCellDef="let element">{{ element.totalUnits }}</td>
+              </ng-container>
+              <tr mat-header-row *matHeaderRowDef="['vehicleNumber', 'totalOrders', 'totalWeight', 'totalUnits']"></tr>
+              <tr mat-row *matRowDef="let row; columns: ['vehicleNumber', 'totalOrders', 'totalWeight', 'totalUnits']"></tr>
+            </table>
+          </div>
+        </mat-tab>
+  
+        <!-- Báo cáo đơn hàng dở dang -->
+        <mat-tab label="Incomplete Orders">
+          <div class="table-responsive m-t-16">
+            <table mat-table [dataSource]="incompleteReport" class="w-100">
+              <ng-container matColumnDef="date">
+                <th mat-header-cell *matHeaderCellDef>Date</th>
+                <td mat-cell *matCellDef="let element">{{ element.date }}</td>
+              </ng-container>
+              <ng-container matColumnDef="totalOrders">
+                <th mat-header-cell *matHeaderCellDef>Total Orders</th>
+                <td mat-cell *matCellDef="let element">{{ element.totalOrders }}</td>
+              </ng-container>
+              <ng-container matColumnDef="totalWeight">
+                <th mat-header-cell *matHeaderCellDef>Total Weight (kg)</th>
+                <td mat-cell *matCellDef="let element">{{ element.totalWeight }}</td>
+              </ng-container>
+              <ng-container matColumnDef="totalUnits">
+                <th mat-header-cell *matHeaderCellDef>Total Units (bags)</th>
+                <td mat-cell *matCellDef="let element">{{ element.totalUnits }}</td>
+              </ng-container>
+              <tr mat-header-row *matHeaderRowDef="['date', 'totalOrders', 'totalWeight', 'totalUnits']"></tr>
+              <tr mat-row *matRowDef="let row; columns: ['date', 'totalOrders', 'totalWeight', 'totalUnits']"></tr>
+            </table>
+          </div>
+        </mat-tab>
+  
+        <!-- Báo cáo đại lý -->
+        <mat-tab label="Distributor">
+          <div class="table-responsive m-t-16">
+            <table mat-table [dataSource]="distributorReport" class="w-100">
+              <ng-container matColumnDef="distributorName">
+                <th mat-header-cell *matHeaderCellDef>Distributor Name</th>
+                <td mat-cell *matCellDef="let element">{{ element.distributorName }}</td>
+              </ng-container>
+              <ng-container matColumnDef="totalOrders">
+                <th mat-header-cell *matHeaderCellDef>Total Orders</th>
+                <td mat-cell *matCellDef="let element">{{ element.totalOrders }}</td>
+              </ng-container>
+              <ng-container matColumnDef="totalWeight">
+                <th mat-header-cell *matHeaderCellDef>Total Weight (kg)</th>
+                <td mat-cell *matCellDef="let element">{{ element.totalWeight }}</td>
+              </ng-container>
+              <ng-container matColumnDef="totalUnits">
+                <th mat-header-cell *matHeaderCellDef>Total Units (bags)</th>
+                <td mat-cell *matCellDef="let element">{{ element.totalUnits }}</td>
+              </ng-container>
+              <tr mat-header-row *matHeaderRowDef="['distributorName', 'totalOrders', 'totalWeight', 'totalUnits']"></tr>
+              <tr mat-row *matRowDef="let row; columns: ['distributorName', 'totalOrders', 'totalWeight', 'totalUnits']"></tr>
+            </table>
+          </div>
+        </mat-tab>
+  
+        <!-- Báo cáo khu vực -->
+        <mat-tab label="Area">
+          <div class="table-responsive m-t-16">
+            <table mat-table [dataSource]="areaReport" class="w-100">
+              <ng-container matColumnDef="area">
+                <th mat-header-cell *matHeaderCellDef>Area</th>
+                <td mat-cell *matCellDef="let element">{{ element.area }}</td>
+              </ng-container>
+              <ng-container matColumnDef="totalOrders">
+                <th mat-header-cell *matHeaderCellDef>Total Orders</th>
+                <td mat-cell *matCellDef="let element">{{ element.totalOrders }}</td>
+              </ng-container>
+              <ng-container matColumnDef="totalWeight">
+                <th mat-header-cell *matHeaderCellDef>Total Weight (kg)</th>
+                <td mat-cell *matCellDef="let element">{{ element.totalWeight }}</td>
+              </ng-container>
+              <ng-container matColumnDef="totalUnits">
+                <th mat-header-cell *matHeaderCellDef>Total Units (bags)</th>
+                <td mat-cell *matCellDef="let element">{{ element.totalUnits }}</td>
+              </ng-container>
+              <tr mat-header-row *matHeaderRowDef="['area', 'totalOrders', 'totalWeight', 'totalUnits']"></tr>
+              <tr mat-row *matRowDef="let row; columns: ['area', 'totalOrders', 'totalWeight', 'totalUnits']"></tr>
+            </table>
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+    </mat-card-content>
+  </mat-card>

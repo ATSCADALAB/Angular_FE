@@ -1,0 +1,30 @@
+<mat-card class="cardWithShadow theme-card modal-card">
+    <mat-card-header>
+      <mat-card-title class="m-b-0">Update Area</mat-card-title>
+      <span class="flex-1-auto"></span>
+      <button mat-flat-button matTooltipPosition="left" class="m-l-8" matTooltipHideDelay="100000" (click)="closeModal()">
+        <span color="warn">Close</span>
+      </button>
+    </mat-card-header>
+    <mat-card-content class="b-t-1">
+      <form [formGroup]="dataForm" autocomplete="off" novalidate (ngSubmit)="updateData(dataForm.value)">
+        <mat-form-field class="w-100" appearance="outline">
+          <mat-label>Area Code</mat-label>
+          <input matInput formControlName="areaCode" />
+          <mat-error *ngIf="validateControl('areaCode') && hasError('areaCode', 'required')">Area Code is required</mat-error>
+          <mat-error *ngIf="validateControl('areaCode') && hasError('areaCode', 'maxlength')">Area Code must not exceed 50 characters</mat-error>
+        </mat-form-field>
+  
+        <mat-form-field class="w-100" appearance="outline">
+          <mat-label>Area Name</mat-label>
+          <input matInput formControlName="areaName" />
+          <mat-error *ngIf="validateControl('areaName') && hasError('areaName', 'required')">Area Name is required</mat-error>
+          <mat-error *ngIf="validateControl('areaName') && hasError('areaName', 'maxlength')">Area Name must not exceed 100 characters</mat-error>
+        </mat-form-field>
+  
+        <button mat-flat-button color="primary" [disabled]="!dataForm.valid">
+          Save
+        </button>
+      </form>
+    </mat-card-content>
+  </mat-card>
