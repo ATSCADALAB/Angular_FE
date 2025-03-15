@@ -13,6 +13,11 @@ export const navItems: NavItem[] = [
     navCap: 'Administration',
   },
   {
+    displayName: 'Reports',
+    iconName: 'poker-chip',
+    route: '/ui-components/reports',
+  },
+  {
     displayName: 'Lines',
     iconName: 'poker-chip',
     route: '/ui-components/lines',

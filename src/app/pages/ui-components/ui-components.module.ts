@@ -42,6 +42,7 @@ import { UpdateAreaComponent } from './areas/update-area/update-area.component';
 import { AddLineComponent } from './lines/add-line/add-line.component';
 import { UpdateLineComponent } from './lines/update-line/update-line.component';
 import { LinesComponent } from './lines/lines.component';
+import { ReportComponent } from './report/report.component';
 
 @NgModule({
   imports: [
@@ -97,7 +98,8 @@ import { LinesComponent } from './lines/lines.component';
     //Lines
     AddLineComponent,
     UpdateLineComponent,
-    LinesComponent
+    LinesComponent,
+    ReportComponent
   ],
 })
 export class UicomponentsModule {}

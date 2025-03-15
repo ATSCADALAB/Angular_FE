@@ -12,11 +12,16 @@ import { OrdersComponent } from './orders/order.component';
 import { AreasComponent } from './areas/areas.component';
 import { LinesComponent } from './lines/lines.component';
 import { DistributorsComponent } from './distributors/distributors.component';
+import { ReportComponent } from './report/report.component';
 
 export const UiComponentsRoutes: Routes = [
   {
     path: '',
     children: [
+      {
+        path: 'reports',
+        component: ReportComponent,
+      },
       {
         path: 'lines',
         component: LinesComponent,
