@@ -38,12 +38,13 @@
       <p>Successful Imports: {{ importReport.successfulImports }}</p>
       <p>Duplicate Rows: {{ importReport.duplicateRows }}</p>
     </div>
-
+    
     <div class="table-responsive m-t-16">
       <mat-form-field class="w-100" appearance="outline">
         <input matInput type="text" (keyup)="doFilter($any($event).target.value)" placeholder="Search....">
       </mat-form-field>
     </div>
+    
     <div class="table-responsive m-t-16">
       <table mat-table [dataSource]="dataSource" class="w-100" matSort>
         <ng-container matColumnDef="action">

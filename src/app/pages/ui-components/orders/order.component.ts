@@ -10,6 +10,7 @@ import { DataService } from 'src/app/shared/services/data.service';
 import { ImportResponse, OrderDto } from 'src/app/_interface/order';
 import { AddOrderComponent } from './add-order/add-order.component';
 import { UpdateOrderComponent } from './update-order/update-order.component';
+import { SignalRService } from 'src/app/shared/services/signalr.service';
 
 @Component({
   selector: 'app-orders',
@@ -17,6 +18,7 @@ import { UpdateOrderComponent } from './update-order/update-order.component';
   styleUrls: ['./orders.component.scss']
 })
 export class OrdersComponent implements OnInit, AfterViewInit {
+  
   displayedColumns: string[] = [
     'action',
     'status',
@@ -43,6 +45,7 @@ export class OrdersComponent implements OnInit, AfterViewInit {
   statusFilter: number | string = ''; // Giá trị status được chọn
   searchText: string = ''; // Lưu giá trị search text
   constructor(
+    
     private repoService: RepositoryService,
     private dialog: MatDialog,
     private dialogService: DialogService,
@@ -54,6 +57,7 @@ export class OrdersComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
+    
     this.getOrders();
   }
 
