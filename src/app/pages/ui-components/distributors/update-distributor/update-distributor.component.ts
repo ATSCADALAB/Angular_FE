@@ -2,19 +2,20 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { ToastrService } from 'ngx-toastr';
-import { DistributorDto, DistributorForUpdateDto } from 'src/app/_interface/distributor';
 import { RepositoryService } from 'src/app/shared/services/repository.service';
 import { DialogService } from 'src/app/shared/services/dialog.service';
 import { DataService } from 'src/app/shared/services/data.service';
+import { DistributorDto, DistributorForUpdateDto } from 'src/app/_interface/distributor';
+import { AreaDto } from 'src/app/_interface/area';
 
 @Component({
   selector: 'app-update-distributor',
   templateUrl: './update-distributor.component.html'
 })
 export class UpdateDistributorComponent implements OnInit {
-  dataForm: FormGroup | any;
-  distributor: DistributorDto | any;
-  result: any;
+  dataForm!: FormGroup;
+  distributor!: DistributorDto;
+  areas: AreaDto[] = [];
 
   constructor(
     private repoService: RepositoryService,
@@ -30,14 +31,13 @@ export class UpdateDistributorComponent implements OnInit {
       distributorCode: new FormControl('', [Validators.required, Validators.maxLength(50)]),
       distributorName: new FormControl('', [Validators.required, Validators.maxLength(100)]),
       address: new FormControl('', [Validators.required, Validators.maxLength(200)]),
-      phoneNumber: new FormControl('', [Validators.required, Validators.maxLength(20), Validators.pattern(/^\+?\d{10,20}$/)]),
       contactSource: new FormControl('', [Validators.maxLength(100)]),
-      area: new FormControl('', [Validators.required, Validators.maxLength(50)]),
-      note: new FormControl('', [Validators.maxLength(500)]),
+      phoneNumber: new FormControl('', [Validators.required, Validators.maxLength(20)]),
+      areaId: new FormControl(null, [Validators.required]),
       isActive: new FormControl(true)
     });
 
-    this.result = this.data;
+    this.getAreas();
     this.getDistributorToUpdate();
   }
 
@@ -49,57 +49,75 @@ export class UpdateDistributorComponent implements OnInit {
     return this.dataForm?.get(controlName)?.hasError(errorName);
   }
 
-  public createData = (dataFormValue: any) => {
+  public updateData = (dataFormValue: any) => {
     if (this.dataForm.valid) {
-      this.executeDataCreation(dataFormValue);
+      this.executeDataUpdate(dataFormValue);
     }
   };
 
-  private executeDataCreation = (dataFormValue: any) => {
+  private executeDataUpdate = (dataFormValue: any) => {
     let data: DistributorForUpdateDto = {
       distributorCode: dataFormValue.distributorCode,
       distributorName: dataFormValue.distributorName,
       address: dataFormValue.address,
-      phoneNumber: dataFormValue.phoneNumber,
       contactSource: dataFormValue.contactSource,
-      area: dataFormValue.area,
-      note: dataFormValue.note,
-      isActive: true
+      phoneNumber: dataFormValue.phoneNumber,
+      areaId: dataFormValue.areaId,
+      isActive: dataFormValue.isActive
     };
 
-    let id = this.result.id;
-    const Uri: string = `api/distributors/${id}`;
-    this.repoService.update(Uri, data).subscribe({
-      next: () => {
-        this.dialogService.openSuccessDialog('The distributor has been updated successfully.')
+    const uri: string = `api/distributors/${this.data.id}`;
+    this.repoService.update(uri, data).subscribe(
+      () => {
+        this.dialogService.openSuccessDialog("The distributor has been updated successfully.")
           .afterClosed()
           .subscribe(() => {
             this.dataService.triggerRefreshTab1();
-            this.dialogRef.close([]);
+            this.dialogRef.close();
           });
       },
-      error: (error) => {
+      (error) => {
         this.toastr.error(error);
-        this.dialogRef.close([]);
+        this.dialogRef.close();
       }
-    });
+    );
   };
 
   private getDistributorToUpdate = () => {
-    let id = this.result.id;
-    const Uri: string = `api/distributors/${id}`;
-    this.repoService.getData(Uri).subscribe({
-      next: (dist: any) => {
-        this.distributor = { ...dist };
-        this.dataForm.patchValue(this.distributor);
-      },
-      error: (err) => {
-        this.toastr.error(err);
-      }
-    });
+    const uri: string = `api/distributors/${this.data.id}`;
+    this.repoService.getData(uri)
+      .subscribe({
+        next: (distributor: any) => {
+          this.distributor = { ...distributor };
+          this.dataForm.patchValue({
+            distributorCode: this.distributor.distributorCode,
+            distributorName: this.distributor.distributorName,
+            address: this.distributor.address,
+            contactSource: this.distributor.contactSource,
+            phoneNumber: this.distributor.phoneNumber,
+            areaId: this.distributor.areaId,
+            isActive: this.distributor.isActive
+          });
+        },
+        error: (err) => {
+          this.toastr.error(err);
+        }
+      });
   };
 
+  public getAreas() {
+    this.repoService.getData('api/areas')
+      .subscribe(
+        (res) => {
+          this.areas = res as AreaDto[];
+        },
+        (err) => {
+          this.toastr.error(err);
+        }
+      );
+  }
+
   closeModal() {
-    this.dialogRef.close([]);
+    this.dialogRef.close();
   }
 }

@@ -12,7 +12,7 @@ import { ProductInformationForCreationDto } from 'src/app/_interface/product-inf
   templateUrl: './add-product-information.component.html'
 })
 export class AddProductInformationComponent implements OnInit {
-  dataForm: FormGroup | any;
+  dataForm!: FormGroup;
 
   constructor(
     private repoService: RepositoryService,
@@ -24,10 +24,10 @@ export class AddProductInformationComponent implements OnInit {
 
   ngOnInit() {
     this.dataForm = new FormGroup({
-      productCode: new FormControl('', [Validators.required, Validators.maxLength(50)]),
-      productName: new FormControl('', [Validators.required, Validators.maxLength(200)]),
-      unit: new FormControl('', [Validators.required, Validators.maxLength(20)]),
-      weight: new FormControl(0, [Validators.required, Validators.min(0)]),
+      productCode: new FormControl('', [Validators.required]),
+      productName: new FormControl('', [Validators.required]),
+      unit: new FormControl('', [Validators.required]),
+      weightPerUnit: new FormControl(0, [Validators.required, Validators.min(0)]),
       isActive: new FormControl(true)
     });
   }
@@ -51,31 +51,31 @@ export class AddProductInformationComponent implements OnInit {
       productCode: dataFormValue.productCode,
       productName: dataFormValue.productName,
       unit: dataFormValue.unit,
-      weight: dataFormValue.weight,
-      isActive: true
+      weightPerUnit: dataFormValue.weightPerUnit,
+      isActive: dataFormValue.isActive
     };
 
-    const apiUri: string = `api/productInformations`;
+    const apiUri: string = `api/product-informations`;
     this.repoService.create(apiUri, data).subscribe(
-      (res: any) => {
+      () => {
         this.dialogService.openSuccessDialog("The product information has been added successfully.")
           .afterClosed()
           .subscribe(() => {
             this.dataService.triggerRefreshTab1();
-            this.dialogRef.close([]);
+            this.dialogRef.close();
           });
       },
       (error) => {
         this.dialogService.openErrorDialog(error.message)
           .afterClosed()
           .subscribe(() => {
-            this.dialogRef.close([]);
+            this.dialogRef.close();
           });
       }
     );
   };
 
   closeModal() {
-    this.dialogRef.close([]);
+    this.dialogRef.close();
   }
 }

@@ -1,53 +1,32 @@
-import { DistributorDto } from 'src/app/_interface/distributor';
-import { ProductInformationDto } from 'src/app/_interface/product-information';
-
-export interface OrderDto {
-  id: string;
-  code: string;
-  exportDate: Date;
-  quantityVehicle: number;
+export interface OrderWithDetails {
+  id: string; // Guid trong C# là string trong TypeScript
+  orderCode: string;
+  exportDate: string; // DateTime từ backend sẽ là string ở frontend
   vehicleNumber: string;
-  containerNumber: number;
-  sealNumber: number;
   driverName: string;
+  driverNumber: number;
   driverPhoneNumber: string;
-  unitOrder: string;
-  weightOrder: number;
-  manufactureDate: Date;
-  distributorId: string;
-  productInformationId: string;
-  distributor: DistributorDto;
-  productInformation: ProductInformationDto;
-  status:number;
+  area: string;
+  status: number;
+  distributorId: number;
+  distributorName: string;
+  createdAt: string;
+  updatedAt: string | null;
+  orderDetail: OrderDetailWithProduct;
 }
-export interface OrderForCreationDto {
-  code: string; // Số Phiếu XK
-  exportDate: Date; // Ngày xuất
-  quantityVehicle: number; // Số tài xế
-  vehicleNumber: string; // Biển số xe vận chuyển
-  containerNumber: number; // Số Cont
-  sealNumber: number; // Số Seal
-  driverName: string; // Tên TX
-  driverPhoneNumber: string; // SĐT TX
-  unitOrder: string; // Số lượng (Bao)
-  weightOrder: number; // Số Lượng (Kg)
-  manufactureDate: Date; // Ngày sản xuất
-  distributorId: string; // ID của Distributor
-  productInformationId: string; // ID của ProductInformation
-  status:number;
-}
-export interface ImportResponse {
-  successfulImports: number;
-  duplicateRows: number;
-}
-export interface OrderLineDetailCreationDto {
-  OrderId: string;
-  Line: number;
-}
-export interface OrderLineDetailDto {
-  id: string; // Guid từ backend
-  sequenceNumber: number;
-  orderId: string;
-  line: number;
+
+export interface OrderDetailWithProduct {
+  id: number;
+  orderId: string; // Guid trong C# là string trong TypeScript
+  productInformationId: number;
+  productCode: string;
+  productName: string;
+  requestedUnits: number;
+  requestedWeight: number;
+  manufactureDate: string; // DateTime từ backend sẽ là string ở frontend
+  defectiveUnits: number;
+  defectiveWeight: number;
+  replacedUnits: number;
+  replacedWeight: number;
   createdAt: string;
 }
