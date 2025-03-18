@@ -1,145 +1,253 @@
-<mat-card class="cardWithShadow theme-card">
-    <mat-card-header>
-      <mat-card-title class="m-b-0">Reports</mat-card-title>
-      <span class="flex-1-auto"></span>
-      <!-- Có thể thêm nút xuất Excel nếu cần -->
-    </mat-card-header>
-  
-    <mat-card-content class="b-t-1">
-      <mat-tab-group>
-        <!-- Báo cáo sản phẩm hàng ngày -->
-        <mat-tab label="Product Daily">
-          <div class="table-responsive m-t-16">
-            <table mat-table [dataSource]="productReport" class="w-100">
-              <ng-container matColumnDef="date">
-                <th mat-header-cell *matHeaderCellDef>Date</th>
-                <td mat-cell *matCellDef="let element">{{ element.date }}</td>
-              </ng-container>
-              <ng-container matColumnDef="productName">
-                <th mat-header-cell *matHeaderCellDef>Product Name</th>
-                <td mat-cell *matCellDef="let element">{{ element.productName }}</td>
-              </ng-container>
-              <ng-container matColumnDef="totalOrders">
-                <th mat-header-cell *matHeaderCellDef>Total Orders</th>
-                <td mat-cell *matCellDef="let element">{{ element.totalOrders }}</td>
-              </ng-container>
-              <ng-container matColumnDef="totalWeight">
-                <th mat-header-cell *matHeaderCellDef>Total Weight (kg)</th>
-                <td mat-cell *matCellDef="let element">{{ element.totalWeight }}</td>
-              </ng-container>
-              <ng-container matColumnDef="totalUnits">
-                <th mat-header-cell *matHeaderCellDef>Total Units (bags)</th>
-                <td mat-cell *matCellDef="let element">{{ element.totalUnits }}</td>
-              </ng-container>
-              <tr mat-header-row *matHeaderRowDef="['date', 'productName', 'totalOrders', 'totalWeight', 'totalUnits']"></tr>
-              <tr mat-row *matRowDef="let row; columns: ['date', 'productName', 'totalOrders', 'totalWeight', 'totalUnits']"></tr>
-            </table>
-          </div>
-        </mat-tab>
-  
-        <!-- Báo cáo theo phương tiện -->
-        <mat-tab label="Vehicle">
-          <div class="table-responsive m-t-16">
-            <table mat-table [dataSource]="vehicleReport" class="w-100">
-              <ng-container matColumnDef="vehicleNumber">
-                <th mat-header-cell *matHeaderCellDef>Vehicle Number</th>
-                <td mat-cell *matCellDef="let element">{{ element.vehicleNumber }}</td>
-              </ng-container>
-              <ng-container matColumnDef="totalOrders">
-                <th mat-header-cell *matHeaderCellDef>Total Orders</th>
-                <td mat-cell *matCellDef="let element">{{ element.totalOrders }}</td>
-              </ng-container>
-              <ng-container matColumnDef="totalWeight">
-                <th mat-header-cell *matHeaderCellDef>Total Weight (kg)</th>
-                <td mat-cell *matCellDef="let element">{{ element.totalWeight }}</td>
-              </ng-container>
-              <ng-container matColumnDef="totalUnits">
-                <th mat-header-cell *matHeaderCellDef>Total Units (bags)</th>
-                <td mat-cell *matCellDef="let element">{{ element.totalUnits }}</td>
-              </ng-container>
-              <tr mat-header-row *matHeaderRowDef="['vehicleNumber', 'totalOrders', 'totalWeight', 'totalUnits']"></tr>
-              <tr mat-row *matRowDef="let row; columns: ['vehicleNumber', 'totalOrders', 'totalWeight', 'totalUnits']"></tr>
-            </table>
-          </div>
-        </mat-tab>
-  
-        <!-- Báo cáo đơn hàng dở dang -->
-        <mat-tab label="Incomplete Orders">
-          <div class="table-responsive m-t-16">
-            <table mat-table [dataSource]="incompleteReport" class="w-100">
-              <ng-container matColumnDef="date">
-                <th mat-header-cell *matHeaderCellDef>Date</th>
-                <td mat-cell *matCellDef="let element">{{ element.date }}</td>
-              </ng-container>
-              <ng-container matColumnDef="totalOrders">
-                <th mat-header-cell *matHeaderCellDef>Total Orders</th>
-                <td mat-cell *matCellDef="let element">{{ element.totalOrders }}</td>
-              </ng-container>
-              <ng-container matColumnDef="totalWeight">
-                <th mat-header-cell *matHeaderCellDef>Total Weight (kg)</th>
-                <td mat-cell *matCellDef="let element">{{ element.totalWeight }}</td>
-              </ng-container>
-              <ng-container matColumnDef="totalUnits">
-                <th mat-header-cell *matHeaderCellDef>Total Units (bags)</th>
-                <td mat-cell *matCellDef="let element">{{ element.totalUnits }}</td>
-              </ng-container>
-              <tr mat-header-row *matHeaderRowDef="['date', 'totalOrders', 'totalWeight', 'totalUnits']"></tr>
-              <tr mat-row *matRowDef="let row; columns: ['date', 'totalOrders', 'totalWeight', 'totalUnits']"></tr>
-            </table>
-          </div>
-        </mat-tab>
-  
-        <!-- Báo cáo đại lý -->
-        <mat-tab label="Distributor">
-          <div class="table-responsive m-t-16">
-            <table mat-table [dataSource]="distributorReport" class="w-100">
-              <ng-container matColumnDef="distributorName">
-                <th mat-header-cell *matHeaderCellDef>Distributor Name</th>
-                <td mat-cell *matCellDef="let element">{{ element.distributorName }}</td>
-              </ng-container>
-              <ng-container matColumnDef="totalOrders">
-                <th mat-header-cell *matHeaderCellDef>Total Orders</th>
-                <td mat-cell *matCellDef="let element">{{ element.totalOrders }}</td>
-              </ng-container>
-              <ng-container matColumnDef="totalWeight">
-                <th mat-header-cell *matHeaderCellDef>Total Weight (kg)</th>
-                <td mat-cell *matCellDef="let element">{{ element.totalWeight }}</td>
-              </ng-container>
-              <ng-container matColumnDef="totalUnits">
-                <th mat-header-cell *matHeaderCellDef>Total Units (bags)</th>
-                <td mat-cell *matCellDef="let element">{{ element.totalUnits }}</td>
-              </ng-container>
-              <tr mat-header-row *matHeaderRowDef="['distributorName', 'totalOrders', 'totalWeight', 'totalUnits']"></tr>
-              <tr mat-row *matRowDef="let row; columns: ['distributorName', 'totalOrders', 'totalWeight', 'totalUnits']"></tr>
-            </table>
-          </div>
-        </mat-tab>
-  
-        <!-- Báo cáo khu vực -->
-        <mat-tab label="Area">
-          <div class="table-responsive m-t-16">
-            <table mat-table [dataSource]="areaReport" class="w-100">
-              <ng-container matColumnDef="area">
-                <th mat-header-cell *matHeaderCellDef>Area</th>
-                <td mat-cell *matCellDef="let element">{{ element.area }}</td>
-              </ng-container>
-              <ng-container matColumnDef="totalOrders">
-                <th mat-header-cell *matHeaderCellDef>Total Orders</th>
-                <td mat-cell *matCellDef="let element">{{ element.totalOrders }}</td>
-              </ng-container>
-              <ng-container matColumnDef="totalWeight">
-                <th mat-header-cell *matHeaderCellDef>Total Weight (kg)</th>
-                <td mat-cell *matCellDef="let element">{{ element.totalWeight }}</td>
-              </ng-container>
-              <ng-container matColumnDef="totalUnits">
-                <th mat-header-cell *matHeaderCellDef>Total Units (bags)</th>
-                <td mat-cell *matCellDef="let element">{{ element.totalUnits }}</td>
-              </ng-container>
-              <tr mat-header-row *matHeaderRowDef="['area', 'totalOrders', 'totalWeight', 'totalUnits']"></tr>
-              <tr mat-row *matRowDef="let row; columns: ['area', 'totalOrders', 'totalWeight', 'totalUnits']"></tr>
-            </table>
-          </div>
-        </mat-tab>
-      </mat-tab-group>
-    </mat-card-content>
-  </mat-card>
+<div class="report-container">
+  <h2>Reports</h2>
+ 
+
+  <mat-tab-group>
+    <mat-tab label="Product Daily">
+      <div class="filter-section">
+        <mat-form-field appearance="fill">
+          <mat-label>Start Date</mat-label>
+          <input matInput [matDatepicker]="startPicker" [formControl]="startDate">
+          <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+          <mat-datepicker #startPicker></mat-datepicker>
+        </mat-form-field>
+        <mat-form-field appearance="fill">
+          <mat-label>End Date</mat-label>
+          <input matInput [matDatepicker]="endPicker" [formControl]="endDate">
+          <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+          <mat-datepicker #endPicker></mat-datepicker>
+        </mat-form-field>
+        <mat-form-field appearance="fill">
+          <mat-label>Line</mat-label>
+          <mat-select [formControl]="selectedLine">
+            <mat-option *ngFor="let line of lines" [value]="line.id">{{line.name}}</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="fill">
+          <mat-label>Product</mat-label>
+          <mat-select [formControl]="selectedProduct">
+            <mat-option *ngFor="let product of products" [value]="product.id">{{product.name}}</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <button mat-raised-button color="primary" (click)="loadProductDailyReport()">Report</button>
+        <button mat-raised-button color="accent" (click)="exportReport()">Export Report</button>
+      </div>
+      <div *ngIf="productDailyReport && productDailyReport.length > 0">
+        <table mat-table [dataSource]="productDailyDataSource" class="mat-elevation-z8">
+          <ng-container matColumnDef="date">
+            <th mat-header-cell *matHeaderCellDef> Date </th>
+            <td mat-cell *matCellDef="let element"> {{element.date}} </td>
+          </ng-container>
+          <ng-container matColumnDef="lineName">
+            <th mat-header-cell *matHeaderCellDef> Line </th>
+            <td mat-cell *matCellDef="let element"> {{element.lineName}} </td>
+          </ng-container>
+          <ng-container matColumnDef="productName">
+            <th mat-header-cell *matHeaderCellDef> Product Name </th>
+            <td mat-cell *matCellDef="let element"> {{element.productName}} </td>
+          </ng-container>
+          <ng-container matColumnDef="totalOrders">
+            <th mat-header-cell *matHeaderCellDef> Total Orders </th>
+            <td mat-cell *matCellDef="let element"> {{element.totalOrders}} </td>
+          </ng-container>
+          <ng-container matColumnDef="totalSensorWeight">
+            <th mat-header-cell *matHeaderCellDef> Total Weight (kg) </th>
+            <td mat-cell *matCellDef="let element"> {{element.totalSensorWeight}} </td>
+          </ng-container>
+          <ng-container matColumnDef="totalSensorUnits">
+            <th mat-header-cell *matHeaderCellDef> Total Units (bags) </th>
+            <td mat-cell *matCellDef="let element"> {{element.totalSensorUnits}} </td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="productDailyColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: productDailyColumns;"></tr>
+        </table>
+      </div>
+      <div *ngIf="!productDailyReport || productDailyReport.length === 0" class="text-center p-4">
+        <p>No data available for Product Daily Report.</p>
+      </div>
+    </mat-tab>
+    <mat-tab label="Vehicle">
+      <div class="filter-section">
+        <mat-form-field appearance="fill">
+          <mat-label>Start Date</mat-label>
+          <input matInput [matDatepicker]="startPickerVehicle" [formControl]="startDate">
+          <mat-datepicker-toggle matSuffix [for]="startPickerVehicle"></mat-datepicker-toggle>
+          <mat-datepicker #startPickerVehicle></mat-datepicker>
+        </mat-form-field>
+        <mat-form-field appearance="fill">
+          <mat-label>End Date</mat-label>
+          <input matInput [matDatepicker]="endPickerVehicle" [formControl]="endDate">
+          <mat-datepicker-toggle matSuffix [for]="endPickerVehicle"></mat-datepicker-toggle>
+          <mat-datepicker #endPickerVehicle></mat-datepicker>
+        </mat-form-field>
+        <mat-form-field appearance="fill">
+          <mat-label>Vehicle Number</mat-label>
+          <input matInput [formControl]="vehicleNumber" placeholder="Enter vehicle number">
+        </mat-form-field>
+        <button mat-raised-button color="primary" (click)="loadVehicleReport()">Report</button>
+        <button mat-raised-button color="accent" (click)="exportVehicleReport()">Export Report</button>
+      </div>
+      <div *ngIf="vehicleReport && vehicleReport.length > 0">
+        <table mat-table [dataSource]="vehicleDataSource" class="mat-elevation-z8">
+          <ng-container matColumnDef="date">
+            <th mat-header-cell *matHeaderCellDef> Date </th>
+            <td mat-cell *matCellDef="let element"> {{element.date}} </td>
+          </ng-container>
+          <ng-container matColumnDef="vehicleNumber">
+            <th mat-header-cell *matHeaderCellDef> Vehicle Number </th>
+            <td mat-cell *matCellDef="let element"> {{element.vehicleNumber}} </td>
+          </ng-container>
+          <ng-container matColumnDef="productName">
+            <th mat-header-cell *matHeaderCellDef> Product Name </th>
+            <td mat-cell *matCellDef="let element"> {{element.productName}} </td>
+          </ng-container>
+          <ng-container matColumnDef="totalOrders">
+            <th mat-header-cell *matHeaderCellDef> Total Orders </th>
+            <td mat-cell *matCellDef="let element"> {{element.totalOrders}} </td>
+          </ng-container>
+          <ng-container matColumnDef="totalSensorWeight">
+            <th mat-header-cell *matHeaderCellDef> Total Weight (kg) </th>
+            <td mat-cell *matCellDef="let element"> {{element.totalSensorWeight}} </td>
+          </ng-container>
+          <ng-container matColumnDef="totalSensorUnits">
+            <th mat-header-cell *matHeaderCellDef> Total Units (bags) </th>
+            <td mat-cell *matCellDef="let element"> {{element.totalSensorUnits}} </td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="vehicleColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: vehicleColumns;"></tr>
+        </table>
+      </div>
+      <div *ngIf="!vehicleReport || vehicleReport.length === 0" class="text-center p-4">
+        <p>No data available for Vehicle Report.</p>
+      </div>
+    </mat-tab>
+    <mat-tab label="Counter & Line">
+      <p>Counter & Line Report (Coming Soon)</p>
+    </mat-tab>
+    <mat-tab label="Incomplete Orders">
+      <div class="filter-section">
+        <mat-form-field appearance="fill">
+          <mat-label>Start Date</mat-label>
+          <input matInput [matDatepicker]="startPickerIncomplete" [formControl]="startDate">
+          <mat-datepicker-toggle matSuffix [for]="startPickerIncomplete"></mat-datepicker-toggle>
+          <mat-datepicker #startPickerIncomplete></mat-datepicker>
+        </mat-form-field>
+        <mat-form-field appearance="fill">
+          <mat-label>End Date</mat-label>
+          <input matInput [matDatepicker]="endPickerIncomplete" [formControl]="endDate">
+          <mat-datepicker-toggle matSuffix [for]="endPickerIncomplete"></mat-datepicker-toggle>
+          <mat-datepicker #endPickerIncomplete></mat-datepicker>
+        </mat-form-field>
+        <button mat-raised-button color="primary" (click)="loadIncompleteOrderReport()">Report</button>
+        <button mat-raised-button color="accent" (click)="exportIncompleteOrderReport()">Export Report</button>
+      </div>
+      <div *ngIf="incompleteOrderReport && incompleteOrderReport.length > 0">
+        <table mat-table [dataSource]="incompleteOrderDataSource" class="mat-elevation-z8">
+          <ng-container matColumnDef="date">
+            <th mat-header-cell *matHeaderCellDef> Date </th>
+            <td mat-cell *matCellDef="let element"> {{element.date}} </td>
+          </ng-container>
+          <ng-container matColumnDef="licensePlate">
+            <th mat-header-cell *matHeaderCellDef> License Plate </th>
+            <td mat-cell *matCellDef="let element"> {{element.licensePlate}} </td>
+          </ng-container>
+          <ng-container matColumnDef="productName">
+            <th mat-header-cell *matHeaderCellDef> Product Name </th>
+            <td mat-cell *matCellDef="let element"> {{element.productName}} </td>
+          </ng-container>
+          <ng-container matColumnDef="requestedUnits">
+            <th mat-header-cell *matHeaderCellDef> Requested Units </th>
+            <td mat-cell *matCellDef="let element"> {{element.requestedUnits}} </td>
+          </ng-container>
+          <ng-container matColumnDef="requestedWeight">
+            <th mat-header-cell *matHeaderCellDef> Requested Weight (kg) </th>
+            <td mat-cell *matCellDef="let element"> {{element.requestedWeight}} </td>
+          </ng-container>
+          <ng-container matColumnDef="actualUnits">
+            <th mat-header-cell *matHeaderCellDef> Actual Units </th>
+            <td mat-cell *matCellDef="let element"> {{element.actualUnits}} </td>
+          </ng-container>
+          <ng-container matColumnDef="actualWeight">
+            <th mat-header-cell *matHeaderCellDef> Actual Weight (kg) </th>
+            <td mat-cell *matCellDef="let element"> {{element.actualWeight}} </td>
+          </ng-container>
+          <ng-container matColumnDef="completionPercentage">
+            <th mat-header-cell *matHeaderCellDef> Completion (%) </th>
+            <td mat-cell *matCellDef="let element"> {{element.completionPercentage}}% </td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="incompleteOrderColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: incompleteOrderColumns;"></tr>
+        </table>
+      </div>
+      <div *ngIf="!incompleteOrderReport || incompleteOrderReport.length === 0" class="text-center p-4">
+        <p>No data available for Incomplete Orders Report.</p>
+      </div>
+    </mat-tab>
+    <mat-tab label="Distributor">
+      <div class="filter-section">
+        <mat-form-field appearance="fill">
+          <mat-label>To Month</mat-label>
+          <input matInput [formControl]="toMonth" type="number" min="1" max="12">
+        </mat-form-field>
+        <mat-form-field appearance="fill">
+          <mat-label>To Year</mat-label>
+          <input matInput [formControl]="toYear" type="number" min="2000" max="2100">
+        </mat-form-field>
+        <mat-form-field appearance="fill">
+          <mat-label>From Month</mat-label>
+          <input matInput [formControl]="fromMonth" type="number" min="1" max="12">
+        </mat-form-field>
+        <mat-form-field appearance="fill">
+          <mat-label>From Year</mat-label>
+          <input matInput [formControl]="fromYear" type="number" min="2000" max="2100">
+        </mat-form-field>
+        <mat-form-field appearance="fill">
+          <mat-label>Distributor</mat-label>
+          <mat-select [formControl]="distributorId">
+            <mat-option *ngFor="let distributor of distributorOptions" [value]="distributor.id">{{distributor.name}}</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="fill">
+          <mat-label>Product</mat-label>
+          <mat-select [formControl]="productInformationId">
+            <mat-option *ngFor="let product of products" [value]="product.id">{{product.name}}</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <button mat-raised-button color="primary" (click)="loadDistributorReport()">Report</button>
+        <button mat-raised-button color="accent" (click)="exportDistributorReport()">Export Report</button>
+      </div>
+      <div *ngIf="distributorReport && distributorReport.length > 0">
+        <table mat-table [dataSource]="distributorDataSource" class="mat-elevation-z8">
+          <ng-container matColumnDef="distributorName">
+            <th mat-header-cell *matHeaderCellDef> Distributor Name </th>
+            <td mat-cell *matCellDef="let element"> {{element.distributorName}} </td>
+          </ng-container>
+          <ng-container matColumnDef="productName">
+            <th mat-header-cell *matHeaderCellDef> Product Name </th>
+            <td mat-cell *matCellDef="let element"> {{element.productName}} </td>
+          </ng-container>
+          <ng-container matColumnDef="reportPeriod">
+            <th mat-header-cell *matHeaderCellDef> Report Period </th>
+            <td mat-cell *matCellDef="let element"> {{element.reportPeriod}} </td>
+          </ng-container>
+          <ng-container matColumnDef="cumulativeUnits">
+            <th mat-header-cell *matHeaderCellDef> Cumulative Units </th>
+            <td mat-cell *matCellDef="let element"> {{element.cumulativeUnits}} </td>
+          </ng-container>
+          <ng-container matColumnDef="cumulativeWeight">
+            <th mat-header-cell *matHeaderCellDef> Cumulative Weight (kg) </th>
+            <td mat-cell *matCellDef="let element"> {{element.cumulativeWeight}} </td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="distributorColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: distributorColumns;"></tr>
+        </table>
+      </div>
+      <div *ngIf="!distributorReport || distributorReport.length === 0" class="text-center p-4">
+        <p>No data available for Distributor Report.</p>
+      </div>
+    </mat-tab>
+    <mat-tab label="Area">
+      <p>Area Report (Coming Soon)</p>
+    </mat-tab>
+  </mat-tab-group>
+</div>

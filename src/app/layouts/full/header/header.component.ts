@@ -54,7 +54,6 @@ export class HeaderComponent {
 
   public getUserEmail() {
     this.email = this.authService.loadCurrentUserEmail();
-    console.log(this.email)
   }
 
   public logout = () => {
