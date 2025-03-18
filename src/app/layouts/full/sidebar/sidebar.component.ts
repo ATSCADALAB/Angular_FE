@@ -36,7 +36,6 @@ export class SidebarComponent implements OnInit {
 
     this.permissionService.getViewableCategories(roleId).subscribe({
       next: (viewableCategories: string[]) => {
-        console.log('Viewable Categories:', viewableCategories);
         this.filteredNavItems = this.navItems.filter(item => {
           // Giữ lại các mục không có route (như navCap) hoặc mục Dashboard
           if (!item.route || item.route === '/dashboard' || item.route === '/ui-components/about') {
@@ -63,7 +62,6 @@ export class SidebarComponent implements OnInit {
           };
 
           const category = routeToCategoryMap[item.route];
-          console.log(category);
           if (!category) {
             return false; // Nếu route không ánh xạ với danh mục nào, không hiển thị
           }
