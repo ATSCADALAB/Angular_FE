@@ -63,3 +63,28 @@ h2 {
     margin: 8px 0;
   }
 }
+.filter-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  padding: 16px;
+}
+
+mat-form-field {
+  min-width: 150px;
+}
+
+.mat-elevation-z8 {
+  margin: 16px;
+}
+th {
+  background-color: #0f172a !important; /* Sử dụng màu primary từ theme */
+  color: rgb(255, 255, 255);
+  font-weight: bold;
+  text-align: center;
+  padding: 10px;
+}
+td {
+  text-align: center;
+} 
