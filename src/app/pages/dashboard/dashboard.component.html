@@ -1,17 +1,15 @@
-<div class="row" fxHide.xs>
+<!-- Tổng quan Dashboard -->
+<div class="row" *ngIf="summary">
   <div class="col-sm-6 col-lg-4">
-    <mat-card class="cardWithShadow bg1">
+    <mat-card class="cardWithShadow bg3">
       <mat-card-content class="p-24 center-content">
         <div class="row">
-          <img src="../../../assets/images/backgrounds/users.png" class="mr-8" width="80" height="80" alt="User Image">
-          <!-- User image -->
+          <img src="../../../assets/images/backgrounds/db1.png" class="mr-8" width="80" height="80" alt="Orders Image">
           <div class="column">
-            <mat-card-title>
-              Users
-            </mat-card-title>
+            <mat-card-title>Đơn hôm nay</mat-card-title>
             <div class="row m-t-24">
               <div class="col-7">
-                <h4 class="mat-headline-5">{{totalUsers | number }}</h4>
+                <h4 class="mat-headline-5">{{summary.totalOrdersToday | number}}</h4>
               </div>
             </div>
           </div>
@@ -20,18 +18,16 @@
     </mat-card>
   </div>
   <div class="col-sm-6 col-lg-4">
-    <mat-card class="cardWithShadow bg2">
+    <mat-card class="cardWithShadow bg5">
       <mat-card-content class="p-24 center-content">
         <div class="row">
-          <img src="../../../assets/images/backgrounds/customers.png" class="mr-8" width="80" height="80"
-            alt="User Image"> <!-- User image -->
+          <img src="../../../assets/images/backgrounds/db2.png" class="mr-8" width="80" height="80" alt="Pending Image">
           <div class="column">
-            <mat-card-title>Customers</mat-card-title>
+            <mat-card-title>Đơn chưa hoàn thành</mat-card-title>
             <div class="row m-t-24">
               <div class="col-7">
-                <h4 class="mat-headline-5">{{totalCustomers | number }}</h4>
+                <h4 class="mat-headline-5">{{summary.pendingOrders | number}}</h4>
               </div>
-
             </div>
           </div>
         </div>
@@ -39,16 +35,15 @@
     </mat-card>
   </div>
   <div class="col-sm-6 col-lg-4">
-    <mat-card class="cardWithShadow bg4">
+    <mat-card class="cardWithShadow bg6">
       <mat-card-content class="p-24 center-content">
         <div class="row">
-          <img src="../../../assets/images/backgrounds/events.png" class="mr-8" width="80" height="80" alt="User Image">
-          <!-- User image -->
+          <img src="../../../assets/images/backgrounds/db3.png" class="mr-8" width="80" height="80" alt="Completed Image">
           <div class="column">
-            <mat-card-title>Log Events</mat-card-title>
+            <mat-card-title>Đơn hoàn thành hôm nay</mat-card-title>
             <div class="row m-t-24">
               <div class="col-7">
-                <h4 class="mat-headline-5">{{totalLogs | number }}</h4>
+                <h4 class="mat-headline-5">{{summary.completedOrdersToday | number}}</h4>
               </div>
             </div>
           </div>
@@ -57,27 +52,246 @@
     </mat-card>
   </div>
 </div>
+
+<!-- Chart đơn hàng hoàn thành/chưa hoàn thành -->
 <div class="row">
   <div class="col-lg-12">
     <mat-card class="cardWithShadow">
       <mat-card-content class="p-24">
-
         <div class="d-flex w-100">
-          <mat-card-title>Log Overview</mat-card-title>
-          <div class="m-l-auto">
-            <mat-form-field class="theme-select" appearance="outline">
-              <mat-select [(ngModel)]="selectedMonth" (selectionChange)="onMonthSelectionChange()">
-                <mat-option *ngFor="let month of months" [value]="month.month">
-                  {{ month.month }}
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
+          <mat-card-title>Trạng thái đơn hàng</mat-card-title>
+        </div>
+        <apx-chart 
+          [series]="salesOverviewChart.series" 
+          [dataLabels]="salesOverviewChart.dataLabels"
+          [chart]="salesOverviewChart.chart" 
+          [legend]="salesOverviewChart.legend" 
+          [xaxis]="salesOverviewChart.xaxis"
+          [yaxis]="salesOverviewChart.yaxis" 
+          [grid]="salesOverviewChart.grid" 
+          [stroke]="salesOverviewChart.stroke"
+          [tooltip]="salesOverviewChart.tooltip" 
+          [plotOptions]="salesOverviewChart.plotOptions">
+        </apx-chart>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
+
+<!-- Đơn hàng theo dây chuyền -->
+<div class="row">
+  <div class="col-lg-12">
+    <mat-card class="cardWithShadow">
+      <mat-card-content class="p-24">
+        <mat-card-title>Đơn hàng theo dây chuyền</mat-card-title>
+        <div class="orders-by-line-container">
+          <div class="line-card" *ngFor="let item of ordersByLine; let i = index" [style.backgroundColor]="getLineColor(i)">
+            <div class="line-name">{{ item.lineName }}</div>
+            <div class="line-orders">{{ item.totalOrders | number }} đơn</div>
           </div>
         </div>
-        <apx-chart [series]="salesOverviewChart.series" [dataLabels]="salesOverviewChart.dataLabels"
-          [chart]="salesOverviewChart.chart" [legend]="salesOverviewChart.legend" [xaxis]="salesOverviewChart.xaxis"
-          [yaxis]="salesOverviewChart.yaxis" [grid]="salesOverviewChart.grid" [stroke]="salesOverviewChart.stroke"
-          [tooltip]="salesOverviewChart.tooltip" [plotOptions]="salesOverviewChart.plotOptions"></apx-chart>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
+
+<!-- Top 5 sản phẩm -->
+<div class="row">
+  <div class="col-lg-12">
+    <mat-card class="cardWithShadow">
+      <mat-card-content class="p-24">
+        <mat-card-title>Top 5 sản phẩm</mat-card-title>
+        <table class="top-products-table">
+          <thead>
+            <tr>
+              <th>Tên sản phẩm</th>
+              <th>Số lượng xuất</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let product of topProducts; let i = index">
+              <td>
+                <span *ngIf="i === 0" class="top-icon gold-medal">🥇</span>
+                <span *ngIf="i === 1" class="top-icon silver-medal">🥈</span>
+                <span *ngIf="i === 2" class="top-icon bronze-medal">🥉</span>
+                <span *ngIf="i === 3" class="top-icon fourth-place">🏅</span>
+                <span *ngIf="i === 4" class="top-icon fifth-place">🎖️</span>
+                {{ product.productName }}
+              </td>
+              <td>{{ product.totalUnits | number }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
+
+<!-- Đơn chưa hoàn thành -->
+<div class="row">
+  <div class="col-lg-12">
+    <mat-card class="cardWithShadow">
+      <mat-card-content class="p-24">
+        <mat-card-title>Đơn chưa hoàn thành</mat-card-title>
+        <div class="table-wrapper">
+          <table class="incomplete-orders-table">
+            <thead>
+              <tr>
+                <th>Ngày</th>
+                <th>Mã đơn</th>
+                <th>Biển số xe</th>
+                <th>Sản phẩm</th>
+                <th>Yêu cầu</th>
+                <th>Thực tế</th>
+                <th>% Hoàn thành</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let order of incompleteOrders">
+                <td>{{ order.date }}</td>
+                <td>{{ order.orderNumber }}</td>
+                <td>{{ order.vehicleNumber }}</td>
+                <td>{{ order.productName }}</td>
+                <td>{{ order.requestedUnits | number }}</td>
+                <td>{{ order.actualUnits | number }}</td>
+                <td>
+                  <span class="completion-percentage" [ngClass]="{
+                    'low': order.completionPercentage < 50,
+                    'medium': order.completionPercentage >= 50 && order.completionPercentage < 80,
+                    'high': order.completionPercentage >= 80
+                  }">
+                    {{ order.completionPercentage | number:'1.0-2' }}%
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
+
+<!-- Đơn chưa hoàn thành -->
+<div class="row">
+  <div class="col-lg-12">
+    <mat-card class="cardWithShadow">
+      <mat-card-content class="p-24">
+        <mat-card-title>Đơn chưa hoàn thành</mat-card-title>
+        <div class="table-wrapper">
+          <table class="incomplete-orders-table">
+            <thead>
+              <tr>
+                <th>Ngày</th>
+                <th>Mã đơn</th>
+                <th>Biển số xe</th>
+                <th>Sản phẩm</th>
+                <th>Yêu cầu</th>
+                <th>Thực tế</th>
+                <th>% Hoàn thành</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let order of incompleteOrders">
+                <td>{{ order.date }}</td>
+                <td>{{ order.orderNumber }}</td>
+                <td>{{ order.vehicleNumber }}</td>
+                <td>{{ order.productName }}</td>
+                <td>{{ order.requestedUnits | number }}</td>
+                <td>{{ order.actualUnits | number }}</td>
+                <td>
+                  <span class="completion-percentage" [ngClass]="{
+                    'low': order.completionPercentage < 50,
+                    'medium': order.completionPercentage >= 50 && order.completionPercentage < 80,
+                    'high': order.completionPercentage >= 80
+                  }">
+                    {{ order.completionPercentage | number:'1.0-2' }}%
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
+
+<!-- Đơn đang xử lý -->
+<div class="row">
+  <div class="col-lg-12">
+    <mat-card class="cardWithShadow">
+      <mat-card-content class="p-24">
+        <mat-card-title>Đơn đang xử lý</mat-card-title>
+        <div class="table-wrapper">
+          <table class="processing-orders-table">
+            <thead>
+              <tr>
+                <th>Ngày</th>
+                <th>Mã đơn</th>
+                <th>Biển số xe</th>
+                <th>Dây chuyền</th>
+                <th>Tổng đơn vị</th>
+                <th>Trạng thái</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let order of processingOrders">
+                <td>{{ order.date }}</td>
+                <td>{{ order.orderNumber }}</td>
+                <td>{{ order.vehicleNumber }}</td>
+                <td>{{ order.lineName }}</td>
+                <td>{{ order.totalUnits | number }}</td>
+                <td>
+                  <span class="status-badge" [ngClass]="{
+                    'pending': order.status.toLowerCase() === 'pending',
+                    'processing': order.status.toLowerCase() === 'processing',
+                    'on-hold': order.status.toLowerCase() === 'on-hold' || order.status.toLowerCase() === 'on hold'
+                  }">
+                    {{ order.status }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
+
+<!-- Đơn hoàn thành gần đây -->
+<div class="row">
+  <div class="col-lg-12">
+    <mat-card class="cardWithShadow">
+      <mat-card-content class="p-24">
+        <mat-card-title>Đơn hoàn thành gần đây</mat-card-title>
+        <div class="table-wrapper">
+          <table class="recent-completed-orders-table">
+            <thead>
+              <tr>
+                <th>Ngày hoàn thành</th>
+                <th>Mã đơn</th>
+                <th>Đại lý</th>
+                <th>Sản phẩm</th>
+                <th>Tổng đơn vị</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let order of recentCompletedOrders">
+                <td>{{ order.completedDate }}</td>
+                <td>{{ order.orderNumber }}</td>
+                <td>{{ order.distributorName }}</td>
+                <td>{{ order.productName }}</td>
+                <td>
+                  <span class="total-units-badge">
+                    {{ order.totalUnits | number }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </mat-card-content>
     </mat-card>
   </div>

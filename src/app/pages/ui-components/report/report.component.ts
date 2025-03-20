@@ -3,8 +3,10 @@ import { MatTableDataSource } from '@angular/material/table';
 import { RepositoryService } from 'src/app/shared/services/repository.service';
 import { DialogService } from 'src/app/shared/services/dialog.service';
 import { FormControl } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
+import { AreaDto } from 'src/app/_interface/area';
 
-interface ReportSummary {
+interface ProductDailyReport {
   date: string;
   lineName: string;
   productName: string;
@@ -36,7 +38,19 @@ interface IncompleteOrderReport {
 interface DistributorReport {
   distributorName: string;
   productName: string;
-  reportPeriod: string;
+  exportPeriod: string;
+  monthlyUnits: number;
+  cumulativeUnits: number;
+  monthlyWeight: number;
+  cumulativeWeight: number;
+}
+
+interface AreaReport {
+  areaName: string;
+  productName: string;
+  exportPeriod: string;
+  totalUnits: number;
+  totalWeight: number;
   cumulativeUnits: number;
   cumulativeWeight: number;
 }
@@ -47,57 +61,89 @@ interface DistributorReport {
   styleUrls: ['./report.component.scss']
 })
 export class ReportComponent implements OnInit {
-  productDailyReport: ReportSummary[] = [];
-  productDailyColumns: string[] = ['date', 'lineName', 'productName', 'totalOrders',  'totalSensorUnits','totalSensorWeight'];
-  productDailyDataSource = new MatTableDataSource<ReportSummary>();
+  // Product Daily
+  productDailyReport: ProductDailyReport[] = [];
+  productDailyColumns: string[] = ['date', 'lineName', 'productName', 'totalOrders', 'totalSensorUnits', 'totalSensorWeight'];
+  productDailyDataSource = new MatTableDataSource<ProductDailyReport>();
 
+  // Vehicle
   vehicleReport: VehicleReport[] = [];
   vehicleColumns: string[] = ['date', 'vehicleNumber', 'productName', 'totalOrders', 'totalSensorUnits', 'totalSensorWeight'];
   vehicleDataSource = new MatTableDataSource<VehicleReport>();
   vehicleNumber = new FormControl('');
 
+  // Common Filters
   startDate = new FormControl(new Date());
   endDate = new FormControl(new Date());
-  selectedLine = new FormControl(0); // Set mặc định là 0 (All)
-  selectedProduct = new FormControl(0); // Set mặc định là 0 (All)
+  selectedLine = new FormControl(0); // 0 = All
+  selectedProduct = new FormControl(0); // 0 = All
   lines: { id: number; name: string }[] = [];
   products: { id: number; name: string }[] = [];
 
-  // Incomplete Orders Report properties
+  // Incomplete Orders
   incompleteOrderReport: IncompleteOrderReport[] = [];
   incompleteOrderColumns: string[] = [
-    'date', 'licensePlate', 'productName', 
-    'requestedUnits', 'requestedWeight', 
+    'date', 'licensePlate', 'productName', 'requestedUnits', 'requestedWeight',
     'actualUnits', 'actualWeight', 'completionPercentage'
   ];
   incompleteOrderDataSource = new MatTableDataSource<IncompleteOrderReport>();
 
-  // Distributor Report properties
+  // Distributor
   distributorReport: DistributorReport[] = [];
   distributorColumns: string[] = [
-    'distributorName', 'productName', 'reportPeriod', 
-    'cumulativeUnits', 'cumulativeWeight'
+    'distributorName', 'productName', 'exportPeriod', 'monthlyUnits', 'cumulativeUnits', 'monthlyWeight', 'cumulativeWeight'
   ];
   distributorDataSource = new MatTableDataSource<DistributorReport>();
-  
-  // Form controls for distributor report
-  fromYear = new FormControl(new Date().getFullYear());
-  toYear = new FormControl(new Date().getFullYear());
-  fromMonth = new FormControl(1);
-  toMonth = new FormControl(12);
-  distributorId = new FormControl('');
-  productInformationId = new FormControl('');
-
+  fromYear = new FormControl<number | null>(new Date().getFullYear() - 1);
+  toYear = new FormControl<number | null>(new Date().getFullYear());
+  fromMonth = new FormControl<number | null>(null); // Mặc định để trống
+  toMonth = new FormControl<number | null>(null);   // Mặc định để trống
+  distributorId = new FormControl(0); // 0 = All
+  productInformationId = new FormControl(0); // 0 = All
   distributorOptions: { id: number; name: string }[] = [];
+
+  // Area
+  areaReport: AreaReport[] = [];
+  areaColumns: string[] = [
+    'areaName', 'productName', 'exportPeriod', 'totalUnits', 'totalWeight', 'cumulativeUnits', 'cumulativeWeight'
+  ];
+  areaDataSource = new MatTableDataSource<AreaReport>();
+  areaId = new FormControl(0); // 0 = All
+  areaOptions: { id: number; name: string }[] = [];
+
+  // Danh sách tháng
+   months = [
+    { value: 1, name: 'January' }, { value: 2, name: 'February' }, { value: 3, name: 'March' },
+    { value: 4, name: 'April' }, { value: 5, name: 'May' }, { value: 6, name: 'June' },
+    { value: 7, name: 'July' }, { value: 8, name: 'August' }, { value: 9, name: 'September' },
+    { value: 10, name: 'October' }, { value: 11, name: 'November' }, { value: 12, name: 'December' }
+];
+
+
+  // Danh sách năm
+  years: number[] = [];
 
   constructor(
     private repoService: RepositoryService,
-    private dialogService: DialogService
-  ) {}
+    private dialogService: DialogService,
+    private http: HttpClient
+  ) {
+    this.generateYears(); // Tạo danh sách năm
+  }
 
   ngOnInit(): void {
     this.loadFilters();
     this.loadDistributors();
+    this.loadAreas();
+  }
+
+  generateYears(): void {
+    const currentYear = new Date().getFullYear();
+    const startYear = 2000; // Năm bắt đầu
+    const endYear = currentYear + 5; // Năm kết thúc (5 năm sau hiện tại)
+    for (let year = startYear; year <= endYear; year++) {
+      this.years.push(year);
+    }
   }
 
   loadFilters(): void {
@@ -108,7 +154,6 @@ export class ReportComponent implements OnInit {
           this.lines.unshift({ id: 0, name: 'All' });
         },
         (err) => {
-          this.dialogService.openErrorDialog('Error fetching lines: ' + err.message);
         }
       );
 
@@ -119,7 +164,6 @@ export class ReportComponent implements OnInit {
           this.products.unshift({ id: 0, name: 'All' });
         },
         (err) => {
-          this.dialogService.openErrorDialog('Error fetching products: ' + err.message);
         }
       );
   }
@@ -128,33 +172,40 @@ export class ReportComponent implements OnInit {
     this.repoService.getData<{ id: number; distributorName: string }[]>('api/distributors')
       .subscribe(
         (res) => {
-          const distributors = res.map(d => ({ id: d.id, name: d.distributorName }));
-          distributors.unshift({ id: 0, name: 'All' });
-          // Cập nhật dropdown cho distributor
-          this.distributorOptions = distributors;
+          this.distributorOptions = res.map(d => ({ id: d.id, name: d.distributorName }));
+          this.distributorOptions.unshift({ id: 0, name: 'All' });
         },
         (err) => {
-          this.dialogService.openErrorDialog('Error fetching distributors: ' + err.message);
         }
       );
+  }
+
+  loadAreas(): void {
+    this.repoService.getData<AreaDto[]>('api/areas').subscribe({
+      next: (response) => {
+        this.areaOptions = response.map(area => ({ id: area.id, name: area.areaName }));
+        this.areaOptions.unshift({ id: 0, name: 'All' });
+      },
+      error: (error) => {
+      }
+    });
   }
 
   loadProductDailyReport(): void {
     const params = {
       startDate: this.startDate.value!.toISOString().split('T')[0],
       endDate: this.endDate.value!.toISOString().split('T')[0],
-      lineId: this.selectedLine.value || null,
-      productInformationId: this.selectedProduct.value || null
+      lineId: this.selectedLine.value === 0 ? null : this.selectedLine.value,
+      productInformationId: this.selectedProduct.value === 0 ? null : this.selectedProduct.value
     };
 
-    this.repoService.getData<ReportSummary[]>('api/reports/product-daily', params)
+    this.repoService.getData<ProductDailyReport[]>('api/reports/product-daily', params)
       .subscribe(
         (res) => {
-          this.productDailyReport = res as ReportSummary[];
+          this.productDailyReport = res;
           this.productDailyDataSource.data = this.productDailyReport;
         },
         (err) => {
-          this.dialogService.openErrorDialog('Error fetching product daily report: ' + err.message);
         }
       );
   }
@@ -163,7 +214,7 @@ export class ReportComponent implements OnInit {
     const params = {
       startDate: this.startDate.value!.toISOString().split('T')[0],
       endDate: this.endDate.value!.toISOString().split('T')[0],
-      vehicleNumber: this.vehicleNumber.value || ''
+      vehicleNumber: this.vehicleNumber.value || null
     };
 
     this.repoService.getData<VehicleReport[]>('api/reports/vehicle-daily', params)
@@ -173,7 +224,6 @@ export class ReportComponent implements OnInit {
           this.vehicleDataSource.data = this.vehicleReport;
         },
         (err) => {
-          this.dialogService.openErrorDialog('Error fetching vehicle report: ' + err.message);
         }
       );
   }
@@ -191,19 +241,27 @@ export class ReportComponent implements OnInit {
           this.incompleteOrderDataSource.data = this.incompleteOrderReport;
         },
         (err) => {
-          this.dialogService.openErrorDialog('Error fetching incomplete order report: ' + err.message);
         }
       );
   }
 
   loadDistributorReport(): void {
+    if (!this.fromYear.value || !this.toYear.value) {
+      this.dialogService.openErrorDialog('Please select start year and end year.');
+      return;
+    }
+    if (this.fromYear.value > this.toYear.value) {
+      this.dialogService.openErrorDialog('Start year must be less than or equal to end year.');
+      return;
+    }
+
     const params = {
       fromYear: this.fromYear.value,
       toYear: this.toYear.value,
-      fromMonth: this.fromMonth.value,
-      toMonth: this.toMonth.value,
-      distributorId: this.distributorId.value || null,
-      productInformationId: this.productInformationId.value || null
+      fromMonth: this.fromMonth.value || null,
+      toMonth: this.toMonth.value || null,
+      distributorId: this.distributorId.value === 0 ? null : this.distributorId.value,
+      productInformationId: this.productInformationId.value === 0 ? null : this.productInformationId.value
     };
 
     this.repoService.getData<DistributorReport[]>('api/reports/distributor-production', params)
@@ -213,38 +271,53 @@ export class ReportComponent implements OnInit {
           this.distributorDataSource.data = this.distributorReport;
         },
         (err) => {
-          this.dialogService.openErrorDialog('Error fetching distributor report: ' + err.message);
         }
       );
+  }
+
+  loadAreaReport(): void {
+    if (!this.fromYear.value || !this.toYear.value) {
+      this.dialogService.openErrorDialog('Please select start year and end year.');
+      return;
+    }
+    if (this.fromYear.value > this.toYear.value) {
+      this.dialogService.openErrorDialog('Start year must be less than or equal to end year.');
+      return;
+    }
+
+    const params = {
+      fromYear: this.fromYear.value,
+      toYear: this.toYear.value,
+      fromMonth: this.fromMonth.value || null,
+      toMonth: this.toMonth.value || null,
+      productInformationId: this.productInformationId.value === 0 ? null : this.productInformationId.value,
+      areaId: this.areaId.value === 0 ? null : this.areaId.value
+    };
+
+    this.repoService.getData<AreaReport[]>('api/reports/region-production', params).subscribe(
+      (res) => {
+        this.areaReport = res;
+        this.areaDataSource.data = this.areaReport;
+      },
+      (err) => {
+      }
+    );
   }
 
   exportReport(): void {
     const params = {
       startDate: this.startDate.value!.toISOString().split('T')[0],
       endDate: this.endDate.value!.toISOString().split('T')[0],
-      lineId: this.selectedLine.value || null,
-      productInformationId: this.selectedProduct.value || null
+      lineId: this.selectedLine.value === 0 ? null : this.selectedLine.value,
+      productInformationId: this.selectedProduct.value === 0 ? null : this.selectedProduct.value
     };
 
-    // Sử dụng RepositoryService để gọi API xuất báo cáo
     this.repoService.exportReport('api/reports/product-daily/export', params)
       .subscribe(
         (response: Blob) => {
-          const blob = new Blob([response], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-          const url = window.URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          // Format tên file giống backend
-          const startDateStr = this.startDate.value!.toLocaleDateString('en-GB').split('/').join('');
-          const endDateStr = this.endDate.value!.toLocaleDateString('en-GB').split('/').join('');
-          a.download = `BaoCaoSanPham_${startDateStr}_${endDateStr}.xlsx`;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          window.URL.revokeObjectURL(url);
+          this.downloadFile(response, `BaoCaoSanPham_${this.formatDate(this.startDate.value!)}_${this.formatDate(this.endDate.value!)}.xlsx`);
         },
         (err) => {
-          this.dialogService.openErrorDialog('Error exporting report: ' + err.message);
         }
       );
   }
@@ -253,26 +326,16 @@ export class ReportComponent implements OnInit {
     const params = {
       startDate: this.startDate.value!.toISOString().split('T')[0],
       endDate: this.endDate.value!.toISOString().split('T')[0],
-      vehicleNumber: this.vehicleNumber.value || ''
+      vehicleNumber: this.vehicleNumber.value || null
     };
 
     this.repoService.exportReport('api/reports/vehicle-daily/export', params)
       .subscribe(
         (response: Blob) => {
-          const blob = new Blob([response], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-          const url = window.URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          const startDateStr = this.startDate.value!.toLocaleDateString('en-GB').split('/').join('');
-          const endDateStr = this.endDate.value!.toLocaleDateString('en-GB').split('/').join('');
-          a.download = `BaoCaoXe_${startDateStr}_${endDateStr}.xlsx`;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          window.URL.revokeObjectURL(url);
+          this.downloadFile(response, `BaoCaoXe_${this.formatDate(this.startDate.value!)}_${this.formatDate(this.endDate.value!)}.xlsx`);
         },
         (err) => {
-          this.dialogService.openErrorDialog('Error exporting report: ' + err.message);
+          this.dialogService.openErrorDialog('Error exporting report');
         }
       );
   }
@@ -286,54 +349,86 @@ export class ReportComponent implements OnInit {
     this.repoService.exportReport('api/reports/incomplete-order-shipment/export', params)
       .subscribe(
         (response: Blob) => {
-          const blob = new Blob([response], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-          const url = window.URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          const startDateStr = this.startDate.value!.toLocaleDateString('en-GB').split('/').join('');
-          const endDateStr = this.endDate.value!.toLocaleDateString('en-GB').split('/').join('');
-          a.download = `BaoCaoDonHangChuaHoanThanh_${startDateStr}_${endDateStr}.xlsx`;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          window.URL.revokeObjectURL(url);
+          this.downloadFile(response, `BaoCaoDonHangChuaHoanThanh_${this.formatDate(this.startDate.value!)}_${this.formatDate(this.endDate.value!)}.xlsx`);
         },
         (err) => {
-          this.dialogService.openErrorDialog('Error exporting report: ' + err.message);
+          this.dialogService.openErrorDialog('Error exporting report');
         }
       );
   }
 
   exportDistributorReport(): void {
+    if (!this.fromYear.value || !this.toYear.value) {
+      this.dialogService.openErrorDialog('Please select start year and end year.');
+      return;
+    }
+    if (this.fromYear.value > this.toYear.value) {
+      this.dialogService.openErrorDialog('Start year must be less than or equal to end year.');
+      return;
+    }
+
     const params = {
       fromYear: this.fromYear.value,
       toYear: this.toYear.value,
-      fromMonth: this.fromMonth.value,
-      toMonth: this.toMonth.value,
-      distributorId: this.distributorId.value || null,
-      productInformationId: this.productInformationId.value || null
+      fromMonth: this.fromMonth.value || null,
+      toMonth: this.toMonth.value || null,
+      distributorId: this.distributorId.value === 0 ? null : this.distributorId.value,
+      productInformationId: this.productInformationId.value === 0 ? null : this.productInformationId.value
     };
 
     this.repoService.exportReport('api/reports/distributor-production/export', params)
       .subscribe(
         (response: Blob) => {
-          const blob = new Blob([response], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-          const url = window.URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `BaoCaoNhaPhanPhoi_${this.fromYear.value}-${this.fromMonth.value}_${this.toYear.value}-${this.toMonth.value}.xlsx`;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          window.URL.revokeObjectURL(url);
+          this.downloadFile(response, `BaoCaoNhaPhanPhoi_${this.fromYear.value}${this.fromMonth.value ? '-' + this.fromMonth.value : ''}_${this.toYear.value}${this.toMonth.value ? '-' + this.toMonth.value : ''}.xlsx`);
         },
         (err) => {
-          this.dialogService.openErrorDialog('Error exporting report: ' + err.message);
+          this.dialogService.openErrorDialog('Error exporting report');
         }
       );
   }
 
-  applyFilter(): void {
-    // Không cần làm gì ở đây, vì dữ liệu chỉ tải khi nhấn Report
+  exportAreaReport(): void {
+    if (!this.fromYear.value || !this.toYear.value) {
+      this.dialogService.openErrorDialog('Please select start year and end year.');
+      return;
+    }
+    if (this.fromYear.value > this.toYear.value) {
+      this.dialogService.openErrorDialog('Start year must be less than or equal to end year.');
+      return;
+    }
+
+    const params = {
+      fromYear: this.fromYear.value,
+      toYear: this.toYear.value,
+      fromMonth: this.fromMonth.value || null,
+      toMonth: this.toMonth.value || null,
+      productInformationId: this.productInformationId.value === 0 ? null : this.productInformationId.value,
+      areaId: this.areaId.value === 0 ? null : this.areaId.value
+    };
+
+    this.repoService.exportReport('api/reports/region-production/export', params)
+      .subscribe(
+        (response: Blob) => {
+          this.downloadFile(response, `BaoCaoKhuVuc_${this.fromYear.value}${this.fromMonth.value ? '-' + this.fromMonth.value : ''}_${this.toYear.value}${this.toMonth.value ? '-' + this.toMonth.value : ''}.xlsx`);
+        },
+        (err) => {
+          this.dialogService.openErrorDialog('Error exporting area report');
+        }
+      );
+  }
+
+  private formatDate(date: Date): string {
+    return date.toLocaleDateString('en-GB').split('/').join('');
+  }
+
+  private downloadFile(blob: Blob, fileName: string): void {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
   }
 }

@@ -1,8 +1,8 @@
 <div class="report-container">
   <h2>Reports</h2>
- 
 
   <mat-tab-group>
+    <!-- Product Daily -->
     <mat-tab label="Product Daily">
       <div class="filter-section">
         <mat-form-field appearance="fill">
@@ -50,13 +50,13 @@
             <th mat-header-cell *matHeaderCellDef> Total Orders </th>
             <td mat-cell *matCellDef="let element"> {{element.totalOrders}} </td>
           </ng-container>
-          <ng-container matColumnDef="totalSensorWeight">
-            <th mat-header-cell *matHeaderCellDef> Total Weight (kg) </th>
-            <td mat-cell *matCellDef="let element"> {{element.totalSensorWeight}} </td>
-          </ng-container>
           <ng-container matColumnDef="totalSensorUnits">
             <th mat-header-cell *matHeaderCellDef> Total Units (bags) </th>
             <td mat-cell *matCellDef="let element"> {{element.totalSensorUnits}} </td>
+          </ng-container>
+          <ng-container matColumnDef="totalSensorWeight">
+            <th mat-header-cell *matHeaderCellDef> Total Weight (kg) </th>
+            <td mat-cell *matCellDef="let element"> {{element.totalSensorWeight}} </td>
           </ng-container>
           <tr mat-header-row *matHeaderRowDef="productDailyColumns"></tr>
           <tr mat-row *matRowDef="let row; columns: productDailyColumns;"></tr>
@@ -66,6 +66,8 @@
         <p>No data available for Product Daily Report.</p>
       </div>
     </mat-tab>
+
+    <!-- Vehicle -->
     <mat-tab label="Vehicle">
       <div class="filter-section">
         <mat-form-field appearance="fill">
@@ -105,13 +107,13 @@
             <th mat-header-cell *matHeaderCellDef> Total Orders </th>
             <td mat-cell *matCellDef="let element"> {{element.totalOrders}} </td>
           </ng-container>
-          <ng-container matColumnDef="totalSensorWeight">
-            <th mat-header-cell *matHeaderCellDef> Total Weight (kg) </th>
-            <td mat-cell *matCellDef="let element"> {{element.totalSensorWeight}} </td>
-          </ng-container>
           <ng-container matColumnDef="totalSensorUnits">
             <th mat-header-cell *matHeaderCellDef> Total Units (bags) </th>
             <td mat-cell *matCellDef="let element"> {{element.totalSensorUnits}} </td>
+          </ng-container>
+          <ng-container matColumnDef="totalSensorWeight">
+            <th mat-header-cell *matHeaderCellDef> Total Weight (kg) </th>
+            <td mat-cell *matCellDef="let element"> {{element.totalSensorWeight}} </td>
           </ng-container>
           <tr mat-header-row *matHeaderRowDef="vehicleColumns"></tr>
           <tr mat-row *matRowDef="let row; columns: vehicleColumns;"></tr>
@@ -121,9 +123,8 @@
         <p>No data available for Vehicle Report.</p>
       </div>
     </mat-tab>
-    <mat-tab label="Counter & Line">
-      <p>Counter & Line Report (Coming Soon)</p>
-    </mat-tab>
+
+    <!-- Incomplete Orders -->
     <mat-tab label="Incomplete Orders">
       <div class="filter-section">
         <mat-form-field appearance="fill">
@@ -156,7 +157,7 @@
             <td mat-cell *matCellDef="let element"> {{element.productName}} </td>
           </ng-container>
           <ng-container matColumnDef="requestedUnits">
-            <th mat-header-cell *matHeaderCellDef> Requested Units </th>
+            <th mat-header-cell *matHeaderCellDef> Requested Units (bags) </th>
             <td mat-cell *matCellDef="let element"> {{element.requestedUnits}} </td>
           </ng-container>
           <ng-container matColumnDef="requestedWeight">
@@ -164,7 +165,7 @@
             <td mat-cell *matCellDef="let element"> {{element.requestedWeight}} </td>
           </ng-container>
           <ng-container matColumnDef="actualUnits">
-            <th mat-header-cell *matHeaderCellDef> Actual Units </th>
+            <th mat-header-cell *matHeaderCellDef> Actual Units (bags) </th>
             <td mat-cell *matCellDef="let element"> {{element.actualUnits}} </td>
           </ng-container>
           <ng-container matColumnDef="actualWeight">
@@ -173,7 +174,7 @@
           </ng-container>
           <ng-container matColumnDef="completionPercentage">
             <th mat-header-cell *matHeaderCellDef> Completion (%) </th>
-            <td mat-cell *matCellDef="let element"> {{element.completionPercentage}}% </td>
+            <td mat-cell *matCellDef="let element"> {{element.completionPercentage | number:'1.2-2'}}% </td>
           </ng-container>
           <tr mat-header-row *matHeaderRowDef="incompleteOrderColumns"></tr>
           <tr mat-row *matRowDef="let row; columns: incompleteOrderColumns;"></tr>
@@ -183,36 +184,60 @@
         <p>No data available for Incomplete Orders Report.</p>
       </div>
     </mat-tab>
+
+    <!-- Distributor -->
     <mat-tab label="Distributor">
       <div class="filter-section">
-        <mat-form-field appearance="fill">
-          <mat-label>To Month</mat-label>
-          <input matInput [formControl]="toMonth" type="number" min="1" max="12">
-        </mat-form-field>
-        <mat-form-field appearance="fill">
-          <mat-label>To Year</mat-label>
-          <input matInput [formControl]="toYear" type="number" min="2000" max="2100">
-        </mat-form-field>
-        <mat-form-field appearance="fill">
-          <mat-label>From Month</mat-label>
-          <input matInput [formControl]="fromMonth" type="number" min="1" max="12">
-        </mat-form-field>
+        <!-- From Year -->
         <mat-form-field appearance="fill">
           <mat-label>From Year</mat-label>
-          <input matInput [formControl]="fromYear" type="number" min="2000" max="2100">
+          <mat-select [formControl]="fromYear">
+            <mat-option *ngFor="let year of years" [value]="year">{{year}}</mat-option>
+          </mat-select>
         </mat-form-field>
+
+        <!-- From Month -->
+        <mat-form-field appearance="fill">
+          <mat-label>From Month</mat-label>
+          <mat-select [formControl]="fromMonth">
+            <mat-option [value]="null">Không chọn</mat-option>
+            <mat-option *ngFor="let month of months" [value]="month.value">{{month.name}}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <!-- To Year -->
+        <mat-form-field appearance="fill">
+          <mat-label>To Year</mat-label>
+          <mat-select [formControl]="toYear">
+            <mat-option *ngFor="let year of years" [value]="year">{{year}}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <!-- To Month -->
+        <mat-form-field appearance="fill">
+          <mat-label>To Month</mat-label>
+          <mat-select [formControl]="toMonth">
+            <mat-option [value]="null">Không chọn</mat-option>
+            <mat-option *ngFor="let month of months" [value]="month.value">{{month.name}}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <!-- Distributor -->
         <mat-form-field appearance="fill">
           <mat-label>Distributor</mat-label>
           <mat-select [formControl]="distributorId">
             <mat-option *ngFor="let distributor of distributorOptions" [value]="distributor.id">{{distributor.name}}</mat-option>
           </mat-select>
         </mat-form-field>
+
+        <!-- Product -->
         <mat-form-field appearance="fill">
           <mat-label>Product</mat-label>
           <mat-select [formControl]="productInformationId">
             <mat-option *ngFor="let product of products" [value]="product.id">{{product.name}}</mat-option>
           </mat-select>
         </mat-form-field>
+
         <button mat-raised-button color="primary" (click)="loadDistributorReport()">Report</button>
         <button mat-raised-button color="accent" (click)="exportDistributorReport()">Export Report</button>
       </div>
@@ -226,13 +251,21 @@
             <th mat-header-cell *matHeaderCellDef> Product Name </th>
             <td mat-cell *matCellDef="let element"> {{element.productName}} </td>
           </ng-container>
-          <ng-container matColumnDef="reportPeriod">
-            <th mat-header-cell *matHeaderCellDef> Report Period </th>
-            <td mat-cell *matCellDef="let element"> {{element.reportPeriod}} </td>
+          <ng-container matColumnDef="exportPeriod">
+            <th mat-header-cell *matHeaderCellDef> Period </th>
+            <td mat-cell *matCellDef="let element"> {{element.exportPeriod}} </td>
+          </ng-container>
+          <ng-container matColumnDef="monthlyUnits">
+            <th mat-header-cell *matHeaderCellDef> Units (bags) </th>
+            <td mat-cell *matCellDef="let element"> {{element.monthlyUnits}} </td>
           </ng-container>
           <ng-container matColumnDef="cumulativeUnits">
-            <th mat-header-cell *matHeaderCellDef> Cumulative Units </th>
+            <th mat-header-cell *matHeaderCellDef> Cumulative Units (bags) </th>
             <td mat-cell *matCellDef="let element"> {{element.cumulativeUnits}} </td>
+          </ng-container>
+          <ng-container matColumnDef="monthlyWeight">
+            <th mat-header-cell *matHeaderCellDef> Weight (kg) </th>
+            <td mat-cell *matCellDef="let element"> {{element.monthlyWeight}} </td>
           </ng-container>
           <ng-container matColumnDef="cumulativeWeight">
             <th mat-header-cell *matHeaderCellDef> Cumulative Weight (kg) </th>
@@ -246,8 +279,100 @@
         <p>No data available for Distributor Report.</p>
       </div>
     </mat-tab>
+
+    <!-- Area -->
     <mat-tab label="Area">
-      <p>Area Report (Coming Soon)</p>
+      <div class="filter-section">
+        <!-- From Year -->
+        <mat-form-field appearance="fill">
+          <mat-label>From Year</mat-label>
+          <mat-select [formControl]="fromYear">
+            <mat-option *ngFor="let year of years" [value]="year">{{year}}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <!-- From Month -->
+        <mat-form-field appearance="fill">
+          <mat-label>From Month</mat-label>
+          <mat-select [formControl]="fromMonth">
+            <mat-option [value]="null">Không chọn</mat-option>
+            <mat-option *ngFor="let month of months" [value]="month.value">{{month.name}}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <!-- To Year -->
+        <mat-form-field appearance="fill">
+          <mat-label>To Year</mat-label>
+          <mat-select [formControl]="toYear">
+            <mat-option *ngFor="let year of years" [value]="year">{{year}}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <!-- To Month -->
+        <mat-form-field appearance="fill">
+          <mat-label>To Month</mat-label>
+          <mat-select [formControl]="toMonth">
+            <mat-option [value]="null">Không chọn</mat-option>
+            <mat-option *ngFor="let month of months" [value]="month.value">{{month.name}}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <!-- Area -->
+        <mat-form-field appearance="fill">
+          <mat-label>Area</mat-label>
+          <mat-select [formControl]="areaId">
+            <mat-option *ngFor="let area of areaOptions" [value]="area.id">{{area.name}}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <!-- Product -->
+        <mat-form-field appearance="fill">
+          <mat-label>Product</mat-label>
+          <mat-select [formControl]="productInformationId">
+            <mat-option *ngFor="let product of products" [value]="product.id">{{product.name}}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <button mat-raised-button color="primary" (click)="loadAreaReport()">Report</button>
+        <button mat-raised-button color="accent" (click)="exportAreaReport()" [disabled]="!areaReport || areaReport.length === 0">Export Report</button>
+      </div>
+      <div *ngIf="areaReport && areaReport.length > 0">
+        <table mat-table [dataSource]="areaDataSource" class="mat-elevation-z8">
+          <ng-container matColumnDef="areaName">
+            <th mat-header-cell *matHeaderCellDef> Area Name </th>
+            <td mat-cell *matCellDef="let element"> {{element.areaName}} </td>
+          </ng-container>
+          <ng-container matColumnDef="productName">
+            <th mat-header-cell *matHeaderCellDef> Product Name </th>
+            <td mat-cell *matCellDef="let element"> {{element.productName}} </td>
+          </ng-container>
+          <ng-container matColumnDef="exportPeriod">
+            <th mat-header-cell *matHeaderCellDef> Period </th>
+            <td mat-cell *matCellDef="let element"> {{element.exportPeriod}} </td>
+          </ng-container>
+          <ng-container matColumnDef="totalUnits">
+            <th mat-header-cell *matHeaderCellDef> Total Units (bags) </th>
+            <td mat-cell *matCellDef="let element"> {{element.totalUnits}} </td>
+          </ng-container>
+          <ng-container matColumnDef="totalWeight">
+            <th mat-header-cell *matHeaderCellDef> Total Weight (kg) </th>
+            <td mat-cell *matCellDef="let element"> {{element.totalWeight}} </td>
+          </ng-container>
+          <ng-container matColumnDef="cumulativeUnits">
+            <th mat-header-cell *matHeaderCellDef> Cumulative Units (bags) </th>
+            <td mat-cell *matCellDef="let element"> {{element.cumulativeUnits}} </td>
+          </ng-container>
+          <ng-container matColumnDef="cumulativeWeight">
+            <th mat-header-cell *matHeaderCellDef> Cumulative Weight (kg) </th>
+            <td mat-cell *matCellDef="let element"> {{element.cumulativeWeight}} </td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="areaColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: areaColumns;"></tr>
+        </table>
+      </div>
+      <div *ngIf="!areaReport || areaReport.length === 0" class="text-center p-4">
+        <p>No data available for Area Report.</p>
+      </div>
     </mat-tab>
   </mat-tab-group>
 </div>
