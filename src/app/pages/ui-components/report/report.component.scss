@@ -1,20 +1,90 @@
-.cardWithShadow {
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+.filter-section {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+
+  mat-form-field {
+    flex: 1;
+    min-width: 200px;
   }
-  
-  .theme-card {
-    margin: 16px;
+
+  button {
+    margin-left: 8px;
   }
-  
-  .table-responsive {
+
+  @media screen and (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+
+    mat-form-field {
+      width: 100%;
+      margin: 4px 0;
+    }
+
+    button {
+      margin: 4px 0;
+      width: 100%;
+    }
+  }
+}
+
+.mat-elevation-z8 {
+  width: 100%;
+  overflow-x: auto;
+}
+
+@media screen and (max-width: 768px) {
+  .mat-mdc-table {
+    display: block;
     overflow-x: auto;
-    padding: 16px;
+    white-space: nowrap;
   }
-  
-  table {
-    width: 100%;
-  }
-  
-  th, td {
+
+  .mat-mdc-cell,
+  .mat-mdc-header-cell {
     padding: 8px;
   }
+}
+
+.report-container {
+  padding: 16px;
+  
+  @media screen and (max-width: 768px) {
+    padding: 8px;
+  }
+}
+
+h2 {
+  @media screen and (max-width: 768px) {
+    font-size: 1.5rem;
+    margin: 8px 0;
+  }
+}
+.filter-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  padding: 16px;
+}
+
+mat-form-field {
+  min-width: 150px;
+}
+
+.mat-elevation-z8 {
+  margin: 16px;
+}
+th {
+  background-color: #0f172a !important; /* Sử dụng màu primary từ theme */
+  color: rgb(255, 255, 255);
+  font-weight: bold;
+  text-align: center;
+  padding: 10px;
+}
+td {
+  text-align: center;
+} 

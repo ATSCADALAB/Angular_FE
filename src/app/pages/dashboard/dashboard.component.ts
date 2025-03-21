@@ -1,65 +1,65 @@
+import { Component, ViewEncapsulation } from '@angular/core';
+import { salesOverviewChart } from 'src/app/_interface/chart';
 import {
-  Component,
-  ViewEncapsulation,
-} from '@angular/core';
-import {
-  MonthDto,
-  MonthTotalDto,
-  AuditLogDto,
-} from 'src/app/_interface/audit-log';
-import {
-  salesOverviewChart,
-} from 'src/app/_interface/chart';
-import { CustomerDto } from 'src/app/_interface/customers';
-import { UserDto } from 'src/app/_interface/user';
+  DashboardSummaryDto,
+  OrdersByLineDto,
+  OrderStatusTrendDto,
+  TopProductDto,
+  IncompleteOrderDto,
+  ProcessingOrderDto,
+  RecentCompletedOrderDto
+} from 'src/app/_interface/dashboard';
 import { RepositoryService } from 'src/app/shared/services/repository.service';
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
-  encapsulation: ViewEncapsulation.None,
+  styleUrls: ['./dashboard.component.scss'] 
 })
 export class AppDashboardComponent {
   public errorMessage: string = '';
   public showError?: boolean;
-  months: MonthDto[];
-  selectedMonth: string | null = null;
-  monthDetails: MonthTotalDto;
   public salesOverviewChart!: Partial<salesOverviewChart> | any;
-  customers: CustomerDto[] | any;
-  users: UserDto[] | any;
-  logs: AuditLogDto[] | any;
-  public totalUsers: number;
-  public totalCustomers: number;
-  public totalLogs: number;
 
+  // Biến cho dashboard
+  summary: DashboardSummaryDto | null = null;
+  ordersByLine: OrdersByLineDto[] = [];
+  orderStatusTrend: OrderStatusTrendDto[] = [];
+  topProducts: TopProductDto[] = [];
+  incompleteOrders: IncompleteOrderDto[] = [];
+  processingOrders: ProcessingOrderDto[] = [];
+  recentCompletedOrders: RecentCompletedOrderDto[] = [];
+  // Danh sách màu cho các line
+  lineColors: string[] = [
+    '#5D87FF', // Xanh dương
+    '#FF5733', // Cam
+    '#33FF57', // Xanh lá
+    '#FFC107', // Vàng
+    '#FF33A1', // Hồng
+    '#7B33FF', // Tím
+    '#33FFF5', // Xanh ngọc
+  ];
   constructor(private repoService: RepositoryService) { }
 
   ngOnInit() {
-    this.getMonths();
     this.initializeChart();
-    this.getCustomers();
-    this.getUsers();
-    this.getAuditLog();
+    this.getDashboardSummary();
+    this.getOrdersByLine();
+    this.getOrderStatusTrend();
+    this.getTopProducts();
+    this.getIncompleteOrders();
+    this.getProcessingOrders();
+    this.getRecentCompletedOrders();
   }
-
-  public getCustomers() {
-    // this.repoService.getData('api/customers').subscribe(
-    //   (res) => {
-    //     this.customers = res as CustomerDto[];
-    //     this.totalCustomers = this.customers.length;
-    //   },
-    //   (err) => {
-    //     console.log(err);
-    //   }
-    // );
+  // Hàm lấy màu dựa trên index
+  getLineColor(index: number): string {
+    return this.lineColors[index % this.lineColors.length]; // Lặp lại màu nếu vượt quá số lượng
   }
-
-  public getAuditLog() {
-    this.repoService.getData('api/audits').subscribe(
+  public getDashboardSummary() {
+    this.repoService.getData('api/dashboard/summary').subscribe(
       (res) => {
-        this.logs = res as AuditLogDto[];
-        this.totalLogs = this.logs.length;
+        this.summary = res as DashboardSummaryDto;
+        this.updateChartWithSummary(); // Cập nhật chart với summary
       },
       (err) => {
         console.log(err);
@@ -67,11 +67,10 @@ export class AppDashboardComponent {
     );
   }
 
-  public getUsers() {
-    this.repoService.getData('api/users').subscribe(
+  public getOrdersByLine() {
+    this.repoService.getData('api/dashboard/orders-by-line').subscribe(
       (res) => {
-        this.users = res as UserDto[];
-        this.totalUsers = this.users.length;
+        this.ordersByLine = res as OrdersByLineDto[];
       },
       (err) => {
         console.log(err);
@@ -79,14 +78,12 @@ export class AppDashboardComponent {
     );
   }
 
-  public getMonths() {
-    this.repoService.getData('api/audits/GetMonths').subscribe(
+  public getOrderStatusTrend() {
+    this.repoService.getData('api/dashboard/order-status-trend').subscribe(
       (res) => {
-        this.months = res as MonthDto[];
-        if (this.months.length > 0) {
-          this.selectedMonth = this.months[0].month;
-          this.fetchDataForSelectedMonth();
-        }
+        this.orderStatusTrend = res as OrderStatusTrendDto[];
+        // Nếu muốn dùng trend thay vì summary cho chart, uncomment dòng dưới
+        // this.updateChartWithTrend();
       },
       (err) => {
         console.log(err);
@@ -94,46 +91,105 @@ export class AppDashboardComponent {
     );
   }
 
-  public onMonthSelectionChange() {
-    this.fetchDataForSelectedMonth();
+  public getTopProducts() {
+    this.repoService.getData('api/dashboard/top-products').subscribe(
+      (res) => {
+        this.topProducts = res as TopProductDto[];
+      },
+      (err) => {
+        console.log(err);
+      }
+    );
   }
 
-  private fetchDataForSelectedMonth() {
-    this.repoService
-      .getData(`api/audits/totalForSingleMonth/${this.selectedMonth}`)
-      .subscribe((res) => {
-        this.monthDetails = res as MonthTotalDto;
-        this.updateChart();
-      });
+  public getIncompleteOrders() {
+    this.repoService.getData('api/dashboard/incomplete-orders').subscribe(
+      (res) => {
+        this.incompleteOrders = res as IncompleteOrderDto[];
+      },
+      (err) => {
+        console.log(err);
+      }
+    );
   }
 
-  private updateChart() {
+  public getProcessingOrders() {
+    this.repoService.getData('api/dashboard/processing-orders').subscribe(
+      (res) => {
+        this.processingOrders = res as ProcessingOrderDto[];
+      },
+      (err) => {
+        console.log(err);
+      }
+    );
+  }
+
+  public getRecentCompletedOrders() {
+    this.repoService.getData('api/dashboard/recent-completed-orders').subscribe(
+      (res) => {
+        this.recentCompletedOrders = res as RecentCompletedOrderDto[];
+      },
+      (err) => {
+        console.log(err);
+      }
+    );
+  }
+
+  // Cập nhật chart với dữ liệu từ summary (hoàn thành vs chưa hoàn thành)
+  private updateChartWithSummary() {
+    if (!this.summary) return;
+
     this.salesOverviewChart.series = [
       {
-        name: 'Audit this month',
-        data: this.monthDetails.dayTotals.map(
-          (dayTotal) => dayTotal.totalAudit
-        ),
+        name: 'Đơn chưa hoàn thành',
+        data: [this.summary.pendingOrders],
+        color: '#FF5733',
+      },
+      {
+        name: 'Đơn hoàn thành hôm nay',
+        data: [this.summary.completedOrdersToday],
         color: '#5D87FF',
       },
     ];
 
     this.salesOverviewChart.xaxis = {
-      categories: this.monthDetails.dayTotals.map(
-        (dayTotal) => dayTotal.dayDate
-      ),
+      categories: ['Hôm nay'],
+    };
+  }
+
+  // Nếu muốn dùng trend thay vì summary
+  private updateChartWithTrend() {
+    this.salesOverviewChart.series = [
+      {
+        name: 'Chưa xử lý',
+        data: this.orderStatusTrend.map((trend) => trend.pending),
+        color: '#FF5733',
+      },
+      {
+        name: 'Đang xử lý',
+        data: this.orderStatusTrend.map((trend) => trend.processing),
+        color: '#33FF57',
+      },
+      {
+        name: 'Dở dang',
+        data: this.orderStatusTrend.map((trend) => trend.incomplete),
+        color: '#FFC107',
+      },
+      {
+        name: 'Hoàn thành',
+        data: this.orderStatusTrend.map((trend) => trend.completed),
+        color: '#5D87FF',
+      },
+    ];
+
+    this.salesOverviewChart.xaxis = {
+      categories: this.orderStatusTrend.map((trend) => trend.date),
     };
   }
 
   private initializeChart() {
     this.salesOverviewChart = {
-      series: [
-        {
-          name: 'Audit this month',
-          data: [],
-          color: '#5D87FF',
-        },
-      ],
+      series: [],
       grid: {
         borderColor: 'rgba(0,0,0,0.1)',
         strokeDashArray: 3,
@@ -157,9 +213,9 @@ export class AppDashboardComponent {
       },
       dataLabels: { enabled: false },
       markers: { size: 0 },
-      legend: { show: false },
+      legend: { show: true },
       xaxis: {
-        type: 'Date',
+        type: 'category',
         categories: [],
         labels: {
           style: { cssClass: 'grey--text lighten-2--text fill-color' },
@@ -168,7 +224,6 @@ export class AppDashboardComponent {
       yaxis: {
         show: true,
         min: 0,
-        max: 500,
         tickAmount: 4,
         labels: {
           style: {

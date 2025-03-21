@@ -2,17 +2,57 @@ import { Component, OnInit } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { RepositoryService } from 'src/app/shared/services/repository.service';
 import { DialogService } from 'src/app/shared/services/dialog.service';
-import { OrderWithDetails } from 'src/app/_interface/order';
+import { FormControl } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
+import { AreaDto } from 'src/app/_interface/area';
 
-interface ReportSummary {
-  date?: string;
-  productName?: string;
-  vehicleNumber?: string;
-  distributorName?: string;
-  area?: string;
+interface ProductDailyReport {
+  date: string;
+  lineName: string;
+  productName: string;
   totalOrders: number;
-  totalWeight: number;
+  totalSensorWeight: number;
+  totalSensorUnits: number;
+}
+
+interface VehicleReport {
+  date: string;
+  vehicleNumber: string;
+  productName: string;
+  totalOrders: number;
+  totalSensorWeight: number;
+  totalSensorUnits: number;
+}
+
+interface IncompleteOrderReport {
+  date: string;
+  licensePlate: string;
+  productName: string;
+  requestedUnits: number;
+  requestedWeight: number;
+  actualUnits: number;
+  actualWeight: number;
+  completionPercentage: number;
+}
+
+interface DistributorReport {
+  distributorName: string;
+  productName: string;
+  exportPeriod: string;
+  monthlyUnits: number;
+  cumulativeUnits: number;
+  monthlyWeight: number;
+  cumulativeWeight: number;
+}
+
+interface AreaReport {
+  areaName: string;
+  productName: string;
+  exportPeriod: string;
   totalUnits: number;
+  totalWeight: number;
+  cumulativeUnits: number;
+  cumulativeWeight: number;
 }
 
 @Component({
@@ -21,94 +61,374 @@ interface ReportSummary {
   styleUrls: ['./report.component.scss']
 })
 export class ReportComponent implements OnInit {
-  orders: OrderWithDetails[] = [];
-  productReport: ReportSummary[] = [];
-  vehicleReport: ReportSummary[] = [];
-  incompleteReport: ReportSummary[] = [];
-  distributorReport: ReportSummary[] = [];
-  areaReport: ReportSummary[] = [];
+  // Product Daily
+  productDailyReport: ProductDailyReport[] = [];
+  productDailyColumns: string[] = ['date', 'lineName', 'productName', 'totalOrders', 'totalSensorUnits', 'totalSensorWeight'];
+  productDailyDataSource = new MatTableDataSource<ProductDailyReport>();
+
+  // Vehicle
+  vehicleReport: VehicleReport[] = [];
+  vehicleColumns: string[] = ['date', 'vehicleNumber', 'productName', 'totalOrders', 'totalSensorUnits', 'totalSensorWeight'];
+  vehicleDataSource = new MatTableDataSource<VehicleReport>();
+  vehicleNumber = new FormControl('');
+
+  // Common Filters
+  startDate = new FormControl(new Date());
+  endDate = new FormControl(new Date());
+  selectedLine = new FormControl(0); // 0 = All
+  selectedProduct = new FormControl(0); // 0 = All
+  lines: { id: number; name: string }[] = [];
+  products: { id: number; name: string }[] = [];
+
+  // Incomplete Orders
+  incompleteOrderReport: IncompleteOrderReport[] = [];
+  incompleteOrderColumns: string[] = [
+    'date', 'licensePlate', 'productName', 'requestedUnits', 'requestedWeight',
+    'actualUnits', 'actualWeight', 'completionPercentage'
+  ];
+  incompleteOrderDataSource = new MatTableDataSource<IncompleteOrderReport>();
+
+  // Distributor
+  distributorReport: DistributorReport[] = [];
+  distributorColumns: string[] = [
+    'distributorName', 'productName', 'exportPeriod', 'monthlyUnits', 'cumulativeUnits', 'monthlyWeight', 'cumulativeWeight'
+  ];
+  distributorDataSource = new MatTableDataSource<DistributorReport>();
+  fromYear = new FormControl<number | null>(new Date().getFullYear() - 1);
+  toYear = new FormControl<number | null>(new Date().getFullYear());
+  fromMonth = new FormControl<number | null>(null); // Mặc định để trống
+  toMonth = new FormControl<number | null>(null);   // Mặc định để trống
+  distributorId = new FormControl(0); // 0 = All
+  productInformationId = new FormControl(0); // 0 = All
+  distributorOptions: { id: number; name: string }[] = [];
+
+  // Area
+  areaReport: AreaReport[] = [];
+  areaColumns: string[] = [
+    'areaName', 'productName', 'exportPeriod', 'totalUnits', 'totalWeight', 'cumulativeUnits', 'cumulativeWeight'
+  ];
+  areaDataSource = new MatTableDataSource<AreaReport>();
+  areaId = new FormControl(0); // 0 = All
+  areaOptions: { id: number; name: string }[] = [];
+
+  // Danh sách tháng
+   months = [
+    { value: 1, name: 'January' }, { value: 2, name: 'February' }, { value: 3, name: 'March' },
+    { value: 4, name: 'April' }, { value: 5, name: 'May' }, { value: 6, name: 'June' },
+    { value: 7, name: 'July' }, { value: 8, name: 'August' }, { value: 9, name: 'September' },
+    { value: 10, name: 'October' }, { value: 11, name: 'November' }, { value: 12, name: 'December' }
+];
+
+
+  // Danh sách năm
+  years: number[] = [];
 
   constructor(
     private repoService: RepositoryService,
-    private dialogService: DialogService
-  ) {}
-
-  ngOnInit(): void {
-    this.loadOrders();
+    private dialogService: DialogService,
+    private http: HttpClient
+  ) {
+    this.generateYears(); // Tạo danh sách năm
   }
 
-  loadOrders(): void {
-    this.repoService.getData('api/orders/with-details')
+  ngOnInit(): void {
+    this.loadFilters();
+    this.loadDistributors();
+    this.loadAreas();
+  }
+
+  generateYears(): void {
+    const currentYear = new Date().getFullYear();
+    const startYear = 2000; // Năm bắt đầu
+    const endYear = currentYear + 5; // Năm kết thúc (5 năm sau hiện tại)
+    for (let year = startYear; year <= endYear; year++) {
+      this.years.push(year);
+    }
+  }
+
+  loadFilters(): void {
+    this.repoService.getData<{ id: number; lineName: string }[]>('api/lines')
       .subscribe(
         (res) => {
-          this.orders = res as OrderWithDetails[];
-          this.generateReports();
+          this.lines = res.map(l => ({ id: l.id, name: l.lineName }));
+          this.lines.unshift({ id: 0, name: 'All' });
         },
         (err) => {
-          this.dialogService.openErrorDialog('Error fetching orders: ' + err.message);
+        }
+      );
+
+    this.repoService.getData<{ id: number; productName: string }[]>('api/product-informations')
+      .subscribe(
+        (res) => {
+          this.products = res.map(p => ({ id: p.id, name: p.productName }));
+          this.products.unshift({ id: 0, name: 'All' });
+        },
+        (err) => {
         }
       );
   }
 
-  generateReports(): void {
-    // 1. Báo cáo theo sản phẩm hàng ngày
-    this.productReport = this.groupBy(this.orders, order => {
-      const date = new Date(order.exportDate).toLocaleDateString();
-      return `${date}-${order.orderDetail.productName}`;
-    }, (group) => ({
-      date: new Date(group[0].exportDate).toLocaleDateString(),
-      productName: group[0].orderDetail.productName,
-      totalOrders: group.length,
-      totalWeight: group.reduce((sum, o) => sum + o.orderDetail.requestedWeight, 0),
-      totalUnits: group.reduce((sum, o) => sum + o.orderDetail.requestedUnits, 0)
-    }));
-
-    // 2. Báo cáo theo phương tiện
-    this.vehicleReport = this.groupBy(this.orders, order => order.vehicleNumber, (group) => ({
-      vehicleNumber: group[0].vehicleNumber,
-      totalOrders: group.length,
-      totalWeight: group.reduce((sum, o) => sum + o.orderDetail.requestedWeight, 0),
-      totalUnits: group.reduce((sum, o) => sum + o.orderDetail.requestedUnits, 0)
-    }));
-
-    // 4. Báo cáo đơn hàng xuất dở dang
-    this.incompleteReport = this.groupBy(
-      this.orders.filter(o => o.status === 0), // Giả sử status = 0 là dở dang
-      order => order.orderCode,
-      (group) => ({
-        date: new Date(group[0].exportDate).toLocaleDateString(),
-        totalOrders: group.length,
-        totalWeight: group.reduce((sum, o) => sum + o.orderDetail.requestedWeight, 0),
-        totalUnits: group.reduce((sum, o) => sum + o.orderDetail.requestedUnits, 0)
-      })
-    );
-
-    // 5. Báo cáo sản lượng đại lý
-    this.distributorReport = this.groupBy(this.orders, order => order.distributorName, (group) => ({
-      distributorName: group[0].distributorName,
-      totalOrders: group.length,
-      totalWeight: group.reduce((sum, o) => sum + o.orderDetail.requestedWeight, 0),
-      totalUnits: group.reduce((sum, o) => sum + o.orderDetail.requestedUnits, 0)
-    }));
-
-    // 6. Báo cáo theo khu vực (giả lập vì chưa có area)
-    this.areaReport = this.groupBy(this.orders, order => order.distributorName, (group) => ({
-      area: 'N/A', // Cần backend bổ sung area
-      totalOrders: group.length,
-      totalWeight: group.reduce((sum, o) => sum + o.orderDetail.requestedWeight, 0),
-      totalUnits: group.reduce((sum, o) => sum + o.orderDetail.requestedUnits, 0)
-    }));
+  loadDistributors(): void {
+    this.repoService.getData<{ id: number; distributorName: string }[]>('api/distributors')
+      .subscribe(
+        (res) => {
+          this.distributorOptions = res.map(d => ({ id: d.id, name: d.distributorName }));
+          this.distributorOptions.unshift({ id: 0, name: 'All' });
+        },
+        (err) => {
+        }
+      );
   }
 
-  // Hàm gom nhóm chung
-  private groupBy<T, K>(array: T[], keyFn: (item: T) => K, transformFn: (group: T[]) => ReportSummary): ReportSummary[] {
-    const map = new Map<K, T[]>();
-    array.forEach(item => {
-      const key = keyFn(item);
-      const group = map.get(key) || [];
-      group.push(item);
-      map.set(key, group);
+  loadAreas(): void {
+    this.repoService.getData<AreaDto[]>('api/areas').subscribe({
+      next: (response) => {
+        this.areaOptions = response.map(area => ({ id: area.id, name: area.areaName }));
+        this.areaOptions.unshift({ id: 0, name: 'All' });
+      },
+      error: (error) => {
+      }
     });
-    return Array.from(map.values()).map(transformFn);
+  }
+
+  loadProductDailyReport(): void {
+    const params = {
+      startDate: this.startDate.value!.toISOString().split('T')[0],
+      endDate: this.endDate.value!.toISOString().split('T')[0],
+      lineId: this.selectedLine.value === 0 ? null : this.selectedLine.value,
+      productInformationId: this.selectedProduct.value === 0 ? null : this.selectedProduct.value
+    };
+
+    this.repoService.getData<ProductDailyReport[]>('api/reports/product-daily', params)
+      .subscribe(
+        (res) => {
+          this.productDailyReport = res;
+          this.productDailyDataSource.data = this.productDailyReport;
+        },
+        (err) => {
+        }
+      );
+  }
+
+  loadVehicleReport(): void {
+    const params = {
+      startDate: this.startDate.value!.toISOString().split('T')[0],
+      endDate: this.endDate.value!.toISOString().split('T')[0],
+      vehicleNumber: this.vehicleNumber.value || null
+    };
+
+    this.repoService.getData<VehicleReport[]>('api/reports/vehicle-daily', params)
+      .subscribe(
+        (res) => {
+          this.vehicleReport = res;
+          this.vehicleDataSource.data = this.vehicleReport;
+        },
+        (err) => {
+        }
+      );
+  }
+
+  loadIncompleteOrderReport(): void {
+    const params = {
+      startDate: this.startDate.value!.toISOString().split('T')[0],
+      endDate: this.endDate.value!.toISOString().split('T')[0]
+    };
+
+    this.repoService.getData<IncompleteOrderReport[]>('api/reports/incomplete-order-shipment', params)
+      .subscribe(
+        (res) => {
+          this.incompleteOrderReport = res;
+          this.incompleteOrderDataSource.data = this.incompleteOrderReport;
+        },
+        (err) => {
+        }
+      );
+  }
+
+  loadDistributorReport(): void {
+    if (!this.fromYear.value || !this.toYear.value) {
+      this.dialogService.openErrorDialog('Please select start year and end year.');
+      return;
+    }
+    if (this.fromYear.value > this.toYear.value) {
+      this.dialogService.openErrorDialog('Start year must be less than or equal to end year.');
+      return;
+    }
+
+    const params = {
+      fromYear: this.fromYear.value,
+      toYear: this.toYear.value,
+      fromMonth: this.fromMonth.value || null,
+      toMonth: this.toMonth.value || null,
+      distributorId: this.distributorId.value === 0 ? null : this.distributorId.value,
+      productInformationId: this.productInformationId.value === 0 ? null : this.productInformationId.value
+    };
+
+    this.repoService.getData<DistributorReport[]>('api/reports/distributor-production', params)
+      .subscribe(
+        (res) => {
+          this.distributorReport = res;
+          this.distributorDataSource.data = this.distributorReport;
+        },
+        (err) => {
+        }
+      );
+  }
+
+  loadAreaReport(): void {
+    if (!this.fromYear.value || !this.toYear.value) {
+      this.dialogService.openErrorDialog('Please select start year and end year.');
+      return;
+    }
+    if (this.fromYear.value > this.toYear.value) {
+      this.dialogService.openErrorDialog('Start year must be less than or equal to end year.');
+      return;
+    }
+
+    const params = {
+      fromYear: this.fromYear.value,
+      toYear: this.toYear.value,
+      fromMonth: this.fromMonth.value || null,
+      toMonth: this.toMonth.value || null,
+      productInformationId: this.productInformationId.value === 0 ? null : this.productInformationId.value,
+      areaId: this.areaId.value === 0 ? null : this.areaId.value
+    };
+
+    this.repoService.getData<AreaReport[]>('api/reports/region-production', params).subscribe(
+      (res) => {
+        this.areaReport = res;
+        this.areaDataSource.data = this.areaReport;
+      },
+      (err) => {
+      }
+    );
+  }
+
+  exportReport(): void {
+    const params = {
+      startDate: this.startDate.value!.toISOString().split('T')[0],
+      endDate: this.endDate.value!.toISOString().split('T')[0],
+      lineId: this.selectedLine.value === 0 ? null : this.selectedLine.value,
+      productInformationId: this.selectedProduct.value === 0 ? null : this.selectedProduct.value
+    };
+
+    this.repoService.exportReport('api/reports/product-daily/export', params)
+      .subscribe(
+        (response: Blob) => {
+          this.downloadFile(response, `BaoCaoSanPham_${this.formatDate(this.startDate.value!)}_${this.formatDate(this.endDate.value!)}.xlsx`);
+        },
+        (err) => {
+        }
+      );
+  }
+
+  exportVehicleReport(): void {
+    const params = {
+      startDate: this.startDate.value!.toISOString().split('T')[0],
+      endDate: this.endDate.value!.toISOString().split('T')[0],
+      vehicleNumber: this.vehicleNumber.value || null
+    };
+
+    this.repoService.exportReport('api/reports/vehicle-daily/export', params)
+      .subscribe(
+        (response: Blob) => {
+          this.downloadFile(response, `BaoCaoXe_${this.formatDate(this.startDate.value!)}_${this.formatDate(this.endDate.value!)}.xlsx`);
+        },
+        (err) => {
+          this.dialogService.openErrorDialog('Error exporting report');
+        }
+      );
+  }
+
+  exportIncompleteOrderReport(): void {
+    const params = {
+      startDate: this.startDate.value!.toISOString().split('T')[0],
+      endDate: this.endDate.value!.toISOString().split('T')[0]
+    };
+
+    this.repoService.exportReport('api/reports/incomplete-order-shipment/export', params)
+      .subscribe(
+        (response: Blob) => {
+          this.downloadFile(response, `BaoCaoDonHangChuaHoanThanh_${this.formatDate(this.startDate.value!)}_${this.formatDate(this.endDate.value!)}.xlsx`);
+        },
+        (err) => {
+          this.dialogService.openErrorDialog('Error exporting report');
+        }
+      );
+  }
+
+  exportDistributorReport(): void {
+    if (!this.fromYear.value || !this.toYear.value) {
+      this.dialogService.openErrorDialog('Please select start year and end year.');
+      return;
+    }
+    if (this.fromYear.value > this.toYear.value) {
+      this.dialogService.openErrorDialog('Start year must be less than or equal to end year.');
+      return;
+    }
+
+    const params = {
+      fromYear: this.fromYear.value,
+      toYear: this.toYear.value,
+      fromMonth: this.fromMonth.value || null,
+      toMonth: this.toMonth.value || null,
+      distributorId: this.distributorId.value === 0 ? null : this.distributorId.value,
+      productInformationId: this.productInformationId.value === 0 ? null : this.productInformationId.value
+    };
+
+    this.repoService.exportReport('api/reports/distributor-production/export', params)
+      .subscribe(
+        (response: Blob) => {
+          this.downloadFile(response, `BaoCaoNhaPhanPhoi_${this.fromYear.value}${this.fromMonth.value ? '-' + this.fromMonth.value : ''}_${this.toYear.value}${this.toMonth.value ? '-' + this.toMonth.value : ''}.xlsx`);
+        },
+        (err) => {
+          this.dialogService.openErrorDialog('Error exporting report');
+        }
+      );
+  }
+
+  exportAreaReport(): void {
+    if (!this.fromYear.value || !this.toYear.value) {
+      this.dialogService.openErrorDialog('Please select start year and end year.');
+      return;
+    }
+    if (this.fromYear.value > this.toYear.value) {
+      this.dialogService.openErrorDialog('Start year must be less than or equal to end year.');
+      return;
+    }
+
+    const params = {
+      fromYear: this.fromYear.value,
+      toYear: this.toYear.value,
+      fromMonth: this.fromMonth.value || null,
+      toMonth: this.toMonth.value || null,
+      productInformationId: this.productInformationId.value === 0 ? null : this.productInformationId.value,
+      areaId: this.areaId.value === 0 ? null : this.areaId.value
+    };
+
+    this.repoService.exportReport('api/reports/region-production/export', params)
+      .subscribe(
+        (response: Blob) => {
+          this.downloadFile(response, `BaoCaoKhuVuc_${this.fromYear.value}${this.fromMonth.value ? '-' + this.fromMonth.value : ''}_${this.toYear.value}${this.toMonth.value ? '-' + this.toMonth.value : ''}.xlsx`);
+        },
+        (err) => {
+          this.dialogService.openErrorDialog('Error exporting area report');
+        }
+      );
+  }
+
+  private formatDate(date: Date): string {
+    return date.toLocaleDateString('en-GB').split('/').join('');
+  }
+
+  private downloadFile(blob: Blob, fileName: string): void {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
   }
 }
