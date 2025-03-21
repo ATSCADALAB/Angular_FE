@@ -5,6 +5,7 @@ import { MaterialModule } from 'src/app/material.module';
 import { SuccessComponent } from './success/success.component';
 import { ErrorComponent } from './error/error.component';
 import { ConfirmDeleteComponent } from './confirm-delete/confirm-delete.component';
+import { ConfirmComponent } from './confirm/confirm.component';
 
 
 @NgModule({
@@ -17,12 +18,14 @@ import { ConfirmDeleteComponent } from './confirm-delete/confirm-delete.componen
     SuccessComponent,
     ErrorComponent,
     ConfirmDeleteComponent,
+    ConfirmComponent
   ],
   declarations: 
   [
     SuccessComponent,
     ErrorComponent,
     ConfirmDeleteComponent,
+    ConfirmComponent
   ]
 })
 export class ModalsModule { }

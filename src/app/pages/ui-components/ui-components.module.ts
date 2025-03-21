@@ -43,6 +43,8 @@ import { AddLineComponent } from './lines/add-line/add-line.component';
 import { UpdateLineComponent } from './lines/update-line/update-line.component';
 import { LinesComponent } from './lines/lines.component';
 import { ReportComponent } from './report/report.component';
+import { OrderDetailsComponent } from './orders/order-detail/order-details.component';
+import { OrderDetailReplaceComponent } from './orders/order-detail/order-detail-replace/order-detail-replace.component';
 
 @NgModule({
   imports: [
@@ -90,7 +92,8 @@ import { ReportComponent } from './report/report.component';
     // AddOrderComponent,
     // UpdateOrderComponent,
     OrdersComponent,
-    OrdersComponent,
+    OrderDetailsComponent,
+    OrderDetailReplaceComponent,
     //Ares
     AreasComponent,
     AddAreaComponent,

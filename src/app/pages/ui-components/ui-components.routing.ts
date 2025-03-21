@@ -8,7 +8,7 @@ import { PermissionsComponent } from './permissions/permissions.component';
 import { ProductsComponent } from './products/products.component';
 import { ProductInformationsComponent } from './product-information/product-informations.component';
 import { OrdersComponent } from './orders/order.component';
-// import { OrderDetailsComponent } from './orders/order-detail/order-details.component';
+import { OrderDetailsComponent } from './orders/order-detail/order-details.component';
 import { AreasComponent } from './areas/areas.component';
 import { LinesComponent } from './lines/lines.component';
 import { DistributorsComponent } from './distributors/distributors.component';
@@ -30,10 +30,10 @@ export const UiComponentsRoutes: Routes = [
         path: 'areas',
         component: AreasComponent,
       },
-      // {
-      //   path: 'order-details/:id',
-      //   component: OrderDetailsComponent,
-      // },
+      {
+      path: 'order-details/:id',
+      component: OrderDetailsComponent,
+      },
       {
         path: 'orders',
         component: OrdersComponent,

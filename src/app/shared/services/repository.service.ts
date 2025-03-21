@@ -24,6 +24,9 @@ export class RepositoryService {
   public update = (route: string, body:any) => {
     return this.http.put(this.createCompleteRoute(route, environment.apiUrl), body, this.generateHeaders());
   }
+  public updateByID = (route: string, id: string,body:any) => {
+    return this.http.put(`${this.createCompleteRoute(route, environment.apiUrl)}/${id}`, body, this.generateHeaders());
+  }
  
   public delete = (route: string) => {
     return this.http.delete(this.createCompleteRoute(route, environment.apiUrl));

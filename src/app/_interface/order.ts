@@ -1,3 +1,5 @@
+import { DistributorDto } from "./distributor";
+
 export interface OrderWithDetails {
   id: string; // Guid trong C# là string trong TypeScript
   orderCode: string;
@@ -29,4 +31,31 @@ export interface OrderDetailWithProduct {
   replacedUnits: number;
   replacedWeight: number;
   createdAt: string;
+}
+export interface OrderDto {
+  id: string;
+  orderCode: string;
+  exportDate: string;
+  vehicleNumber: string;
+  driverNumber: number;
+  driverName: string;
+  driverPhoneNumber: string;
+  status: number;
+  distributorId: number;
+  createdAt: string;
+  updatedAt: string;
+  distributor: DistributorDto; // Nếu có dữ liệu distributor, bạn có thể thay đổi kiểu phù hợp
+}
+
+export interface  OrderForManipulationDto
+{
+  id: string;
+  orderCode: string;
+  vehicleNumber: string;
+  driverNumber: number;
+  driverName: string;
+  driverPhoneNumber: string;
+  status: number;
+  distributorId: number;
+    
 }

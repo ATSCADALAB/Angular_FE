@@ -29,16 +29,44 @@ mat-card-subtitle {
 }
 
 .info-section {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: #f9f9f9;
   margin-bottom: 24px;
 }
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.section-header button {
+  margin-right: 10px;
+}
+.toggle-btn {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+  border-radius: 4px;
+  margin-right: 10px;
+}
 
+.toggle-btn:hover {
+  background: #0056b3;
+}
+
+.info-content {
+  margin-top: 10px;
+}
 .section-title {
   font-size: 20px;
-  font-weight: 500;
-  color: #0f172a;
-  margin-bottom: 16px;
-  border-bottom: 2px solid #e0e0e0;
-  padding-bottom: 8px;
+    font-weight: 500;
+    color: #0f172a;
+    margin-bottom: 16px;
+    border-bottom: 2px solid #ef6e6e;
+    padding-bottom: 8px;
+    margin-left: 10px;
 }
 
 .info-grid {
@@ -222,30 +250,6 @@ mat-spinner {
   position: relative;
 }
 
-/* Nút toggle đẹp hơn */
-.toggle-btn {
-  background-color: transparent;
-  border: none;
-  color: white;
-  font-size: 14px;
-  font-weight: bold;
-  cursor: pointer;
-  position: absolute;
-  right: 15px;
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  align-items: center;
-}
-
-/* Mũi tên chuyển động */
-.toggle-btn span {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  margin-left: 5px;
-  transition: transform 0.3s ease-in-out;
-}
 
 .arrow-up {
   transform: rotate(0deg);
@@ -269,14 +273,40 @@ mat-spinner {
   transition: max-height 0.3s ease-in-out;
 }
 
-
+.order-title {
+  display: flex;
+  flex-wrap: wrap;  /* Cho phép xuống dòng */
+  align-items: center;
+  justify-content: space-between; /* Cách đều hai phần */
+}
+.header-content {
+  margin-left: auto;
+}
 .running-text {
   margin-left: auto; /* Đẩy sang phải */
   font-weight: bold;
   color: #ffffff; /* Màu vàng */
+  font-size: large;
 }
+
 .running-bg {
   background: yellowgreen; /* Màu vàng khi đang chạy */
+  color: white;
+}
+.table {
+  width: 95%;
+  border-collapse: collapse;
+  margin:auto
+}
+
+.table th, .table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.table th {
+  background-color: #2a3547;
   color: white;
 }
 /* Responsive adjustments */
@@ -303,15 +333,25 @@ mat-spinner {
   .modern-select {
     width: 150px; /* Giảm độ rộng trên mobile */
   }
-
+  .order-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
   .action-button {
     min-width: 100px; /* Giảm độ rộng tối thiểu trên mobile */
     padding: 0 16px;
     height: 40px;
     font-size: 14px;
   }
-
-
+  .running-text {
+    display: block;
+    width: 100%;
+    text-align: left; /* Căn trái cho đẹp hơn */
+    margin-top: 4px; /* Tạo khoảng cách với tiêu đề */
+  }
+  .header-content {
+    margin-left: 0; /* Xóa margin trên mobile */
+  }
 
   
 }
