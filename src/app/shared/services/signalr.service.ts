@@ -47,8 +47,8 @@ export class SignalRService {
   }
 
   // Ngắt kết nối SignalR
-  stopConnection(): void {
-    this.hubConnection.stop()
+  stopConnection(): Promise<void> {
+    return this.hubConnection.stop()
       .then(() => console.log('SignalR connection stopped'))
       .catch(err => console.error('Error while stopping SignalR connection:', err));
   }
