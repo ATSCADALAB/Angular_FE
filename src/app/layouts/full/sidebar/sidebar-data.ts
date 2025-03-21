@@ -18,6 +18,21 @@ export const navItems: NavItem[] = [
     route: '/ui-components/reports',
   },
   {
+    displayName: 'Inbound',
+    iconName: 'poker-chip',
+    route: '/ui-components/inbound',
+  },
+  {
+    displayName: 'Outbound',
+    iconName: 'poker-chip',
+    route: '/ui-components/outbound',
+  },
+  {
+    displayName: 'Stock',
+    iconName: 'poker-chip',
+    route: '/ui-components/stock-report',
+  },
+  {
     displayName: 'Lines',
     iconName: 'poker-chip',
     route: '/ui-components/lines',

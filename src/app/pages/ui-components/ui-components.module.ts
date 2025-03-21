@@ -43,7 +43,11 @@ import { AddLineComponent } from './lines/add-line/add-line.component';
 import { UpdateLineComponent } from './lines/update-line/update-line.component';
 import { LinesComponent } from './lines/lines.component';
 import { ReportComponent } from './report/report.component';
-
+import { InboundComponent } from './inbound/inbound.component';
+import { OutboundComponent } from './outbound/outbound.component';
+import { StockReportComponent } from './stock-report/stock-report.component';
+import { AddInboundComponent } from './inbound/add-inbound/add-inbound.component';
+import { AddOutboundComponent } from './outbound/add-outbound/add-outbound.component';
 @NgModule({
   imports: [
     CommonModule,
@@ -99,7 +103,12 @@ import { ReportComponent } from './report/report.component';
     AddLineComponent,
     UpdateLineComponent,
     LinesComponent,
-    ReportComponent
+    ReportComponent,
+    InboundComponent,
+    AddInboundComponent,
+    OutboundComponent,
+    AddOutboundComponent,
+    StockReportComponent
   ],
 })
 export class UicomponentsModule {}

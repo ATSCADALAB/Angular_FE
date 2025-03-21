@@ -58,6 +58,9 @@ export class SidebarComponent implements OnInit {
             '/ui-components/areas': 'Areas',
             '/ui-components/lines': 'Lines',
             '/ui-components/reports': 'Reports',
+            '/ui-components/inbound': 'InboundRecords',
+            '/ui-components/outbound': 'OutboundRecords',
+            '/ui-components/stock-report': 'Stock',
 
           };
 

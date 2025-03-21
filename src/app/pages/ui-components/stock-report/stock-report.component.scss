@@ -1,0 +1,20 @@
+.mat-header-cell {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .report-controls {
+    display: flex;
+    gap: 16px;
+  }
+  
+  .mat-column-productName { width: 200px; }
+  .mat-column-openingStockUnits { width: 150px; }
+  .mat-column-openingStockWeight { width: 150px; }
+  .mat-column-inQuantityUnits { width: 150px; }
+  .mat-column-inQuantityWeight { width: 150px; }
+  .mat-column-outQuantityUnits { width: 150px; }
+  .mat-column-outQuantityWeight { width: 150px; }
+  .mat-column-closingStockUnits { width: 150px; }
+  .mat-column-closingStockWeight { width: 150px; }
