@@ -46,6 +46,11 @@ import { ReportComponent } from './report/report.component';
 import { OrderDetailsComponent } from './orders/order-detail/order-details.component';
 import { OrderDetailReplaceComponent } from './orders/order-detail/order-detail-replace/order-detail-replace.component';
 
+import { InboundComponent } from './inbound/inbound.component';
+import { OutboundComponent } from './outbound/outbound.component';
+import { StockReportComponent } from './stock-report/stock-report.component';
+import { AddInboundComponent } from './inbound/add-inbound/add-inbound.component';
+import { AddOutboundComponent } from './outbound/add-outbound/add-outbound.component';
 @NgModule({
   imports: [
     CommonModule,
@@ -102,7 +107,12 @@ import { OrderDetailReplaceComponent } from './orders/order-detail/order-detail-
     AddLineComponent,
     UpdateLineComponent,
     LinesComponent,
-    ReportComponent
+    ReportComponent,
+    InboundComponent,
+    AddInboundComponent,
+    OutboundComponent,
+    AddOutboundComponent,
+    StockReportComponent
   ],
 })
 export class UicomponentsModule {}

@@ -13,11 +13,25 @@ import { AreasComponent } from './areas/areas.component';
 import { LinesComponent } from './lines/lines.component';
 import { DistributorsComponent } from './distributors/distributors.component';
 import { ReportComponent } from './report/report.component';
-
+import { InboundComponent } from './inbound/inbound.component';
+import { OutboundComponent } from './outbound/outbound.component';
+import { StockReportComponent } from './stock-report/stock-report.component';
 export const UiComponentsRoutes: Routes = [
   {
     path: '',
     children: [
+      {
+        path: 'stock-report',
+        component: StockReportComponent,
+      },
+      {
+        path: 'inbound',
+        component: InboundComponent,
+      },
+      {
+        path: 'outbound',
+        component: OutboundComponent,
+      },
       {
         path: 'reports',
         component: ReportComponent,

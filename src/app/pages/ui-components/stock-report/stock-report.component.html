@@ -1,0 +1,86 @@
+<mat-card class="cardWithShadow theme-card">
+  <mat-card-header>
+    <mat-card-title class="m-b-0">Stock Report</mat-card-title>
+  </mat-card-header>
+
+  <mat-card-content class="b-t-1">
+    <div class="report-controls m-t-16 m-b-16">
+      <mat-form-field appearance="outline">
+        <mat-label>Report Type</mat-label>
+        <mat-select [(value)]="reportType" (selectionChange)="changeReportType($event.value)">
+          <mat-option value="daily">Daily</mat-option>
+          <mat-option value="monthly">Monthly</mat-option>
+          <mat-option value="yearly">Yearly</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" *ngIf="reportType === 'daily'">
+        <mat-label>Select Date</mat-label>
+        <input matInput [matDatepicker]="picker" [(ngModel)]="selectedDate" (dateChange)="getReport()">
+        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" *ngIf="reportType === 'monthly' || reportType === 'yearly'">
+        <mat-label>Year</mat-label>
+        <input matInput type="number" [(ngModel)]="selectedYear" (change)="getReport()">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" *ngIf="reportType === 'monthly'">
+        <mat-label>Month</mat-label>
+        <mat-select [(value)]="selectedMonth" (selectionChange)="getReport()">
+          <mat-option *ngFor="let month of [1,2,3,4,5,6,7,8,9,10,11,12]" [value]="month">{{ month }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div class="table-responsive">
+      <mat-form-field class="w-100" appearance="outline">
+        <input matInput type="text" (keyup)="doFilter($any($event).target.value)" placeholder="Search...">
+      </mat-form-field>
+
+      <table mat-table [dataSource]="dataSource" class="w-100" matSort>
+        <ng-container matColumnDef="productName">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Product Name</th>
+          <td mat-cell *matCellDef="let element">{{ element.productName }}</td>
+        </ng-container>
+        <ng-container matColumnDef="openingStockUnits">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Opening Stock (Units)</th>
+          <td mat-cell *matCellDef="let element">{{ element.openingStockUnits }}</td>
+        </ng-container>
+        <ng-container matColumnDef="openingStockWeight">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Opening Stock (kg)</th>
+          <td mat-cell *matCellDef="let element">{{ element.openingStockWeight }}</td>
+        </ng-container>
+        <ng-container matColumnDef="inQuantityUnits">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Inbound (Units)</th>
+          <td mat-cell *matCellDef="let element">{{ element.inQuantityUnits }}</td>
+        </ng-container>
+        <ng-container matColumnDef="inQuantityWeight">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Inbound (kg)</th>
+          <td mat-cell *matCellDef="let element">{{ element.inQuantityWeight }}</td>
+        </ng-container>
+        <ng-container matColumnDef="outQuantityUnits">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Outbound (Units)</th>
+          <td mat-cell *matCellDef="let element">{{ element.outQuantityUnits }}</td>
+        </ng-container>
+        <ng-container matColumnDef="outQuantityWeight">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Outbound (kg)</th>
+          <td mat-cell *matCellDef="let element">{{ element.outQuantityWeight }}</td>
+        </ng-container>
+        <ng-container matColumnDef="closingStockUnits">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Closing Stock (Units)</th>
+          <td mat-cell *matCellDef="let element">{{ element.closingStockUnits }}</td>
+        </ng-container>
+        <ng-container matColumnDef="closingStockWeight">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Closing Stock (kg)</th>
+          <td mat-cell *matCellDef="let element">{{ element.closingStockWeight }}</td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+      <mat-paginator [pageSize]="4" [pageSizeOptions]="[4, 6, 10, 20]"></mat-paginator>
+    </div>
+  </mat-card-content>
+</mat-card>

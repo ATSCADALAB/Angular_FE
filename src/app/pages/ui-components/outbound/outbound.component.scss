@@ -1,0 +1,11 @@
+.mat-header-cell {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .mat-column-productName { width: 200px; }
+  .mat-column-quantityUnits { width: 150px; }
+  .mat-column-quantityWeight { width: 150px; }
+  .mat-column-outboundDate { width: 200px; }
+  .mat-column-createdAt { width: 200px; }
