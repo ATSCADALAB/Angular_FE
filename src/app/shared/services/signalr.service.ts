@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import * as signalR from '@microsoft/signalr';
 import { HubConnection, HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
 import { Subject } from 'rxjs';
 import { WcfDataDto } from 'src/app/_interface/wcf-data-dto';
@@ -57,5 +58,9 @@ export class SignalRService {
   sendData(data: WcfDataDto[]): void {
     this.hubConnection.invoke('SendData', data)
       .catch(err => console.error('Error while sending data to SignalR hub:', err));
+  }
+  // hàm isConnected để kiểm tra trạng thái kết nối
+  isConnected(): boolean {
+    return this.hubConnection?.state === signalR.HubConnectionState.Connected;
   }
 }

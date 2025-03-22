@@ -44,13 +44,13 @@ import { UpdateLineComponent } from './lines/update-line/update-line.component';
 import { LinesComponent } from './lines/lines.component';
 import { ReportComponent } from './report/report.component';
 import { OrderDetailsComponent } from './orders/order-detail/order-details.component';
-import { OrderDetailReplaceComponent } from './orders/order-detail/order-detail-replace/order-detail-replace.component';
 
 import { InboundComponent } from './inbound/inbound.component';
 import { OutboundComponent } from './outbound/outbound.component';
 import { StockReportComponent } from './stock-report/stock-report.component';
 import { AddInboundComponent } from './inbound/add-inbound/add-inbound.component';
 import { AddOutboundComponent } from './outbound/add-outbound/add-outbound.component';
+import { OrderDetailConfirmComponent } from './orders/order-detail/order-detail-confirm/order-detail-confirm.component';
 @NgModule({
   imports: [
     CommonModule,
@@ -98,7 +98,7 @@ import { AddOutboundComponent } from './outbound/add-outbound/add-outbound.compo
     // UpdateOrderComponent,
     OrdersComponent,
     OrderDetailsComponent,
-    OrderDetailReplaceComponent,
+    OrderDetailConfirmComponent,
     //Ares
     AreasComponent,
     AddAreaComponent,
