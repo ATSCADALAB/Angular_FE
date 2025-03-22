@@ -101,7 +101,7 @@ export class AddProductComponent implements OnInit {
   }
 
   public getProductInformations() {
-    this.repoService.getData('api/productInformations')
+    this.repoService.getData('api/product-informations')
       .subscribe(
         (res) => {
           this.productInformations = res as ProductInformationDto[];
