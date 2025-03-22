@@ -4,6 +4,8 @@ import { BlankComponent } from './layouts/blank/blank.component';
 import { FullComponent } from './layouts/full/full.component';
 import { AuthGuard } from './guards/auth.guard';
 import { ServerErrorComponent } from './errors/server-error/server-error.component';
+import { OrderDetailsComponent } from './pages/ui-components/orders/order-detail/order-details.component';
+import { CanDeactivateGuard } from './shared/services/can-deactivate.guard';
 
 const routes: Routes = [
   {
@@ -44,6 +46,10 @@ const routes: Routes = [
     ],
   },
   { path: '500', component: ServerErrorComponent },
+  { path: 'order-details/:id', 
+    component: OrderDetailsComponent, 
+    canDeactivate: [CanDeactivateGuard] 
+  },
 ];
 
 @NgModule({

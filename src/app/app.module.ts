@@ -22,6 +22,7 @@ import { LoadingInterceptor } from './core/loading.interceptor';
 import { ToastrModule } from 'ngx-toastr';
 import { ErrorHandlerService } from './shared/services/error-handler.service';
 import { ServerErrorComponent } from './errors/server-error/server-error.component';
+import { CanDeactivateGuard } from './shared/services/can-deactivate.guard';
 
 export function tokenGetter() {
   return localStorage.getItem("token");
@@ -76,8 +77,10 @@ export function tokenGetter() {
       provide: HTTP_INTERCEPTORS,
       useClass: LoadingInterceptor,
       multi: true
-    }
+    },
+    CanDeactivateGuard
   ],
+  
   bootstrap: [AppComponent]
 })
 export class AppModule { }

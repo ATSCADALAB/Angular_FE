@@ -1,0 +1,55 @@
+<mat-card class="cardWithShadow theme-card modal-card">
+  <!-- Header -->
+  <mat-card-header class="header">
+    <mat-card-title>Confirm</mat-card-title>
+    <span class="spacer"></span>
+    <button mat-icon-button matTooltip="Close" (click)="closeModal()">
+      <mat-icon color="warn">close</mat-icon>
+    </button>
+  </mat-card-header>
+
+  <!-- Nội dung -->
+  <mat-card-content class="b-t-1 content">
+    <!-- Thông tin đơn hàng -->
+    <div *ngIf="orderDetail" class="order-info">
+      <div class="info-item">
+        <mat-icon color="primary">inventory</mat-icon>
+        <strong>Tổng sản phẩm đã đếm:</strong> 
+        <span>{{ totalUnits }} / {{ orderDetail.requestedUnits }}</span>
+      </div>
+    </div>
+
+    <!-- Hỏi người dùng -->
+    <div class="question">
+      <mat-icon color="accent">help_outline</mat-icon>
+      <span>Bổ sung số lượng sản phẩm nếu có sản phẩm lỗi</span>
+    </div>
+
+    <!-- Form nhập số lượng -->
+    <form [formGroup]="dataForm" (ngSubmit)="createData(dataForm.value)" class="form-container">
+      <mat-form-field class="full-width" appearance="outline">
+        <mat-label>Số lượng lỗi</mat-label>
+        <input matInput type="number" formControlName="defectiveUnits" />
+        <mat-error *ngIf="dataForm.get('defectiveUnits')?.hasError('required')">
+          Vui lòng nhập số lượng lỗi
+        </mat-error>
+      </mat-form-field>
+    
+      <mat-form-field class="full-width" appearance="outline">
+        <mat-label>Số lượng bổ sung</mat-label>
+        <input matInput type="number" formControlName="replaceUnits" />
+        <mat-error *ngIf="dataForm.get('replaceUnits')?.hasError('required')">
+          Vui lòng nhập số lượng bổ sung
+        </mat-error>
+      </mat-form-field>
+    
+      <!-- Button -->
+      <div class="button-group">
+        <button mat-flat-button color="primary" [disabled]="!dataForm.valid">
+          <mat-icon>save</mat-icon> Lưu
+        </button>
+      </div>
+    </form>
+    
+  </mat-card-content>
+</mat-card>

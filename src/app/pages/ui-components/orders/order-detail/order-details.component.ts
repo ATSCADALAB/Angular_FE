@@ -4,16 +4,18 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RepositoryService } from 'src/app/shared/services/repository.service';
 // import { OrderDto, OrderLineDetailCreationDto, OrderLineDetailDto } from 'src/app/_interface/order';
-import { OrderLineDetailDto, OrderLineDetailCreationDto, OrderDetailDto, OrderDetailUpdatenDto } from 'src/app/_interface/order-detail';
+import {  OrderDetailDto, OrderDetailUpdateDto } from 'src/app/_interface/order-detail';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { WcfDataDto } from 'src/app/_interface/wcf-data-dto';
 import { SignalRService } from 'src/app/shared/services/signalr.service';
 import { SensorRecordCreationDto, SensorRecordDto } from 'src/app/_interface/sensor-record';
 import { OrderForManipulationDto } from 'src/app/_interface/order';
-import { ConfirmDeleteComponent } from 'src/app/shared/modals/confirm-delete/confirm-delete.component';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmComponent } from 'src/app/shared/modals/confirm/confirm.component';
-import { OrderDetailReplaceComponent } from './order-detail-replace/order-detail-replace.component';
+import { Subscription } from 'rxjs';
+import { OrderDetailConfirmComponent } from './order-detail-confirm/order-detail-confirm.component';
+import { OrderLineDetailCreationDto, OrderLineDetailDto } from 'src/app/_interface/order-line-detail';
+
 
 @Component({
   selector: 'app-order-details',
@@ -30,6 +32,7 @@ export class OrderDetailsComponent implements OnInit {
   isExpanded = false;
   orderId: string | null = null;
   orderDetail: OrderDetailDto;
+  //orderLineDetails:OrderLineDetailDto [];
   selectedLine: number;
   lines: number[] = [1, 2, 3, 4];
 
@@ -38,19 +41,21 @@ export class OrderDetailsComponent implements OnInit {
   receivedDataSensor: WcfDataDto[] = []; //Giá trị nhận dữ liệu SingnalR từ Server
   dataSensorByLine: WcfDataDto | null = null; //Giá trị lưu trữ dữ liệu Sensor theo Line
   orderLineDetails: OrderLineDetailDto[] = [];
-
+  latestRecord: any; // Biến để lưu dòng mới nhất
+  isSignalRRunning: boolean = false;
+  private subscription: Subscription
   constructor(
     private dialog: MatDialog,
     private route: ActivatedRoute,
     private router: Router,
     private repoService: RepositoryService,
     private snackBar: MatSnackBar,
-    private signalrService: SignalRService //Khai báo signalrService
+    private signalrService: SignalRService, //Khai báo signalrService
+
   ) { }
 
   ngOnInit(): void {
     this.orderId = this.route.snapshot.paramMap.get('id');
-
     if (this.orderId) {
       // Load thông tin OrderDetail theo OrderId
       this.repoService.getData(`api/order-details/by-order/${this.orderId}`).subscribe(
@@ -64,7 +69,19 @@ export class OrderDetailsComponent implements OnInit {
       );
       this.getOrderLineDetail(); //Lấy giá trị OrderLineDetail
       this.loadSensorRecord();
+      this.checkSignalRStatus();
     }
+  }
+  // Ngắt kết nối SingalR khi component bị hủy
+  ngOnDestroy() {
+    console.log("Component destroyed - Disconnecting SignalR...");
+    if (this.subscription) {
+      this.subscription.unsubscribe(); // Hủy subscription khi component bị hủy
+    }
+    this.signalrService.stopConnection(); // Ngắt kết nối SignalR
+  }
+  checkSignalRStatus() {
+    this.isSignalRRunning = this.signalrService.isConnected(); // `isConnected()` trả về `true` hoặc `false`
   }
   //Hàm tính tổng giá trị đọc được từ Sensor
   calculateTotals(): void {
@@ -77,6 +94,7 @@ export class OrderDetailsComponent implements OnInit {
       this.repoService.getData(`api/sensor-records/by-order/${this.orderId}`).subscribe(
         (res) => {
           this.sensorRecord = res as SensorRecordDto[];
+          this.latestRecord = this.getLatestRecord();
           console.log('Sensor Record:', this.sensorRecord);
           this.calculateTotals();
         },
@@ -86,6 +104,12 @@ export class OrderDetailsComponent implements OnInit {
         }
       );
     }
+  }
+
+  getLatestRecord(): any {
+    return this.sensorRecord?.length > 0
+      ? this.sensorRecord.reduce((latest, item) => new Date(item.recordTime) > new Date(latest.recordTime) ? item : latest)
+      : null;
   }
   //Hàm tạo và update dữ liệu Sensor Record
   createSensorRecord(): void {
@@ -160,6 +184,8 @@ export class OrderDetailsComponent implements OnInit {
         return 'In Progress';
       case 2:
         return 'Completed';
+      case 3:
+        return 'Cancel';
       default:
         return 'Unknown';
     }
@@ -174,6 +200,8 @@ export class OrderDetailsComponent implements OnInit {
         return 'status-in-progress';
       case 2:
         return 'status-completed';
+      case 3:
+        return 'status-cancel';
       default:
         return 'status-unknown';
     }
@@ -189,10 +217,9 @@ export class OrderDetailsComponent implements OnInit {
         // Khởi tạo kết nối SignalR
         if (this.selectedLine != 0) {
           this.signalrService.startConnection().then(() => {
-            console.log("SignalR connected successfully!");
-            this.signalrService.dataReceived$.subscribe(data => {
+            this.isSignalRRunning = true;
+            this.subscription = this.signalrService.dataReceived$.subscribe(data => {
               this.receivedDataSensor = data;
-
               // Kiểm tra dữ liệu hợp lệ trước khi truy cập index
               if (Array.isArray(this.receivedDataSensor) && this.receivedDataSensor.length >= this.selectedLine) {
                 this.dataSensorByLine = this.receivedDataSensor[this.selectedLine - 1];
@@ -215,7 +242,8 @@ export class OrderDetailsComponent implements OnInit {
       if (totalUnits < this.orderDetail.requestedUnits) {
         const dialogRef = this.dialog.open(ConfirmComponent, {
           width: '450px',
-          data: { message: "Số lượng bao chưa đủ. Bạn có chắc chắn muốn dừng?" }
+          height: '100px',
+          data: { message: "Số lượng đếm chưa đủ. Bạn có chắc chắn muốn dừng?" }
         });
 
         dialogRef.afterClosed().subscribe(result => {
@@ -235,6 +263,7 @@ export class OrderDetailsComponent implements OnInit {
               lastRecord.recordTime = new Date(this.dataSensorByLine.timeStamp).toISOString();
               console.log("lastRecord:", lastRecord);
               this.updateSensorRecord(lastRecord);
+              this.updateLastOrderLineDetail();
             } else {
               console.error("Data Sensor By Line null:", this.dataSensorByLine);
             }
@@ -243,6 +272,7 @@ export class OrderDetailsComponent implements OnInit {
           this.signalrService.stopConnection().catch(err => {
             console.error("SignalR connection error:", err);
           });
+          this.isSignalRRunning = false; 
         });
       } else {
         // Nếu dữ liệu hợp lệ, vẫn tiếp tục dừng như bình thường
@@ -258,6 +288,7 @@ export class OrderDetailsComponent implements OnInit {
             lastRecord.recordTime = new Date(this.dataSensorByLine.timeStamp).toISOString();
             console.log("lastRecord:", lastRecord);
             this.updateSensorRecord(lastRecord);
+            this.updateLastOrderLineDetail();
           } else {
             console.error("Data Sensor By Line null:", this.dataSensorByLine);
           }
@@ -266,13 +297,13 @@ export class OrderDetailsComponent implements OnInit {
         this.signalrService.stopConnection().catch(err => {
           console.error("SignalR connection error:", err);
         });
+        this.isSignalRRunning = false;
       }
     }
   }
 
   completeOrder() {
-    this.updateOrderDetail();
-    this.updateOrderStatus(2); //update thành completed
+    this.confirmForm(this.orderDetail.id);
     console.log('Order Detail updated successfully:', this.orderDetail);
   }
   goBack(): void {
@@ -281,14 +312,14 @@ export class OrderDetailsComponent implements OnInit {
   //Hàm update OrderDetail 
   updateOrderDetail(): void {
     if (this.totalUnits > this.orderDetail.requestedUnits) {
-      const orderDetailDataUpdate: OrderDetailUpdatenDto = {
+      const orderDetailDataUpdate: OrderDetailUpdateDto = {
         orderId: this.orderDetail.orderId,
         requestedUnits: this.orderDetail.requestedUnits,
         requestedWeight: this.orderDetail.requestedWeight,
         manufactureDate: this.orderDetail.manufactureDate,
         productInformationId: this.orderDetail.productInformationId,
-        defectiveUnits: this.totalUnits,
-        defectiveWeight: this.totalWeight,
+        defectiveUnits: this.orderDetail.defectiveUnits,
+        defectiveWeight: this.orderDetail.defectiveWeight,
         replacedUnits: this.orderDetail.replacedUnits,
         replacedWeight: this.orderDetail.replacedWeight,
       };
@@ -355,17 +386,29 @@ export class OrderDetailsComponent implements OnInit {
         }
       );
     }
-   
+
   }
   //Hàm mở modal AddLine
-  addReplaceUnit(id: number) {
+  confirmForm(id: number) {
     console.log("ID:", id);
-    this.dialog.open(OrderDetailReplaceComponent, {
+    const dialogRef = this.dialog.open(OrderDetailConfirmComponent, {
       width: '500px',
-      height: '450px',
+      height: '400px',
       enterAnimationDuration: '100ms',
       exitAnimationDuration: '100ms',
-      data: { id }
+      data: {
+        id,
+        totalUnits: this.totalUnits,
+        updateOrderDetail: this.updateOrderDetail.bind(this),
+        updateOrderStatus: this.updateOrderStatus.bind(this)
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.updateOrderDetail();
+        this.updateOrderStatus(2); // update thành completed
+      }
     });
   }
   //Hàm lấy dữ liệu OrderLineDetail theo orderID
@@ -387,8 +430,6 @@ export class OrderDetailsComponent implements OnInit {
   createOrderLineDetail(): void {
     if (this.orderLineDetails != null && this.orderId != null) {
       let sequenceNumber = this.orderLineDetails.length + 1;
-      console.log("Hàm tạo OrderLineDetail:", sequenceNumber);
-      console.log("Hàm tạo OrderLineDetail:", this.selectedLine);
       const orderLineDetailData: OrderLineDetailCreationDto = {
         orderId: this.orderId,
         LineId: this.selectedLine,
@@ -410,5 +451,31 @@ export class OrderDetailsComponent implements OnInit {
       );
     }
   }
+  
+  //Hàm update OrderLineDetail
+  updateLastOrderLineDetail(): void {
+    if (this.orderLineDetails && this.orderLineDetails.length > 0) {
+      
+      // Lấy phần tử cuối cùng
+      const lastOrderLineDetail = this.orderLineDetails.reduce((latest, current) => 
+        current.id > latest.id ? current : latest
+      );
+      console.log("ID cập nhật",lastOrderLineDetail.id);
+      if (lastOrderLineDetail) {
+        lastOrderLineDetail.EndTime = new Date().toISOString(); // Cập nhật thời gian
+  
+        this.repoService.updateByID('api/order-line-details', lastOrderLineDetail.id.toString(), lastOrderLineDetail)
+          .subscribe(
+            (res) => console.log('Last Order Line Detail updated successfully:', res),
+            (err) => console.error('Error updating Order Line Detail:', err)
+          );
+      } else {
+        console.error('No valid Order Line Detail found.');
+      }
+    } else {
+      console.error('Order Line Details list is empty.');
+    }
+  }
+  
 }
 
