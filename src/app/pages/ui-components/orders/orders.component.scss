@@ -126,3 +126,64 @@
 .m-l-8 {
   margin-left: 8px;
 }
+/* Ngăn tiêu đề xuống dòng */
+.mat-header-cell {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Tùy chỉnh kích thước cột nếu cần */
+.mat-column-action { width: 150px; }
+.mat-column-status { width: 150px; }
+.mat-column-code { width: 120px; }
+.mat-column-exportDate { width: 150px; }
+.mat-column-quantityVehicle { width: 100px; }
+.mat-column-vehicleNumber { width: 120px; }
+.mat-column-driverName { width: 150px; }
+.mat-column-driverPhoneNumber { width: 150px; }
+.mat-column-weightOrder { width: 120px; }
+.mat-column-unitOrder { width: 120px; }
+.mat-column-manufactureDate { width: 150px; }
+.mat-column-productName { width: 200px; }
+.mat-column-distributorName { width: 150px; }
+.mat-column-area { width: 150px; }
+
+/* Tùy chỉnh giao diện báo cáo import */
+.import-report {
+  padding: 16px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+}
+
+/* Định nghĩa màu sắc cho trạng thái */
+.status-pending { color: orange; }
+.status-processing { color: blue; }
+.status-completed { color: green; }
+.status-incomplete { color: red; }
+
+/* Tùy chỉnh layout bộ lọc */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-end; /* Căn dưới để nút Search thẳng hàng với các trường */
+}
+
+.filter-field {
+  min-width: 150px;
+  flex: 1;
+}
+
+.m-l-8 {
+  margin-left: 8px;
+}
+
+.status-link {
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.status-link:hover {
+  text-decoration: none;
+}
