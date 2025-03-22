@@ -153,7 +153,7 @@ export class OrdersComponent implements OnInit, AfterViewInit, OnDestroy {
       case 0: return 'Pending';
       case 1: return 'Processing';
       case 2: return 'Completed';
-      case 3: return 'Incomplete';
+      case 3: return 'Cancelled';
       default: return 'Unknown';
     }
   }
@@ -163,7 +163,7 @@ export class OrdersComponent implements OnInit, AfterViewInit, OnDestroy {
       case 0: return 'status-pending';
       case 1: return 'status-processing';
       case 2: return 'status-completed';
-      case 3: return 'status-incomplete';
+      case 3: return 'status-cancelled';
       default: return '';
     }
   }
