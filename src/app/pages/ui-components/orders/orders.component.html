@@ -3,80 +3,100 @@
     <mat-card-title class="m-b-0">Orders</mat-card-title>
     <span class="flex-1-auto"></span>
     <button mat-flat-button color="accent" matTooltipPosition="left" class="m-l-8" matTooltipHideDelay="100000" (click)="triggerFileInput()">
-      <mat-icon>upload_file</mat-icon> <span fxHide.xs>Import from Excel</span>
+      <mat-icon>upload_file</mat-icon> <span class="d-none d-sm-inline">Import from Excel</span>
     </button>
     <input type="file" #fileInput style="display: none" (change)="onFileChange($event)" accept=".xlsx, .xls" />
     <button mat-flat-button color="accent" matTooltipPosition="left" class="m-l-8" matTooltipHideDelay="100000" (click)="downloadTemplate()">
-      <mat-icon>download</mat-icon> <span fxHide.xs>Download Template</span>
+      <mat-icon>download</mat-icon> <span class="d-none d-sm-inline">Download Template</span>
     </button>
   </mat-card-header>
 
   <mat-card-content class="b-t-1">
     <!-- Bộ lọc -->
     <div class="filters m-t-16 m-b-16">
-      <mat-form-field appearance="outline" class="filter-field">
-        <mat-label>Start Date</mat-label>
-        <input matInput [matDatepicker]="startPicker" [(ngModel)]="startDate">
-        <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
-        <mat-datepicker #startPicker></mat-datepicker>
-      </mat-form-field>
+      <!-- Hàng 1: Start Date | End Date -->
+      <div class="row g-3">
+        <div class="col-12 col-md-6">
+          <mat-form-field appearance="outline" class="filter-field" floatLabel="always">
+            <mat-label>Start Date</mat-label>
+            <input matInput [matDatepicker]="startPicker" [(ngModel)]="startDate">
+            <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+            <mat-datepicker #startPicker></mat-datepicker>
+          </mat-form-field>
+        </div>
+        <div class="col-12 col-md-6">
+          <mat-form-field appearance="outline" class="filter-field" floatLabel="always">
+            <mat-label>End Date</mat-label>
+            <input matInput [matDatepicker]="endPicker" [(ngModel)]="endDate">
+            <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+            <mat-datepicker #endPicker></mat-datepicker>
+          </mat-form-field>
+        </div>
+      </div>
 
-      <mat-form-field appearance="outline" class="filter-field">
-        <mat-label>End Date</mat-label>
-        <input matInput [matDatepicker]="endPicker" [(ngModel)]="endDate">
-        <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
-        <mat-datepicker #endPicker></mat-datepicker>
-      </mat-form-field>
+      <!-- Hàng 2: Distributor | Area | Product | Status -->
+      <div class="row g-3">
+        <div class="col-12 col-md-6 col-lg-3">
+          <mat-form-field appearance="outline" class="filter-field" floatLabel="always">
+            <mat-label>Distributor</mat-label>
+            <mat-select [(value)]="selectedDistributorId">
+              <mat-option [value]="null">All</mat-option>
+              <mat-option *ngFor="let distributor of distributors" [value]="distributor.id">
+                {{ distributor.distributorName }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="col-12 col-md-6 col-lg-3">
+          <mat-form-field appearance="outline" class="filter-field" floatLabel="always">
+            <mat-label>Area</mat-label>
+            <mat-select [(value)]="selectedAreaId">
+              <mat-option [value]="null">All</mat-option>
+              <mat-option *ngFor="let area of areas" [value]="area.id">
+                {{ area.areaName }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="col-12 col-md-6 col-lg-3">
+          <mat-form-field appearance="outline" class="filter-field" floatLabel="always">
+            <mat-label>Product</mat-label>
+            <mat-select [(value)]="selectedProductInformationId">
+              <mat-option [value]="null">All</mat-option>
+              <mat-option *ngFor="let product of productInformations" [value]="product.id">
+                {{ product.productName }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="col-12 col-md-6 col-lg-3">
+          <mat-form-field appearance="outline" class="filter-field" floatLabel="always">
+            <mat-label>Status</mat-label>
+            <mat-select [(value)]="selectedStatus">
+              <mat-option [value]="null">All</mat-option>
+              <mat-option [value]="0">Pending</mat-option>
+              <mat-option [value]="1">Processing</mat-option>
+              <mat-option [value]="2">Completed</mat-option>
+              <mat-option [value]="3">Cancelled</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
 
-      <mat-form-field appearance="outline" class="filter-field">
-        <mat-label>Distributor</mat-label>
-        <mat-select [(value)]="selectedDistributorId">
-          <!-- Mặc định là "All" khi selectedDistributorId = null -->
-          <mat-option [value]="null">All</mat-option>
-          <mat-option *ngFor="let distributor of distributors" [value]="distributor.id">
-            {{ distributor.distributorName }}
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" class="filter-field">
-        <mat-label>Area</mat-label>
-        <mat-select [(value)]="selectedAreaId">
-          <!-- Mặc định là "All" khi selectedAreaId = null -->
-          <mat-option [value]="null">All</mat-option>
-          <mat-option *ngFor="let area of areas" [value]="area.id">
-            {{ area.areaName }}
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" class="filter-field">
-        <mat-label>Product</mat-label>
-        <mat-select [(value)]="selectedProductInformationId">
-          <!-- Mặc định là "All" khi selectedProductInformationId = null -->
-          <mat-option [value]="null">All</mat-option>
-          <mat-option *ngFor="let product of productInformations" [value]="product.id">
-            {{ product.productName }}
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" class="filter-field">
-        <mat-label>Status</mat-label>
-        <mat-select [(value)]="selectedStatus">
-          <!-- Mặc định là "All" khi selectedStatus = null -->
-          <mat-option [value]="null">All</mat-option>
-          <mat-option [value]="0">Pending</mat-option>
-          <mat-option [value]="1">Processing</mat-option>
-          <mat-option [value]="2">Completed</mat-option>
-          <mat-option [value]="3">Incomplete</mat-option>
-        </mat-select>
-      </mat-form-field>
-
-      <!-- Nút Search -->
-      <button mat-flat-button color="primary" (click)="applyFilter()">
-        <mat-icon>search</mat-icon> Search
-      </button>
+      <!-- Hàng 3: Search | Reset -->
+      <!-- Hàng 3: 6 cột trống | Search | Reset -->
+      <div class="row g-3">
+        <div class="col-12 col-md-6 col-lg-6">
+          <button mat-flat-button color="primary" class="filter-button" (click)="applyFilter()">
+            <mat-icon>search</mat-icon> Search
+          </button>
+        </div>
+        <div class="col-12 col-md-6 col-lg-6">
+          <button mat-flat-button color="warn" class="filter-button" (click)="resetFilters()">
+            <mat-icon>refresh</mat-icon> Reset
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Hiển thị báo cáo import nếu có -->

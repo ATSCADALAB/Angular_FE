@@ -13,73 +13,74 @@ export const navItems: NavItem[] = [
     navCap: 'Administration',
   },
   {
+    displayName: 'Orders',
+    iconName: 'truck-delivery',
+    route: '/ui-components/orders',
+  },
+  {
     displayName: 'Reports',
-    iconName: 'poker-chip',
+    iconName: 'database-export',
     route: '/ui-components/reports',
   },
   {
     displayName: 'Inbound',
-    iconName: 'poker-chip',
+    iconName: 'transfer-in',
     route: '/ui-components/inbound',
   },
   {
     displayName: 'Outbound',
-    iconName: 'poker-chip',
+    iconName: 'transfer-out',
     route: '/ui-components/outbound',
   },
   {
     displayName: 'Stock',
-    iconName: 'poker-chip',
+    iconName: 'home',
     route: '/ui-components/stock-report',
   },
   {
     displayName: 'Lines',
-    iconName: 'poker-chip',
+    iconName: 'line',
     route: '/ui-components/lines',
   },
   {
     displayName: 'Areas',
-    iconName: 'poker-chip',
+    iconName: 'chart-area',
     route: '/ui-components/areas',
   },
   {
-    displayName: 'Orders',
-    iconName: 'poker-chip',
-    route: '/ui-components/orders',
-  },
-  {
-    displayName: 'Roles',
-    iconName: 'poker-chip',
-    route: '/ui-components/roles',
-  },
-  {
-    displayName: 'Users',
-    iconName: 'rosette',
-    route: '/ui-components/users',
-  },
-  {
-    displayName: 'Categories',
-    iconName: 'rosette',
-    route: '/ui-components/categories',
-  },
-  {
     displayName: 'Distribuitors',
-    iconName: 'rosette',
+    iconName: 'emergency-bed',
     route: '/ui-components/distributors',
   },
   {
     displayName: 'Products',
-    iconName: 'rosette',
+    iconName: 'tags',
     route: '/ui-components/products',
   },
   {
     displayName: 'ProductInformations',
-    iconName: 'rosette',
+    iconName: 'paper-bag',
     route: '/ui-components/product-informations',
   },
   {
+    displayName: 'Roles',
+    iconName: 'user-plus',
+    route: '/ui-components/roles',
+  },
+  {
+    displayName: 'Users',
+    iconName: 'user-circle',
+    route: '/ui-components/users',
+  },
+  {
+    displayName: 'Categories',
+    iconName: 'category',
+    route: '/ui-components/categories',
+  },
+  
+  {
     displayName: 'Permissions',
-    iconName: 'rosette',
+    iconName: 'settings-pause',
     route: '/ui-components/permissions',
   },
   {
@@ -87,10 +88,10 @@ export const navItems: NavItem[] = [
     iconName: 'layout-navbar-expand',
     route: '/ui-components/audits',
   },
-  {
-    displayName: 'About',
-    iconName: 'tooltip',
-    route: '/ui-components/about',
-  },
+  // {
+  //   displayName: 'About',
+  //   iconName: 'tooltip',
+  //   route: '/ui-components/about',
+  // },
 
 ];
