@@ -69,10 +69,6 @@ export class ChangeDefualtPasswordComponent implements OnInit {
       },
       error: (err: HttpErrorResponse) => {
         console.log(err.message);
-        this.dialogserve
-          .openErrorDialog(err.message)
-          .afterClosed()
-          .subscribe((res) => {});
       },
     });
   };

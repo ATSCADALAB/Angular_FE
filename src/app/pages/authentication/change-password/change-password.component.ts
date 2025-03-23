@@ -69,10 +69,6 @@ export class ChangePasswordComponent implements OnInit {
    
     },
     error: (err: HttpErrorResponse) => {
-      this.dialogserve.openErrorDialog(err.message)
-      .afterClosed()
-      .subscribe(   (res) => {
-      });
     }})
   }
 

@@ -85,15 +85,23 @@ export class OrdersComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    const params = {
-      startDate: this.startDate.toISOString().split('T')[0],
-      endDate: this.endDate.toISOString().split('T')[0],
-      distributorId: this.selectedDistributorId || null,
-      areaId: this.selectedAreaId || null,
-      productInformationId: this.selectedProductInformationId || null,
-      status: this.selectedStatus || null
-    };
+    // Điều chỉnh startDate về đầu ngày (00:00:00)
+  const adjustedStartDate = new Date(this.startDate);
+  adjustedStartDate.setHours(0, 0, 0, 0);
 
+  // Điều chỉnh endDate về đầu ngày tiếp theo (00:00:00 của ngày sau)
+  const adjustedEndDate = new Date(this.endDate);
+  adjustedEndDate.setDate(adjustedEndDate.getDate() + 1); // Tăng 1 ngày
+  adjustedEndDate.setHours(0, 0, 0, 0);
+
+  const params = {
+    startDate: adjustedStartDate.toISOString(), // Gửi full ISO string
+    endDate: adjustedEndDate.toISOString(),     // Gửi full ISO string
+    distributorId: this.selectedDistributorId || null,
+    areaId: this.selectedAreaId || null,
+    productInformationId: this.selectedProductInformationId || null,
+    status: this.selectedStatus || null
+  };
     this.repoService.getData('api/orders/by-filter', params)
       .subscribe(
         (res) => {
@@ -101,7 +109,6 @@ export class OrdersComponent implements OnInit, AfterViewInit, OnDestroy {
         },
         (err) => {
           console.error('Error fetching orders:', err);
-          this.dialogService.openErrorDialog('Error fetching orders: ' + err.message);
         }
       );
   }
@@ -115,7 +122,6 @@ export class OrdersComponent implements OnInit, AfterViewInit, OnDestroy {
         },
         (err) => {
           console.error('Error fetching distributors:', err);
-          this.dialogService.openErrorDialog('Error fetching distributors: ' + err.message);
         }
       );
   }
@@ -129,7 +135,6 @@ export class OrdersComponent implements OnInit, AfterViewInit, OnDestroy {
         },
         (err) => {
           console.error('Error fetching areas:', err);
-          this.dialogService.openErrorDialog('Error fetching areas: ' + err.message);
         }
       );
   }
@@ -143,7 +148,6 @@ export class OrdersComponent implements OnInit, AfterViewInit, OnDestroy {
         },
         (err) => {
           console.error('Error fetching products:', err);
-          this.dialogService.openErrorDialog('Error fetching products: ' + err.message);
         }
       );
   }
