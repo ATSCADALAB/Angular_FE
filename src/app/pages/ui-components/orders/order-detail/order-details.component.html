@@ -8,7 +8,7 @@
       </mat-card-title>
       <div *ngIf="isRunning" class="header-content">
         <span *ngIf="dataSensorByLine" class="running-text">
-          Running | Qty (Bags): {{dataSensorByLine.value}} / {{ orderDetail.requestedUnits }}
+          Running | Qty (Bags): {{dataSensorByLine.value}} / {{ orderDetail.requestedUnits - totalUnits }}
         </span>
       </div>
     </mat-card-header>
@@ -141,7 +141,7 @@
               <tr>
                 <th>Line</th>
                 <th>Units</th>
-                <th>Weight</th>
+                <!-- <th>Weight</th> -->
                 <th>Time</th>
               </tr>
             </thead>
@@ -151,18 +151,20 @@
                 <td>
                   {{ item === latestRecord && dataSensorByLine?.value ? dataSensorByLine?.value : item.sensorUnits }}
                 </td>
-                <td>
+                <!-- <td>
                   {{ item.sensorUnits *  orderDetail.productInformation.weightPerUnit }}
-                </td>
+                </td> -->
                 <td>{{ item.recordTime | date: 'yyyy-MM-dd HH:mm:ss' }}</td>
               </tr>
             </tbody>
-            <tfoot *ngIf="orderDetail.defectiveUnits">
+            <tfoot *ngIf="orderDetail.order.status === 2">
               <tr>
                 <td><strong>Total:</strong></td>
-                <td><strong>{{ orderDetail.defectiveUnits }} / {{orderDetail.requestedUnits}}</strong></td>
-                <td><strong>{{ orderDetail.defectiveUnits * orderDetail.productInformation.weightPerUnit }} / {{orderDetail.requestedWeight}}</strong></td>
-                <td *ngIf="orderDetail.replacedUnits"><strong>Đã bổ sung: {{orderDetail.replacedUnits}} túi</strong></td>
+                <td><strong>{{ totalUnits + orderDetail.replacedUnits - orderDetail.defectiveUnits }} / {{orderDetail.requestedUnits}}</strong></td>
+                <td *ngIf="orderDetail.replacedUnits">
+                  <strong style="color: red;">Defectived Units: {{orderDetail.defectiveUnits}} bags</strong> <br />
+                  <strong style="color: green;">Replaced Units: {{orderDetail.replacedUnits}} bags</strong>
+                </td>
               </tr>
             </tfoot>
           </table>
@@ -177,7 +179,7 @@
       <div class="container">
         <!-- Select Line (Bên trái trên desktop, trên cùng ở mobile) -->
         <mat-form-field appearance="outline" class="line-select">
-          <mat-label>Chọn line để bắt đầu xuất hàng</mat-label>
+          <mat-label>Select line to start counting products</mat-label>
           <mat-select [(ngModel)]="selectedLine" [disabled]="orderDetail.order.status === 2 || isRunning">
             <mat-option *ngFor="let line of lines" [value]="line">Line {{ line }}</mat-option>
           </mat-select>

@@ -13,6 +13,7 @@ import { OrderDetailDto } from 'src/app/_interface/order-detail';
   styleUrls: ['./order-detail-confirm.component.scss']
 })
 export class OrderDetailConfirmComponent implements OnInit {
+  confirmMessage: string | null = null;
   dataForm!: FormGroup;
   orderDetail: OrderDetailDto;
   totalUnits: number;
@@ -28,8 +29,9 @@ export class OrderDetailConfirmComponent implements OnInit {
   }
 
   ngOnInit() {
+
     this.dataForm = new FormGroup({
-      defectiveUnits: new FormControl('', [Validators.required, Validators.min(0)]),
+      defectiveUnits: new FormControl(0, [Validators.required, Validators.min(0)]),
       replaceUnits: new FormControl({ value: '', disabled: true }, [
         Validators.required,
         Validators.min(0),
@@ -45,13 +47,14 @@ export class OrderDetailConfirmComponent implements OnInit {
         replaceUnitsControl?.setValue('');
       }
     });
+
     // Kiểm tra khi nhập số lượng bổ sung
     this.dataForm.get('replaceUnits')?.valueChanges.subscribe(value => {
       const defectiveValue = this.dataForm.get('defectiveUnits')?.value;
       if (value && defectiveValue && (value < defectiveValue || value > defectiveValue)) {
-        if (!confirm(`Số lượng bổ sung (${value}) không bằng số lượng lỗi (${defectiveValue}). Bạn có chắc chắn không?`)) {
-          this.dataForm.get('replaceUnits')?.setValue(defectiveValue);
-        }
+        this.confirmMessage = `The number replace unit(s) does not equal the defective unit(s). Are you sure?`;
+      } else {
+        this.confirmMessage = null; // Ẩn thông báo nếu hợp lệ
       }
     });
     this.getOrderDetailToAddReplace();
