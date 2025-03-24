@@ -4,3 +4,8 @@ export interface WcfDataDto {
     status: string;
     timeStamp: string;
   }
+
+  export interface WcfDataUpdateDto {
+    name: string;
+    value: string;
+  }

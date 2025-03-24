@@ -6,7 +6,7 @@ import { RepositoryService } from 'src/app/shared/services/repository.service';
 // import { OrderDto, OrderLineDetailCreationDto, OrderLineDetailDto } from 'src/app/_interface/order';
 import { OrderDetailDto, OrderDetailUpdateDto } from 'src/app/_interface/order-detail';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { WcfDataDto } from 'src/app/_interface/wcf-data-dto';
+import { WcfDataDto, WcfDataUpdateDto } from 'src/app/_interface/wcf-data-dto';
 import { SignalRService } from 'src/app/shared/services/signalr.service';
 import { SensorRecordCreationDto, SensorRecordDto } from 'src/app/_interface/sensor-record';
 import { OrderForManipulationDto } from 'src/app/_interface/order';
@@ -262,6 +262,7 @@ export class OrderDetailsComponent implements OnInit {
               console.log("lastRecord:", lastRecord);
               this.updateSensorRecord(lastRecord);
               this.updateLastOrderLineDetail();
+              this.updateWCFData();
             } else {
               console.error("Data Sensor By Line null:", this.dataSensorByLine);
             }
@@ -287,6 +288,7 @@ export class OrderDetailsComponent implements OnInit {
             console.log("lastRecord:", lastRecord);
             this.updateSensorRecord(lastRecord);
             this.updateLastOrderLineDetail();
+            this.updateWCFData();
           } else {
             console.error("Data Sensor By Line null:", this.dataSensorByLine);
           }
@@ -474,6 +476,28 @@ export class OrderDetailsComponent implements OnInit {
       console.error('Order Line Details list is empty.');
     }
   }
-
+  //Hàm gọi API Write-value để reset tag trên AT
+  updateWCFData():void{
+    if (!this.dataSensorByLine) {
+      console.error('Error: Sensor Record is missing.');
+      return;
+    }
+    const sensorData: WcfDataUpdateDto[] = [
+      {
+        name: this.dataSensorByLine.name,
+        value: "0"
+      }
+    ];
+    console.log("Write value:",sensorData);
+    this.repoService.update('api/wcf/write-value', sensorData).subscribe(
+      (res) => {
+        console.log('Sensor Record updated successfully:', res);
+      },
+      (err) => {
+        console.error('Error updating sensor record:', err);
+      }
+    );
+    this.calculateTotals();
+  }
 }
 
