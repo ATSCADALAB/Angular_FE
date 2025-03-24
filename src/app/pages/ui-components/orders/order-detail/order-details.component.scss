@@ -8,7 +8,8 @@
 }
 
 .order-header {
-  background: linear-gradient(90deg, #1976d2, #2196f3);
+  // background: linear-gradient(90deg, #1976d2, #2196f3);
+  background-color: #2a3547;
   color: white;
   padding: 16px 24px;
 }
@@ -222,6 +223,25 @@ mat-spinner {
   background-color: #f4f4f4;
   font-weight: bold;
 }
+tfoot {
+  background-color: #fff3cd; /* Màu vàng nhạt */
+  font-weight: bold;
+}
+
+tfoot td {
+  padding: 5px;
+  border-top: 2px solid #ddd; /* Viền trên để phân tách */
+}
+
+
+tfoot td strong:nth-child(1) {
+  color: red; /* Màu đỏ cho Defective Units */
+}
+
+tfoot td strong:nth-child(3) {
+  color: green; /* Màu xanh lá cho Replaced Units */
+}
+
 .newest-row {
   background-color: #d4edda; /* Màu nền xanh nhạt */
   font-weight: bold; /* Chữ đậm */

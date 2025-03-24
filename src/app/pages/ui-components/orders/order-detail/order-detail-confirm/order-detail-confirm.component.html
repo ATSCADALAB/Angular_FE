@@ -14,7 +14,7 @@
     <div *ngIf="orderDetail" class="order-info">
       <div class="info-item">
         <mat-icon color="primary">inventory</mat-icon>
-        <strong>Tổng sản phẩm đã đếm:</strong> 
+        <strong>Total counted units:</strong> 
         <span>{{ totalUnits }} / {{ orderDetail.requestedUnits }}</span>
       </div>
     </div>
@@ -22,34 +22,46 @@
     <!-- Hỏi người dùng -->
     <div class="question">
       <mat-icon color="accent">help_outline</mat-icon>
-      <span>Bổ sung số lượng sản phẩm nếu có sản phẩm lỗi</span>
+      <span>Add unit quantity if there is a defective unit</span>
     </div>
 
     <!-- Form nhập số lượng -->
     <form [formGroup]="dataForm" (ngSubmit)="createData(dataForm.value)" class="form-container">
       <mat-form-field class="full-width" appearance="outline">
-        <mat-label>Số lượng lỗi</mat-label>
+        <mat-label>Defective Units</mat-label>
         <input matInput type="number" formControlName="defectiveUnits" />
-        <mat-error *ngIf="dataForm.get('defectiveUnits')?.hasError('required')">
-          Vui lòng nhập số lượng lỗi
+        <mat-error *ngIf="dataForm.get('defectiveUnits')?.hasError('required') && dataForm.get('defectiveUnits')?.touched">
+          Please enter defective units
+        </mat-error>
+        <mat-error *ngIf="dataForm.get('defectiveUnits')?.hasError('min')">
+          The defective unit cannot be less than 0
         </mat-error>
       </mat-form-field>
     
       <mat-form-field class="full-width" appearance="outline">
-        <mat-label>Số lượng bổ sung</mat-label>
+        <mat-label>Replace Units</mat-label>
         <input matInput type="number" formControlName="replaceUnits" />
-        <mat-error *ngIf="dataForm.get('replaceUnits')?.hasError('required')">
-          Vui lòng nhập số lượng bổ sung
+        <mat-error *ngIf="dataForm.get('replaceUnits')?.hasError('required') && dataForm.get('replaceUnits')?.touched">
+          Please enter replace units
+        </mat-error>
+        <mat-error *ngIf="dataForm.get('replaceUnits')?.hasError('min')">
+          The replace unit cannot be less than 0
         </mat-error>
       </mat-form-field>
+    
+      <!-- Hiển thị thông báo xác nhận -->
+      <div *ngIf="confirmMessage" class="alert alert-warning">
+        {{ confirmMessage }}
+      </div>
     
       <!-- Button -->
       <div class="button-group">
         <button mat-flat-button color="primary" [disabled]="!dataForm.valid">
-          <mat-icon>save</mat-icon> Lưu
+          <mat-icon>save</mat-icon> Submit
         </button>
       </div>
     </form>
+    
     
   </mat-card-content>
 </mat-card>

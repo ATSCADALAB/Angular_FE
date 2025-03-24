@@ -4,7 +4,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RepositoryService } from 'src/app/shared/services/repository.service';
 // import { OrderDto, OrderLineDetailCreationDto, OrderLineDetailDto } from 'src/app/_interface/order';
-import {  OrderDetailDto, OrderDetailUpdateDto } from 'src/app/_interface/order-detail';
+import { OrderDetailDto, OrderDetailUpdateDto } from 'src/app/_interface/order-detail';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { WcfDataDto } from 'src/app/_interface/wcf-data-dto';
 import { SignalRService } from 'src/app/shared/services/signalr.service';
@@ -72,6 +72,7 @@ export class OrderDetailsComponent implements OnInit {
       this.checkSignalRStatus();
     }
   }
+
   // Ngắt kết nối SingalR khi component bị hủy
   ngOnDestroy() {
     console.log("Component destroyed - Disconnecting SignalR...");
@@ -209,30 +210,27 @@ export class OrderDetailsComponent implements OnInit {
 
   toggleOrder() {
     if (!this.isRunning) {
-      this.isStarting = true;
-      setTimeout(() => {
-        this.isStarting = false;
-        this.isRunning = true;
-        this.startOrder();
-        // Khởi tạo kết nối SignalR
-        if (this.selectedLine != 0) {
-          this.signalrService.startConnection().then(() => {
-            this.isSignalRRunning = true;
-            this.subscription = this.signalrService.dataReceived$.subscribe(data => {
-              this.receivedDataSensor = data;
-              // Kiểm tra dữ liệu hợp lệ trước khi truy cập index
-              if (Array.isArray(this.receivedDataSensor) && this.receivedDataSensor.length >= this.selectedLine) {
-                this.dataSensorByLine = this.receivedDataSensor[this.selectedLine - 1];
-              } else {
-                console.warn("Dữ liệu không hợp lệ hoặc không có phần tử tại vị trí này.");
-                this.dataSensorByLine = null; // Reset nếu dữ liệu không hợp lệ
-              }
-            });
-          }).catch(err => {
-            console.error("SignalR connection error:", err);
+      this.isStarting = false;
+      this.isRunning = true;
+      this.startOrder();
+      // Khởi tạo kết nối SignalR
+      if (this.selectedLine != 0) {
+        this.signalrService.startConnection().then(() => {
+          this.isSignalRRunning = true;
+          this.subscription = this.signalrService.dataReceived$.subscribe(data => {
+            this.receivedDataSensor = data;
+            // Kiểm tra dữ liệu hợp lệ trước khi truy cập index
+            if (Array.isArray(this.receivedDataSensor) && this.receivedDataSensor.length >= this.selectedLine) {
+              this.dataSensorByLine = this.receivedDataSensor[this.selectedLine - 1];
+            } else {
+              console.warn("Dữ liệu không hợp lệ hoặc không có phần tử tại vị trí này.");
+              this.dataSensorByLine = null; // Reset nếu dữ liệu không hợp lệ
+            }
           });
-        }
-      }, 2000); // Giả lập quá trình khởi động 2 giây
+        }).catch(err => {
+          console.error("SignalR connection error:", err);
+        });
+      }
     }
     else //Xử lý sự kiện STOP
     {
@@ -272,7 +270,7 @@ export class OrderDetailsComponent implements OnInit {
           this.signalrService.stopConnection().catch(err => {
             console.error("SignalR connection error:", err);
           });
-          this.isSignalRRunning = false; 
+          this.isSignalRRunning = false;
         });
       } else {
         // Nếu dữ liệu hợp lệ, vẫn tiếp tục dừng như bình thường
@@ -451,19 +449,19 @@ export class OrderDetailsComponent implements OnInit {
       );
     }
   }
-  
+
   //Hàm update OrderLineDetail
   updateLastOrderLineDetail(): void {
     if (this.orderLineDetails && this.orderLineDetails.length > 0) {
-      
+
       // Lấy phần tử cuối cùng
-      const lastOrderLineDetail = this.orderLineDetails.reduce((latest, current) => 
+      const lastOrderLineDetail = this.orderLineDetails.reduce((latest, current) =>
         current.id > latest.id ? current : latest
       );
-      console.log("ID cập nhật",lastOrderLineDetail.id);
+      console.log("ID cập nhật", lastOrderLineDetail.id);
       if (lastOrderLineDetail) {
         lastOrderLineDetail.EndTime = new Date().toISOString(); // Cập nhật thời gian
-  
+
         this.repoService.updateByID('api/order-line-details', lastOrderLineDetail.id.toString(), lastOrderLineDetail)
           .subscribe(
             (res) => console.log('Last Order Line Detail updated successfully:', res),
@@ -476,6 +474,6 @@ export class OrderDetailsComponent implements OnInit {
       console.error('Order Line Details list is empty.');
     }
   }
-  
+
 }
 
