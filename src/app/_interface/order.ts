@@ -57,5 +57,5 @@ export interface  OrderForManipulationDto
   driverPhoneNumber: string;
   status: number;
   distributorId: number;
-    
+  exportDate: string;
 }

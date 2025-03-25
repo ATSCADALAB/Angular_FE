@@ -68,7 +68,7 @@ export class ReportComponent implements OnInit {
 
   // Vehicle
   vehicleReport: VehicleReport[] = [];
-  vehicleColumns: string[] = ['date', 'vehicleNumber', 'productName', 'totalOrders', 'totalSensorUnits', 'totalSensorWeight'];
+  vehicleColumns: string[] = ['date', 'productName', 'totalOrders', 'totalSensorUnits', 'totalSensorWeight'];
   vehicleDataSource = new MatTableDataSource<VehicleReport>();
   vehicleNumber = new FormControl('');
 

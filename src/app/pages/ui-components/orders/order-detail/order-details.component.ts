@@ -1,5 +1,3 @@
-
-
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RepositoryService } from 'src/app/shared/services/repository.service';
@@ -15,6 +13,7 @@ import { ConfirmComponent } from 'src/app/shared/modals/confirm/confirm.componen
 import { Subscription } from 'rxjs';
 import { OrderDetailConfirmComponent } from './order-detail-confirm/order-detail-confirm.component';
 import { OrderLineDetailCreationDto, OrderLineDetailDto } from 'src/app/_interface/order-line-detail';
+import { TimezoneService } from 'src/app/shared/services/timezone.service';
 
 
 @Component({
@@ -51,7 +50,7 @@ export class OrderDetailsComponent implements OnInit {
     private repoService: RepositoryService,
     private snackBar: MatSnackBar,
     private signalrService: SignalRService, //Khai báo signalrService
-
+    private timezoneService: TimezoneService
   ) { }
 
   ngOnInit(): void {
@@ -345,6 +344,7 @@ export class OrderDetailsComponent implements OnInit {
         driverName: this.orderDetail.order.driverName,
         driverPhoneNumber: this.orderDetail.order.driverPhoneNumber,
         distributorId: this.orderDetail.order.distributorId,
+        exportDate: this.orderDetail.order.exportDate,
       };
 
       this.repoService.updateByID('api/orders', this.orderId, orderData).subscribe(
@@ -372,9 +372,9 @@ export class OrderDetailsComponent implements OnInit {
         lineId: this.selectedLine,
         sensorUnits: 0,
         sensorWeight: 0,
-        recordTime: new Date().toISOString()
+        recordTime: this.timezoneService.getCurrentTime().toISOString()
       };
-      console.log('data:', sensorRecordData);
+      console.log('data:', sensorRecordData); 
       this.createOrderLineDetail(); //Tạo OrderLineDetail
       this.repoService.create('api/sensor-records', sensorRecordData).subscribe(
         (res) => {
@@ -386,7 +386,6 @@ export class OrderDetailsComponent implements OnInit {
         }
       );
     }
-
   }
   //Hàm mở modal AddLine
   confirmForm(id: number) {

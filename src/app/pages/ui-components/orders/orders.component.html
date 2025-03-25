@@ -98,14 +98,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Hiển thị báo cáo import nếu có -->
-    <div *ngIf="importReport" class="import-report m-b-16">
-      <h3>Import Report</h3>
-      <p>Successful Imports: {{ importReport.successfulImports }}</p>
-      <p>Duplicate Rows: {{ importReport.duplicateRows }}</p>
-    </div>
-
     <div class="table-responsive m-t-16">
       <mat-form-field class="w-100" appearance="outline">
         <input matInput type="text" (keyup)="doFilter($any($event).target.value)" placeholder="Search...">
@@ -129,7 +121,7 @@
         <ng-container matColumnDef="status">
           <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14" mat-sort-header>Status</th>
           <td mat-cell *matCellDef="let element" class="mat-body-1">
-            <ng-container *ngIf="element.status === 0 || element.status === 1; else nonClickableStatus">
+            <ng-container *ngIf="element.status === 0 || element.status === 1 || element.status === 2; else nonClickableStatus">
               <a [routerLink]="['/ui-components/order-details', element.id]" [ngClass]="getStatusClass(element.status)" class="status-link">
                 {{ getStatusText(element.status) }}
               </a>
