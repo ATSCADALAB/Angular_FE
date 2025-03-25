@@ -114,26 +114,12 @@
             </div>
           </div>
         </div>
-        <!-- Distributor Information -->
-        <!-- <div class="info-section">
-          <h3 class="section-title">Distributor Information</h3>
-          
-        </div> -->
+        
 
       </div>
       <div class="info-section" *ngIf="sensorRecord.length > 0">
         <div class="section-header">
           <h3 class="section-title">Sensor Record</h3>
-          <!-- <button
-        mat-flat-button
-        color="primary"
-        matTooltipPosition="left"
-        class="m-l-8"
-        matTooltipHideDelay="100000"
-        (click)="addReplaceUnit(orderDetail.id)"
-      >
-        <mat-icon>add</mat-icon> <span fxHide.xs>Add Replace Unit</span>
-      </button> -->
         </div>
         <div class="info-content" >
           <table class="table">
@@ -154,7 +140,7 @@
                 <!-- <td>
                   {{ item.sensorUnits *  orderDetail.productInformation.weightPerUnit }}
                 </td> -->
-                <td>{{ item.recordTime | date: 'yyyy-MM-dd HH:mm:ss' }}</td>
+                <td>{{ item.recordTime | date: 'HH:mm - dd/MM/yyyy' }}</td>
               </tr>
             </tbody>
             <tfoot *ngIf="orderDetail.order.status === 2">
@@ -180,7 +166,7 @@
         <!-- Select Line (Bên trái trên desktop, trên cùng ở mobile) -->
         <mat-form-field appearance="outline" class="line-select">
           <mat-label>Select line to start counting products</mat-label>
-          <mat-select [(ngModel)]="selectedLine" [disabled]="orderDetail.order.status === 2 || isRunning">
+          <mat-select [(ngModel)]="selectedLine" [disabled]="orderDetail.order.status === 2 || isRunning" (selectionChange)="selectLine($event.value)">
             <mat-option *ngFor="let line of lines" [value]="line">Line {{ line }}</mat-option>
           </mat-select>
         </mat-form-field>

@@ -9,6 +9,7 @@ export interface SensorRecordDto {
     sensorUnits: number;
     sensorWeight: number;
     recordTime: string;
+    status:number;
   }
   
   export interface SensorRecordCreationDto {
@@ -18,4 +19,5 @@ export interface SensorRecordDto {
     sensorUnits: number;
     sensorWeight: number;
     recordTime: string;
+    status : number;
   }
