@@ -1,0 +1,37 @@
+<div class="col-12 col-md-6 col-lg-3">
+  <mat-form-field appearance="outline" class="filter-field" floatLabel="always">
+    <mat-label>Distributor</mat-label>
+    <mat-select [(value)]="selectedDistributorId">
+      <mat-option>
+        <ngx-mat-select-search 
+          [formControl]="distributorFilterCtrl"
+          placeholderLabel="Search distributor..."
+          noEntriesFoundLabel="No matching distributor found">
+        </ngx-mat-select-search>
+      </mat-option>
+      <mat-option [value]="null">All</mat-option>
+      <mat-option *ngFor="let distributor of filteredDistributors | async" [value]="distributor.id">
+        {{ distributor.distributorName }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+</div>
+
+<div class="col-12 col-md-6 col-lg-3">
+  <mat-form-field appearance="outline" class="filter-field" floatLabel="always">
+    <mat-label>Product</mat-label>
+    <mat-select [(value)]="selectedProductInformationId">
+      <mat-option>
+        <ngx-mat-select-search 
+          [formControl]="productFilterCtrl"
+          placeholderLabel="Search product..."
+          noEntriesFoundLabel="No matching product found">
+        </ngx-mat-select-search>
+      </mat-option>
+      <mat-option [value]="null">All</mat-option>
+      <mat-option *ngFor="let product of filteredProducts | async" [value]="product.id">
+        {{ product.productName }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+</div> 

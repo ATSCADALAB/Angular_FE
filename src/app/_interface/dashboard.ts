@@ -9,6 +9,7 @@ export interface DashboardSummaryDto {
   export interface OrdersByLineDto {
     lineName: string;
     totalOrders: number;
+    orderID: string;
   }
   
   export interface OrderStatusTrendDto {

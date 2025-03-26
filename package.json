@@ -30,6 +30,7 @@
     "date-fns": "^4.1.0",
     "file-saver": "^2.0.5",
     "ng-apexcharts": "1.7.1",
+    "ngx-mat-select-search": "^8.0.0",
     "ngx-spinner": "^16.0.2",
     "ngx-toastr": "^18.0.0",
     "rxjs": "~7.5.0",
