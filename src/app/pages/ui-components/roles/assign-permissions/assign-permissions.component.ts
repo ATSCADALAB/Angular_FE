@@ -40,7 +40,6 @@ export class AssignPermissionsComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error loading categories:', err);
-        alert('Failed to load categories');
       }
     });
   }
@@ -56,7 +55,6 @@ export class AssignPermissionsComponent implements OnInit {
         },
         error: (err) => {
             console.error('Error loading permissions:', err);
-            alert('Failed to load permissions');
         }
     });
   }
@@ -70,7 +68,6 @@ export class AssignPermissionsComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error loading role permissions:', err);
-        alert('Failed to load role permissions');
       }
     });
   }
@@ -124,7 +121,7 @@ export class AssignPermissionsComponent implements OnInit {
       error: (err) => {
         console.error('Error assigning permissions:', err);
         this.isSaving = false; // Tắt trạng thái loading
-        alert('Failed to assign permissions');
+
       }
     });
   }

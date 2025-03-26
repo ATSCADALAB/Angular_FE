@@ -7,7 +7,7 @@ import { CategoriesComponent } from './categories/categories.component';
 import { PermissionsComponent } from './permissions/permissions.component';
 import { ProductsComponent } from './products/products.component';
 import { ProductInformationsComponent } from './product-information/product-informations.component';
-import { OrdersComponent } from './orders/order.component';
+import { OrdersComponent } from './orders/orders.component';
 import { OrderDetailsComponent } from './orders/order-detail/order-details.component';
 import { AreasComponent } from './areas/areas.component';
 import { LinesComponent } from './lines/lines.component';

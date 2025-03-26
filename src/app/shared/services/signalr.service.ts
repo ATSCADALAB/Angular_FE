@@ -25,7 +25,7 @@ export class SignalRService {
 
     // Lắng nghe dữ liệu từ hub với method 'ReceiveData'
     this.hubConnection.on('ReceiveData', (data: WcfDataDto[]) => {
-      console.log('Data received from SignalR:', data);
+      //console.log('Data received from SignalR:', data);
       this.dataReceived.next(data);
     });
 

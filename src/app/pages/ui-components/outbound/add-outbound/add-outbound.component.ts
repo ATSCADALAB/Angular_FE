@@ -45,7 +45,6 @@ export class AddOutboundComponent implements OnInit {
           this.products = res;
         },
         (err) => {
-          this.toastr.error('Failed to load product list!');
           console.log(err);
         }
       );

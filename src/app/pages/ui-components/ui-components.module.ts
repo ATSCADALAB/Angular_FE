@@ -35,7 +35,7 @@ import { UpdateProductInformationComponent } from './product-information/update-
 import { ProductDetailComponent } from './products/product-detail/product-detail.component';
 // import { AddOrderComponent } from './orders/add-order/add-order.component';
 // import { UpdateOrderComponent } from './orders/update-order/update-order.component';
-import { OrdersComponent } from './orders/order.component';
+import { OrdersComponent } from './orders/orders.component';
 import { AreasComponent } from './areas/areas.component';
 import { AddAreaComponent } from './areas/add-area/add-area.component';
 import { UpdateAreaComponent } from './areas/update-area/update-area.component';

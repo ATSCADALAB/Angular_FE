@@ -142,8 +142,6 @@
                 <th>Vehicle Number</th>
                 <th>Product</th>
                 <th>Requested</th>
-                <th>Actual</th>
-                <th>% Completion</th>
               </tr>
             </thead>
             <tbody>
@@ -153,16 +151,6 @@
                 <td>{{ order.vehicleNumber }}</td>
                 <td>{{ order.productName }}</td>
                 <td>{{ order.requestedUnits | number }}</td>
-                <td>{{ order.actualUnits | number }}</td>
-                <td>
-                  <span class="completion-percentage" [ngClass]="{
-                    'low': order.completionPercentage < 50,
-                    'medium': order.completionPercentage >= 50 && order.completionPercentage < 80,
-                    'high': order.completionPercentage >= 80
-                  }">
-                    {{ order.completionPercentage | number:'1.0-2' }}%
-                  </span>
-                </td>
               </tr>
             </tbody>
           </table>

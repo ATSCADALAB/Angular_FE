@@ -45,7 +45,6 @@ export class RolesComponent implements OnInit {
         },
         error: (err) => {
           console.error('Error loading roles:', err);
-          this.toastr.error('Failed to load roles');
         }
       });
   }
@@ -101,7 +100,6 @@ export class RolesComponent implements OnInit {
             },
             error: (err) => {
               console.error('Error deleting role:', err);
-              this.toastr.error('Failed to delete role');
             }
           });
         }

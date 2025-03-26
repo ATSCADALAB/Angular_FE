@@ -236,7 +236,7 @@ export class OrderDetailsComponent implements OnInit {
     }
   }
   //Sự kiện tại nút Start / Stop
-  toggleOrder() {
+  async toggleOrder() {
     if (!this.isRunning) {
       this.isStarting = false;
       this.isRunning = true;
@@ -273,7 +273,7 @@ export class OrderDetailsComponent implements OnInit {
           data: { message: "The count is not complete. Are you sure you want to stop?" }
         });
 
-        dialogRef.afterClosed().subscribe(result => {
+        dialogRef.afterClosed().subscribe(async result => {
           if (!result) {
             return; // Nếu người dùng chọn "Hủy", không tiếp tục STOP
           }
@@ -292,6 +292,8 @@ export class OrderDetailsComponent implements OnInit {
               this.updateSensorRecord(lastRecord); //Update record cuối cùng
               this.updateLastOrderLineDetail();
               this.updateWCFData();
+              await this.delay(1000); // 2000ms = 2 giây
+              // Reload lại trang sau khi dừng
               window.location.reload();
             }
             else {
@@ -329,10 +331,9 @@ export class OrderDetailsComponent implements OnInit {
           else {
             console.error("Data Sensor By Line null:", this.dataSensorByLine);
           }
+          await this.delay(1000); // 2000ms = 2 giây
           // Reload lại trang sau khi dừng
-          setTimeout(() => {
-            window.location.reload();
-          }, 500);
+          window.location.reload();
         }
 
         this.signalrService.stopConnection().catch(err => {
@@ -342,7 +343,9 @@ export class OrderDetailsComponent implements OnInit {
       }
     }
   }
-
+  private delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
   completeOrder() {
     this.confirmForm(this.orderDetail.id);
     console.log('Order Detail updated successfully:', this.orderDetail);

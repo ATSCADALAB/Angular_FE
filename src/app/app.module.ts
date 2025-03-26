@@ -23,7 +23,6 @@ import { ToastrModule } from 'ngx-toastr';
 import { ErrorHandlerService } from './shared/services/error-handler.service';
 import { ServerErrorComponent } from './errors/server-error/server-error.component';
 import { CanDeactivateGuard } from './shared/services/can-deactivate.guard';
-import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 
 export function tokenGetter() {
   return localStorage.getItem("token");
@@ -65,8 +64,7 @@ export function tokenGetter() {
       preventDuplicates: true,
       progressBar: true,
       closeButton: true
-    }),
-    NgxMatSelectSearchModule
+    })
   ],
   exports: [TablerIconsModule],
   providers: [

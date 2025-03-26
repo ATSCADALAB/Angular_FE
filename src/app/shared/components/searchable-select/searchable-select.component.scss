@@ -1,0 +1,11 @@
+$spacing-unit: 8px;
+
+.filter-field {
+  width: 100%;
+}
+
+.search-input {
+  padding: $spacing-unit;
+  width: 100%;
+  box-sizing: border-box;
+}
