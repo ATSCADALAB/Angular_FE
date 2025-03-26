@@ -32,6 +32,7 @@ export interface DashboardSummaryDto {
     productName: string;
     requestedUnits: number;
     actualUnits: number;
+    orderId:string;
     completionPercentage: number;
   }
   
@@ -41,6 +42,8 @@ export interface DashboardSummaryDto {
     vehicleNumber: string;
     lineName: string;
     totalUnits: number;
+    totalRequestedUnits: number;
+    orderId:string;
     status: string;
   }
   
@@ -50,4 +53,5 @@ export interface DashboardSummaryDto {
     distributorName: string;
     productName: string;
     totalUnits: number;
+    orderId:string;
   }

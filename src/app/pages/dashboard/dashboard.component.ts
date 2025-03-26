@@ -141,19 +141,20 @@ export class AppDashboardComponent {
 
     this.salesOverviewChart.series = [
       {
-        name: 'Đơn chưa hoàn thành',
+        name: 'Pending Orders',
         data: [this.summary.pendingOrders],
         color: '#FF5733',
       },
       {
-        name: 'Đơn hoàn thành hôm nay',
+        name: 'Completed Orders Today',
         data: [this.summary.completedOrdersToday],
         color: '#5D87FF',
       },
     ];
 
+
     this.salesOverviewChart.xaxis = {
-      categories: ['Hôm nay'],
+      categories: ['Today'],
     };
   }
 

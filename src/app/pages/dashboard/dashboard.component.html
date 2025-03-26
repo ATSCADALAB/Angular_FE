@@ -145,7 +145,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let order of incompleteOrders">
+              <tr *ngFor="let order of incompleteOrders" [routerLink]="['/ui-components/order-details', order.orderId]">
                 <td>{{ order.date }}</td>
                 <td>{{ order.orderNumber }}</td>
                 <td>{{ order.vehicleNumber }}</td>
@@ -173,18 +173,20 @@
                 <th>Date</th>
                 <th>Order Number</th>
                 <th>Vehicle Number</th>
-                <th>Production Line</th>
-                <th>Total Units</th>
+                <th>Line</th>
+                <th>Total Actual Product Units</th>
+                <th>Total Requested Units</th>
                 <th>Status</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let order of processingOrders">
+              <tr *ngFor="let order of processingOrders" [routerLink]="['/ui-components/order-details', order.orderId]">
                 <td>{{ order.date }}</td>
                 <td>{{ order.orderNumber }}</td>
                 <td>{{ order.vehicleNumber }}</td>
                 <td>{{ order.lineName }}</td>
                 <td>{{ order.totalUnits | number }}</td>
+                <td>{{ order.totalRequestedUnits | number }}</td>
                 <td>
                   <span class="status-badge" [ngClass]="{
                     'pending': order.status.toLowerCase() === 'pending',
@@ -221,7 +223,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let order of recentCompletedOrders">
+              <tr *ngFor="let order of recentCompletedOrders" [routerLink]="['/ui-components/order-details', order.orderId]">
                 <td>{{ order.completedDate }}</td>
                 <td>{{ order.orderNumber }}</td>
                 <td>{{ order.distributorName }}</td>

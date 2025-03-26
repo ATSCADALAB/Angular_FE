@@ -29,7 +29,7 @@ export class OrderDetailsComponent implements OnInit {
 
   sensorRecord: SensorRecordDto[] = [];
   listSensorRecords: SensorRecordDto[] = [];
-  isExpanded = false;
+  isExpanded = true;
   orderId: string | null = null;
   orderDetail: OrderDetailDto;
   selectedLine: number;
