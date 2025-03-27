@@ -182,7 +182,7 @@
           </button>
     
           <button mat-raised-button color="primary" (click)="completeOrder()" 
-          [disabled]="totalUnits < orderDetail.requestedUnits || isSignalRRunning">
+          [disabled]="isSignalRRunning">
             Complete
           </button>
         </div>
