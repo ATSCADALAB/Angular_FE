@@ -114,9 +114,9 @@ export class AssignPermissionsComponent implements OnInit {
     });
     this.repoService.create('api/rolepermissions/assign', assignment).subscribe({
       next: () => {
-        alert('Permissions assigned successfully');
         this.isSaving = false; // Tắt trạng thái loading
         this.dialogRef.close(true); // Đóng dialog và báo thành công
+        window.location.reload();
       },
       error: (err) => {
         console.error('Error assigning permissions:', err);
