@@ -11,7 +11,34 @@
     </button>
   </mat-card-header>
 
-  <mat-card-content class="b-t-1">
+  <mat-card-content class="b-t-1"><div class="import-result-container m-t-16" *ngIf="showImportResult && importResult">
+    <div class="import-result-header">
+      <h4>Import Result</h4>
+      <button mat-icon-button class="close-btn" (click)="resetImportResult()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    <div class="import-result-body">
+      <div class="result-item success">
+        <mat-icon>check_circle</mat-icon>
+        <span>Successful rows: {{ importResult.successCount }}</span>
+      </div>
+      <div class="result-item warning">
+        <mat-icon>warning</mat-icon>
+        <span>Skipped rows: {{ importResult.skippedCount }}</span>
+        <ul class="details-list" *ngIf="importResult.skippedRows && importResult.skippedRows.length > 0">
+          <li *ngFor="let row of importResult.skippedRows">{{ row }}</li>
+        </ul>
+      </div>
+      <div class="result-item error">
+        <mat-icon>error</mat-icon>
+        <span>Errors: {{ importResult.errors?.length || 0 }}</span>
+        <ul class="details-list" *ngIf="importResult.errors && importResult.errors.length > 0">
+          <li *ngFor="let error of importResult.errors">{{ error }}</li>
+        </ul>
+      </div>
+    </div>
+  </div>
     <!-- Bộ lọc -->
     <div class="filters m-t-16 m-b-16">
       <!-- Hàng 1: Start Date | End Date -->

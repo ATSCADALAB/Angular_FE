@@ -33,7 +33,7 @@ export class OrderDetailsComponent implements OnInit {
   orderId: string | null = null;
   orderDetail: OrderDetailDto;
   selectedLine: number;
-  lines: number[] = [1, 2, 3, 4];
+  lines: number[] = [1, 2, 3, 4,5,6];
 
   isStarting: boolean = false;
   isRunning: boolean = false;

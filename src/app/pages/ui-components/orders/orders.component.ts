@@ -26,7 +26,13 @@ export class OrdersComponent implements OnInit, AfterViewInit, OnDestroy {
     'productName', 'distributorName', 'area'
   ];
   dataSource = new MatTableDataSource<OrderWithDetails>();
-
+  importResult: {
+    successCount: number;
+    skippedCount: number;
+    skippedRows: string[];
+    errors: string[];
+  } | null = null;
+  showImportResult = false; // Điều khiển hiển thị phần kết quả
   // Filters
   startDate = new Date(new Date().setMonth(new Date().getMonth() - 1));
   endDate = new Date();
@@ -207,7 +213,11 @@ export class OrdersComponent implements OnInit, AfterViewInit, OnDestroy {
   triggerFileInput(): void {
     this.fileInput.nativeElement.click();
   }
-
+// Hàm để reset kết quả import nếu cần
+resetImportResult(): void {
+  this.importResult = null;
+  this.showImportResult = false;
+}
   onFileChange(event: Event): void {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
@@ -215,9 +225,15 @@ export class OrdersComponent implements OnInit, AfterViewInit, OnDestroy {
     formData.append('file', file);
     this.repoService.upload('api/orders/import', formData).subscribe({
       next: (res: any) => {
-        this.dialogService.openSuccessDialog('Orders imported successfully.')
-          .afterClosed()
-          .subscribe(() => this.applyFilter());
+        // Lưu kết quả import
+        this.importResult = res as {
+          successCount: number;
+          skippedCount: number;
+          skippedRows: string[];
+          errors: string[];
+        };
+        this.showImportResult = true; // Hiển thị phần kết quả
+        this.applyFilter(); // Làm mới danh sách đơn hàng
       },
       error: (err) => this.dialogService.openErrorDialog(`Error importing orders: ${err.message}`)
     });

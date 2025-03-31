@@ -18,7 +18,7 @@ import { HttpClient } from '@angular/common/http'; // Thêm HttpClient
   styleUrls: ['./distributors.component.scss']
 })
 export class DistributorsComponent implements OnInit, AfterViewInit {
-  displayedColumns: string[] = ['action', 'distributorCode', 'distributorName', 'address', 'phoneNumber', 'area', 'isActive', 'createdAt', 'updatedAt'];
+  displayedColumns: string[] = ['action', 'distributorCode', 'distributorName','province', 'area', 'isActive', 'createdAt', 'updatedAt'];
   public dataSource = new MatTableDataSource<DistributorDto>();
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;

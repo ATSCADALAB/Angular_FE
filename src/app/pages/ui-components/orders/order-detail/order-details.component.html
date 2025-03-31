@@ -8,7 +8,7 @@
       </mat-card-title>
       <div *ngIf="isRunning" class="header-content">
         <span *ngIf="dataSensorByLine" class="running-text">
-          Running | Qty (Bags): {{dataSensorByLine.value}} / {{ orderDetail.requestedUnits - totalUnits }}
+          Running on Line {{ selectedLine }} | Qty (Bags): {{ dataSensorByLine.value }} / {{ orderDetail.requestedUnits - totalUnits }}
         </span>
       </div>
     </mat-card-header>

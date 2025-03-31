@@ -24,12 +24,12 @@ export const navItems: NavItem[] = [
   },
   {
     displayName: 'Inbound',
-    iconName: 'transfer-in',
+    iconName: 'transfer-out',
     route: '/ui-components/inbound',
   },
   {
     displayName: 'Outbound',
-    iconName: 'transfer-out',
+    iconName: 'transfer-in',
     route: '/ui-components/outbound',
   },
   {
@@ -48,7 +48,7 @@ export const navItems: NavItem[] = [
     route: '/ui-components/areas',
   },
   {
-    displayName: 'Distribuitors',
+    displayName: 'Distributors',
     iconName: 'emergency-bed',
     route: '/ui-components/distributors',
   },

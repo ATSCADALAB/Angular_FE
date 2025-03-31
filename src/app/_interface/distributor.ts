@@ -7,6 +7,7 @@ export interface DistributorDto {
   address: string;
   contactSource: string;
   phoneNumber: string;
+  province: string;
   areaId: number;
   isActive: boolean;
   createdAt: Date;
