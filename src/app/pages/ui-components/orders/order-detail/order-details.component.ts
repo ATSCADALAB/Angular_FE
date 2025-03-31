@@ -57,12 +57,12 @@ export class OrderDetailsComponent implements OnInit {
     this.route.paramMap.subscribe(params => {
       this.orderId = params.get('id'); // Lấy orderId từ URL động
       this.selectedLine = 0;
-      // // Lắng nghe sự kiện khi người dùng quay lại trang
-      // window.onpageshow = (event) => {
-      //   if (event.persisted) {
-      //     this.selectedLine = 0; // Reset nếu trang được lấy từ cache
-      //   }
-      // };
+      //Sự kiện back
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) {
+          window.location.reload(); // Tải lại trang khi quay lại tab
+        }
+      });
       console.log("selected line khi load", this.selectedLine);
       if (this.orderId) {
         this.loadOrderDetails(); // Load thông tin đơn hàng
@@ -178,7 +178,7 @@ export class OrderDetailsComponent implements OnInit {
 
 
   //Hàm cập nhật dữ liệu Sensor Record
-  updateSensorRecord(sensorRecord: SensorRecordDto): void {
+ updateSensorRecord(sensorRecord: SensorRecordDto) {
     if (!sensorRecord.id) {
       console.error('Error: Sensor Record ID is missing.');
       return;
@@ -299,10 +299,7 @@ export class OrderDetailsComponent implements OnInit {
             else {
               console.error("Data Sensor By Line null:", this.dataSensorByLine);
             }
-            // Reload lại trang sau khi dừng
-            setTimeout(() => {
-              window.location.reload();
-            }, 500);
+            
           }
 
           this.signalrService.stopConnection().catch(err => {
@@ -326,14 +323,13 @@ export class OrderDetailsComponent implements OnInit {
             this.updateSensorRecord(lastRecord);
             this.updateLastOrderLineDetail();
             this.updateWCFData();
-
+            await this.delay(1000); // 2000ms = 2 giây
+            // Reload lại trang sau khi dừng
+            window.location.reload();
           }
           else {
             console.error("Data Sensor By Line null:", this.dataSensorByLine);
           }
-          await this.delay(1000); // 2000ms = 2 giây
-          // Reload lại trang sau khi dừng
-          window.location.reload();
         }
 
         this.signalrService.stopConnection().catch(err => {
