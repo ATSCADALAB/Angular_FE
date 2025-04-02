@@ -31,8 +31,9 @@ export class UpdateDistributorComponent implements OnInit {
       distributorCode: new FormControl('', [Validators.required, Validators.maxLength(50)]),
       distributorName: new FormControl('', [Validators.required, Validators.maxLength(100)]),
       address: new FormControl('', [Validators.required, Validators.maxLength(200)]),
-      contactSource: new FormControl('', [Validators.maxLength(100)]),
-      phoneNumber: new FormControl('', [Validators.required, Validators.maxLength(20)]),
+      //contactSource: new FormControl('', [Validators.maxLength(100)]),
+      //phoneNumber: new FormControl('', [Validators.required, Validators.maxLength(20)]),
+      province: new FormControl(null, [Validators.required]),
       areaId: new FormControl(null, [Validators.required]),
       isActive: new FormControl(true)
     });
@@ -62,6 +63,7 @@ export class UpdateDistributorComponent implements OnInit {
       address: dataFormValue.address,
       contactSource: dataFormValue.contactSource,
       phoneNumber: dataFormValue.phoneNumber,
+      province: dataFormValue.province,
       areaId: dataFormValue.areaId,
       isActive: dataFormValue.isActive
     };
@@ -95,6 +97,7 @@ export class UpdateDistributorComponent implements OnInit {
             address: this.distributor.address,
             contactSource: this.distributor.contactSource,
             phoneNumber: this.distributor.phoneNumber,
+            province: this.distributor.province,
             areaId: this.distributor.areaId,
             isActive: this.distributor.isActive
           });

@@ -51,6 +51,7 @@ import { StockReportComponent } from './stock-report/stock-report.component';
 import { AddInboundComponent } from './inbound/add-inbound/add-inbound.component';
 import { AddOutboundComponent } from './outbound/add-outbound/add-outbound.component';
 import { OrderDetailConfirmComponent } from './orders/order-detail/order-detail-confirm/order-detail-confirm.component';
+
 @NgModule({
   imports: [
     CommonModule,
@@ -112,7 +113,7 @@ import { OrderDetailConfirmComponent } from './orders/order-detail/order-detail-
     AddInboundComponent,
     OutboundComponent,
     AddOutboundComponent,
-    StockReportComponent
+    StockReportComponent,
   ],
 })
 export class UicomponentsModule {}

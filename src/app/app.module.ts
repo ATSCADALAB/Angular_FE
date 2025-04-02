@@ -39,7 +39,8 @@ export function tokenGetter() {
     BrandingComponent,
     AppNavItemComponent,
     NotFoundComponent,
-    ServerErrorComponent
+    ServerErrorComponent,
+    //FilterSelectComponent
   ],
   imports: [
     BrowserModule,

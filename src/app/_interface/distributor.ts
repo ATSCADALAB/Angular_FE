@@ -22,6 +22,7 @@ export interface DistributorForCreationDto {
   contactSource: string;
   phoneNumber: string;
   areaId: number;
+  province: string; // Thông tin tỉnh thành
   isActive?: boolean; // Optional, mặc định là true
 }
 
@@ -31,6 +32,7 @@ export interface DistributorForUpdateDto {
   address: string;
   contactSource: string;
   phoneNumber: string;
+  province: string; // Thông tin tỉnh thành
   areaId: number;
   isActive?: boolean; // Optional, mặc định là true
 }
