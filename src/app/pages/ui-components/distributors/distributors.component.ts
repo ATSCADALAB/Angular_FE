@@ -18,9 +18,15 @@ import { HttpClient } from '@angular/common/http'; // Thêm HttpClient
   styleUrls: ['./distributors.component.scss']
 })
 export class DistributorsComponent implements OnInit, AfterViewInit {
-  displayedColumns: string[] = ['action', 'distributorCode', 'distributorName','province', 'area', 'isActive', 'createdAt', 'updatedAt'];
+  displayedColumns: string[] = ['action', 'distributorCode', 'distributorName','address', 'province', 'area', 'isActive', 'createdAt', 'updatedAt'];
   public dataSource = new MatTableDataSource<DistributorDto>();
-
+  importResult: {
+    successCount: number;
+    skippedCount: number;
+    skippedRows: string[];
+    errors: string[];
+  } | null = null;
+  showImportResult = false; // Điều khiển hiển thị phần kết quả
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild('fileInput') fileInput!: ElementRef; // Tham chiếu đến input file
@@ -62,18 +68,20 @@ export class DistributorsComponent implements OnInit, AfterViewInit {
   addDistributor() {
     this.dialog.open(AddDistributorComponent, {
       width: '500px',
-      height: '650px',
+
       enterAnimationDuration: '100ms',
       exitAnimationDuration: '100ms',
+      autoFocus: false,
     });
   }
 
   updateDistributor(id: number) {
     this.dialog.open(UpdateDistributorComponent, {
       width: '500px',
-      height: '650px',
+      //height: '650px',
       enterAnimationDuration: '100ms',
       exitAnimationDuration: '100ms',
+      autoFocus: false,
       data: { id }
     });
   }
@@ -111,29 +119,38 @@ export class DistributorsComponent implements OnInit, AfterViewInit {
     if (!file) return;
 
     // Kiểm tra loại file
-  const validTypes = ['application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
-  if (!validTypes.includes(file.type)) {
-    this.dialogService.openErrorDialog('Please select a valid Excel file (.xlsx or .xls).');
-    return;
-  }
-
-  const formData = new FormData();
-  formData.append('file', file, file.name);
-
-  this.repoService.upload('api/distributors/import', formData).subscribe(
-    (res) => {
-      this.dialogService.openSuccessDialog('Distributors imported successfully.')
-        .afterClosed()
-        .subscribe(() => {
-          this.getDistributors();
-        });
-    },
-    (error) => {
-      this.dialogService.openErrorDialog(`Error importing distributors: ${error.message}`);
+    const validTypes = ['application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
+    if (!validTypes.includes(file.type)) {
+      this.dialogService.openErrorDialog('Please select a valid Excel file (.xlsx or .xls).');
+      return;
     }
-  );
 
-  event.target.value = '';
+    const formData = new FormData();
+    formData.append('file', file, file.name);
+
+    this.repoService.upload('api/distributors/import', formData).subscribe(
+      (res) => {
+        // Lưu kết quả import
+        this.importResult = res as {
+          successCount: number;
+          skippedCount: number;
+          skippedRows: string[];
+          errors: string[];
+        };
+        this.showImportResult = true;
+        this.dialogService.openSuccessDialog('Distributors imported successfully.')
+          .afterClosed()
+          .subscribe(() => {
+            this.getDistributors();
+          });
+      },
+      (error) => {
+        // Xử lý lỗi khi import
+        this.dialogService.openErrorDialog(`Error importing distributors`);
+      }
+    );
+
+    event.target.value = '';
   }
 
   downloadTemplate() {
@@ -156,5 +173,10 @@ export class DistributorsComponent implements OnInit, AfterViewInit {
 
   public doFilter = (value: string) => {
     this.dataSource.filter = value.trim().toLocaleLowerCase();
+  }
+  // Hàm để reset kết quả import nếu cần
+  resetImportResult(): void {
+    this.importResult = null;
+    this.showImportResult = false;
   }
 }

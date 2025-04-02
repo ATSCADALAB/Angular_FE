@@ -21,9 +21,9 @@ import { ProductInformationDto } from 'src/app/_interface/product-information';
 })
 export class OrdersComponent implements OnInit, AfterViewInit, OnDestroy {
   displayedColumns: string[] = [
-    'action', 'status', 'code', 'exportDate', 'quantityVehicle', 'vehicleNumber',
-    'driverName', 'driverPhoneNumber', 'weightOrder', 'unitOrder', 'manufactureDate',
-    'productName', 'distributorName', 'area'
+    'action', 'status', 'code',  'quantityVehicle', 'vehicleNumber','productCode','productName',
+    'weightOrder', 'unitOrder','distributorName', 'area','driverName', 'driverPhoneNumber','exportDate',  'manufactureDate',
+     
   ];
   dataSource = new MatTableDataSource<OrderWithDetails>();
   importResult: {
@@ -50,7 +50,15 @@ export class OrdersComponent implements OnInit, AfterViewInit, OnDestroy {
   distributorControl = new FormControl(null);
   productControl = new FormControl(null);
 
-  
+  // Dữ liệu lọc
+  filteredDistributors: DistributorDto[];
+  filteredProducts: ProductInformationDto[];
+
+  // Từ khoá lọc
+  distributorKeyword: string = '';
+  productKeyword: string = '';
+
+
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild('fileInput') fileInput!: ElementRef;
@@ -104,6 +112,7 @@ export class OrdersComponent implements OnInit, AfterViewInit, OnDestroy {
     this.repoService.getData('api/distributors').subscribe({
       next: (res) => {
         this.distributors = res as DistributorDto[];
+        this.filteredDistributors = [...this.distributors];
       },
       error: (err) => this.handleError('distributors', err)
     });
@@ -120,25 +129,31 @@ export class OrdersComponent implements OnInit, AfterViewInit, OnDestroy {
     this.repoService.getData('api/product-informations').subscribe({
       next: (res) => {
         this.productInformations = res as ProductInformationDto[];
+        this.filteredProducts = [...this.productInformations];
       },
       error: (err) => this.handleError('products', err)
     });
   }
-  // Handle selection changes
-  onDistributorChange(value: number | null): void {
-    this.selectedDistributorId = value;
+  // Hàm gán ID khi chọn distributor
+  onDistributorSelected(event: any): void {
+    const selectedDistributor = event.option.value as DistributorDto;
+    this.selectedDistributorId = selectedDistributor?.id || null;
   }
 
   onAreaChange(value: number | null): void {
     this.selectedAreaId = value;
+
   }
 
-  onProductChange(value: number | null): void {
-    this.selectedProductInformationId = value;
+  // Hàm gán ID khi chọn distributor
+  onProductInfomationSelected(event: any): void {
+    const selectedProductInfo = event.option.value as ProductInformationDto;
+    this.selectedProductInformationId = selectedProductInfo?.id || null;
   }
 
   onStatusChange(value: number | null): void {
     this.selectedStatus = value;
+    //console.log('Selected Area ID:', value);
   }
 
   // Filter method
@@ -163,7 +178,7 @@ export class OrdersComponent implements OnInit, AfterViewInit, OnDestroy {
       distributorId: this.selectedDistributorId ?? null,
       areaId: this.selectedAreaId ?? null,
       productInformationId: this.selectedProductInformationId ?? null,
-      status: this.selectedStatus ?? null
+      status: this.selectedStatus ?? null,
     };
     this.repoService.getData('api/orders/by-filter', params).subscribe({
       next: (res) => this.dataSource.data = res as OrderWithDetails[],
@@ -213,11 +228,11 @@ export class OrdersComponent implements OnInit, AfterViewInit, OnDestroy {
   triggerFileInput(): void {
     this.fileInput.nativeElement.click();
   }
-// Hàm để reset kết quả import nếu cần
-resetImportResult(): void {
-  this.importResult = null;
-  this.showImportResult = false;
-}
+  // Hàm để reset kết quả import nếu cần
+  resetImportResult(): void {
+    this.importResult = null;
+    this.showImportResult = false;
+  }
   onFileChange(event: Event): void {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
@@ -276,4 +291,38 @@ resetImportResult(): void {
         }
       });
   }
+  //Filter Component
+  // Hàm filter chung
+  filterOptions<T extends { distributorName?: string; productName?: string }>(
+    sourceList: T[],
+    keyword: string,
+    key: keyof T
+  ): T[] {
+    if (!keyword) {
+      return [...sourceList];
+    }
+    const lowerKeyword = keyword.toLowerCase();
+    return sourceList.filter(item =>
+      (item[key] as string)?.toLowerCase().includes(lowerKeyword)
+    );
+  }
+
+  // Hàm gọi filter cho Distributor và ProductInfo
+  filterDistributors(): void {
+    this.filteredDistributors = this.filterOptions(this.distributors, this.distributorKeyword, 'distributorName');
+  }
+
+  filterProducts(): void {
+    this.filteredProducts = this.filterOptions(this.productInformations, this.productKeyword, 'productName');
+  }
+
+  // Hàm hiển thị tên Distributor
+  displayDistributorName(distributor: DistributorDto): string {
+    return distributor ? distributor.distributorName : '';
+  }
+  displayProductName(product: ProductInformationDto): string {
+    return product?.productName || '';
+  }
+
+
 }

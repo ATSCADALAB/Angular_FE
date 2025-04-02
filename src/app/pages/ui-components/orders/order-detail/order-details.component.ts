@@ -14,6 +14,7 @@ import { Subscription } from 'rxjs';
 import { OrderDetailConfirmComponent } from './order-detail-confirm/order-detail-confirm.component';
 import { OrderLineDetailCreationDto, OrderLineDetailDto } from 'src/app/_interface/order-line-detail';
 import { TimezoneService } from 'src/app/shared/services/timezone.service';
+import { LineDto } from 'src/app/_interface/line';
 
 
 @Component({
@@ -33,8 +34,8 @@ export class OrderDetailsComponent implements OnInit {
   orderId: string | null = null;
   orderDetail: OrderDetailDto;
   selectedLine: number;
-  lines: number[] = [1, 2, 3, 4,5,6];
-
+  //lines: number[] = [1, 2, 3, 4,5,6];
+  lines: LineDto[] = []; // Khai báo biến lines là mảng LineDto
   isStarting: boolean = false;
   isRunning: boolean = false;
   receivedDataSensor: WcfDataDto[] = []; //Giá trị nhận dữ liệu SingnalR từ Server
@@ -65,6 +66,7 @@ export class OrderDetailsComponent implements OnInit {
       });
       console.log("selected line khi load", this.selectedLine);
       if (this.orderId) {
+        this.getListLines(); // Load danh sách Line
         this.loadOrderDetails(); // Load thông tin đơn hàng
         this.getOrderLineDetail(); // Load giá trị OrderLineDetail
         this.loadListSensorRecords(); // Load danh sách Sensor Records
@@ -81,6 +83,16 @@ export class OrderDetailsComponent implements OnInit {
       },
       (err) => {
         console.log("Error loading order details:", err);
+      }
+    );
+  }
+  getListLines() {
+    this.repoService.getData(`api/lines`).subscribe(
+      (res) => {
+        this.lines = (res as LineDto[]); // Gán dữ liệu vào biến orderDetail
+      },
+      (err) => {
+        console.log("Error loading lines:", err);
       }
     );
   }
@@ -178,7 +190,7 @@ export class OrderDetailsComponent implements OnInit {
 
 
   //Hàm cập nhật dữ liệu Sensor Record
- updateSensorRecord(sensorRecord: SensorRecordDto) {
+  updateSensorRecord(sensorRecord: SensorRecordDto) {
     if (!sensorRecord.id) {
       console.error('Error: Sensor Record ID is missing.');
       return;
@@ -299,7 +311,7 @@ export class OrderDetailsComponent implements OnInit {
             else {
               console.error("Data Sensor By Line null:", this.dataSensorByLine);
             }
-            
+
           }
 
           this.signalrService.stopConnection().catch(err => {
@@ -540,36 +552,38 @@ export class OrderDetailsComponent implements OnInit {
     );
     this.calculateTotals();
   }
-  selectLine(line: number) {
+  selectLine(lineId: number) {
+    //console.log("selected line:", lineId);
+
     // Kiểm tra xem Line có đang chạy không
-    const activeRecord = this.listSensorRecords.find(record => record.lineId === line && record.status === 1);
+    const activeRecord = this.listSensorRecords.find(record => record.lineId === lineId && record.status === 1);
 
     if (activeRecord) {
       const dialogRef = this.dialog.open(ConfirmComponent, {
         width: '450px',
         height: '150px',
         disableClose: true,
-        data: { message: `Line ${line} is currently in use by another order. Would you like to view its details?` }
+        data: { message: `Line ${lineId} is currently in use by another order. Would you like to view its details?` }
       });
 
       dialogRef.afterClosed().subscribe(result => {
         if (result) {
-          // Người dùng muốn xem chi tiết -> Chuyển hướng đến trang chi tiết đơn hàng
           this.selectedLine = 0;
           window.location.href = `/ui-components/order-details/${activeRecord.orderId}`;
         } else {
-          // Người dùng chọn "Cancel" -> Reset selectedLine
           this.selectedLine = 0;
         }
       });
 
-      return; // Ngăn việc chọn Line nếu đang chạy
+      return;
     }
-
-    // Nếu Line hợp lệ, cho phép chọn
-    this.selectedLine = line;
-    // console.log(`Selected Line: ${line}`);
+    // Nếu không có record nào đang chạy, cho phép chọn Line
+    this.selectedLine = lineId;
+    console.log("selected line:", this.selectedLine);
   }
+
+
+
 
 
 

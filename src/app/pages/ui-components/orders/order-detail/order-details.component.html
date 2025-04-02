@@ -28,7 +28,7 @@
         <div class="info-content" *ngIf="isExpanded">
           <div class="info-grid">
             <div class="info-item">
-              <span class="label">Export Date:</span>
+              <span class="label">Delivery Date:</span>
               <span class="value">{{ orderDetail.order.exportDate | date: 'dd/MM/yyyy' }}</span>
             </div>
             <div class="info-item">
@@ -40,18 +40,18 @@
           </div>
           <div class="info-grid">
             <div class="info-item">
-              <span class="label">Quantity Request (Bags):</span>
+              <span class="label">Quantity Request:</span>
               <span class="value">{{ orderDetail.requestedUnits }} bags</span>
             </div>
             <div class="info-item">
-              <span class="label">Weight Request (Kg):</span>
-              <span class="value">{{ orderDetail.requestedWeight }} kg</span>
+              <span class="label">Weight Request:</span>
+              <span class="value">{{ orderDetail.requestedWeight | number }} kg</span>
             </div>
           </div>
           <div class="info-grid">
             <div class="info-item">
-              <span class="label">Driver Name:</span>
-              <span class="value">{{ orderDetail.order.driverName }}</span>
+              <span class="label">Vehicle Number:</span>
+              <span class="value">{{ orderDetail.order.vehicleNumber }}</span>
             </div>
             <div class="info-item">
               <span class="label">Phone Number:</span>
@@ -60,8 +60,8 @@
           </div>
           <div class="info-grid">
             <div class="info-item">
-              <span class="label">Vehicle Number:</span>
-              <span class="value">{{ orderDetail.order.vehicleNumber }}</span>
+              <span class="label">Driver Name:</span>
+              <span class="value">{{ orderDetail.order.driverName }}</span>
             </div>
             <div class="info-item">
               <span class="label">Driver Count:</span>
@@ -88,29 +88,39 @@
         <div class="info-content" *ngIf="isExpanded">
           <div class="info-grid">
             <div class="info-item">
+              <span class="label">Product Code:</span>
+              <span class="value">{{ orderDetail.productInformation.productCode }}</span>
+            </div>
+          </div>
+          <div class="info-grid">
+            <div class="info-item">
               <span class="label">Product Name:</span>
               <span class="value">{{ orderDetail.productInformation.productName }}</span>
             </div>
           </div>
           <div class="info-grid">
             <div class="info-item">
-              <span class="label">Distributor Name:</span>
-              <span class="value">{{ orderDetail.order.distributor.distributorName }} - {{
-                orderDetail.order.distributor.area.areaName }}</span>
+              <span class="label">Unit (Kg):</span>
+              <span class="value">{{ orderDetail.productInformation.weightPerUnit }} kg</span>
             </div>
-
           </div>
           <div class="info-grid">
             <div class="info-item">
-              <span class="label">Weight Per Unit (Kg):</span>
-              <span class="value">{{ orderDetail.productInformation.weightPerUnit }} kg</span>
+              <span class="label">Distributor Name:</span>
+              <span class="value">{{ orderDetail.order.distributor.distributorName }}</span>
             </div>
+          </div>
+          
+          <div class="info-grid">
             <div class="info-item">
-              <span class="label">Manufacture Date:</span>
-              <span class="value">
-                {{ orderDetail.manufactureDate | date: 'dd/MM/yyyy' }}
-              </span>
-
+              <span class="label">Province:</span>
+              <span class="value">{{orderDetail.order.distributor.province }}</span>
+            </div>
+          </div>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="label">Area:</span>
+              <span class="value">{{orderDetail.order.distributor.area.areaName }}</span>
             </div>
           </div>
         </div>
@@ -166,8 +176,9 @@
         <!-- Select Line (Bên trái trên desktop, trên cùng ở mobile) -->
         <mat-form-field appearance="outline" class="line-select">
           <mat-label>Select line to start counting products</mat-label>
-          <mat-select [(ngModel)]="selectedLine" [disabled]="orderDetail.order.status === 2 || isRunning" (selectionChange)="selectLine($event.value)">
-            <mat-option *ngFor="let line of lines" [value]="line">Line {{ line }}</mat-option>
+          <mat-select [(ngModel)]="selectedLine" [disabled]="orderDetail.order.status === 2 || isRunning" 
+          (selectionChange)="selectLine($event.value)" >
+            <mat-option *ngFor="let line of lines" [value]="line.id">{{ line.lineName }}</mat-option>
           </mat-select>
         </mat-form-field>
     

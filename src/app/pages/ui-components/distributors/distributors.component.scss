@@ -1,41 +1,214 @@
 .mat-header-cell {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mat-column-action {
+  width: 150px;
+}
+
+.mat-column-distributorCode {
+  width: 150px;
+}
+
+.mat-column-distributorName {
+  width: 200px;
+}
+
+.mat-column-address {
+  width: 200px;
+}
+
+.mat-column-phoneNumber {
+  width: 150px;
+}
+
+.mat-column-area {
+  width: 150px;
+}
+
+.mat-column-isActive {
+  width: 100px;
+}
+
+.mat-column-createdAt {
+  width: 150px;
+}
+
+.mat-column-updatedAt {
+  width: 150px;
+}
+
+.import-result-container {
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid #e0e0e0;
+  width: 100%; // Full width để đồng bộ với bộ lọc
+
+  .import-result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+
+    h4 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 500;
+      color: #333;
+    }
+
+    .close-btn {
+      color: #666;
+
+      &:hover {
+        color: #ff4444;
+      }
+    }
   }
-  
-  .mat-column-action {
-    width: 150px;
+
+  .import-result-body {
+    .result-item {
+      display: flex;
+      align-items: center;
+      padding: 8px 0;
+      font-size: 14px;
+
+      mat-icon {
+        margin-right: 8px;
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0; // Ngăn icon bị co lại
+      }
+
+      &.success {
+        color: #28a745;
+
+        mat-icon {
+          color: #28a745;
+        }
+      }
+
+      &.warning {
+        color: #ff9800;
+
+        mat-icon {
+          color: #ff9800;
+        }
+      }
+
+      &.error {
+        color: #dc3545;
+
+        mat-icon {
+          color: #dc3545;
+        }
+      }
+
+      span {
+        font-weight: 500;
+        word-break: break-word; // Đảm bảo text không tràn ra ngoài
+      }
+
+      .details-list {
+        margin: 8px 0 0 28px;
+        padding-left: 0;
+        list-style-type: none;
+        width: 100%; // Đảm bảo danh sách full width
+
+        li {
+          position: relative;
+          padding-left: 16px;
+          color: #555;
+          font-size: 13px;
+          margin-bottom: 4px;
+          word-break: break-word; // Ngăn text dài làm vỡ giao diện
+
+          &:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: inherit;
+          }
+        }
+      }
+    }
   }
-  
-  .mat-column-distributorCode {
-    width: 150px;
+}
+
+// Responsive adjustments
+@media (max-width: 768px) { // Tablet trở xuống
+  .import-result-container {
+    padding: 12px; // Giảm padding trên mobile
+
+    .import-result-header {
+      h4 {
+        font-size: 16px; // Giảm kích thước chữ
+      }
+
+      .close-btn {
+        padding: 0; // Giảm khoảng cách nút đóng
+      }
+    }
+
+    .import-result-body {
+      .result-item {
+        flex-direction: row; // Giữ ngang nhưng tối ưu không gian
+        align-items: flex-start;
+        font-size: 13px; // Giảm kích thước chữ
+
+        mat-icon {
+          font-size: 18px;
+          width: 18px;
+          height: 18px;
+          margin-right: 6px;
+        }
+
+        .details-list {
+          margin-left: 24px; // Giảm margin để vừa màn hình nhỏ
+          font-size: 12px;
+
+          li {
+            padding-left: 12px;
+          }
+        }
+      }
+    }
   }
-  
-  .mat-column-distributorName {
-    width: 200px;
+}
+
+@media (max-width: 480px) { // Điện thoại nhỏ hơn
+  .import-result-container {
+    padding: 10px;
+
+    .import-result-header {
+      flex-direction: row;
+      align-items: center;
+
+      h4 {
+        font-size: 14px;
+      }
+    }
+
+    .import-result-body {
+      .result-item {
+        flex-direction: column; // Chuyển sang dọc trên màn hình rất nhỏ
+        align-items: flex-start;
+
+        mat-icon {
+          margin-bottom: 4px; // Tạo khoảng cách khi xếp dọc
+        }
+
+        .details-list {
+          margin-left: 0; // Bỏ margin trái để tận dụng không gian
+          padding-left: 20px; // Dùng padding để căn lề danh sách
+        }
+      }
+    }
   }
-  
-  .mat-column-address {
-    width: 200px;
-  }
-  
-  .mat-column-phoneNumber {
-    width: 150px;
-  }
-  
-  .mat-column-area {
-    width: 150px;
-  }
-  
-  .mat-column-isActive {
-    width: 100px;
-  }
-  
-  .mat-column-createdAt {
-    width: 150px;
-  }
-  
-  .mat-column-updatedAt {
-    width: 150px;
-  }
+}

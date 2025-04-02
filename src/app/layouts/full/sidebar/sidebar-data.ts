@@ -53,7 +53,7 @@ export const navItems: NavItem[] = [
     route: '/ui-components/distributors',
   },
   {
-    displayName: 'Products',
+    displayName: 'RFID',
     iconName: 'tags',
     route: '/ui-components/products',
   },

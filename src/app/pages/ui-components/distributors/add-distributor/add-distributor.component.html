@@ -22,13 +22,13 @@
         <mat-error *ngIf="validateControl('distributorName') && hasError('distributorName', 'maxlength')">Distributor Name must not exceed 100 characters</mat-error>
       </mat-form-field>
 
-      <mat-form-field class="w-100" appearance="outline">
+       <mat-form-field class="w-100" appearance="outline">
         <mat-label>Address</mat-label>
         <input matInput formControlName="address" />
         <mat-error *ngIf="validateControl('address') && hasError('address', 'required')">Address is required</mat-error>
         <mat-error *ngIf="validateControl('address') && hasError('address', 'maxlength')">Address must not exceed 200 characters</mat-error>
       </mat-form-field>
-
+      <!--
       <mat-form-field class="w-100" appearance="outline">
         <mat-label>Contact Source</mat-label>
         <input matInput formControlName="contactSource" />
@@ -40,7 +40,14 @@
         <input matInput formControlName="phoneNumber" />
         <mat-error *ngIf="validateControl('phoneNumber') && hasError('phoneNumber', 'required')">Phone Number is required</mat-error>
         <mat-error *ngIf="validateControl('phoneNumber') && hasError('phoneNumber', 'maxlength')">Phone Number must not exceed 20 characters</mat-error>
-      </mat-form-field>
+      </mat-form-field> -->
+
+      <mat-form-field class="w-100" appearance="outline">
+        <mat-label>Province</mat-label>
+        <input matInput formControlName="province" />
+        <mat-error *ngIf="validateControl('province') && hasError('province', 'required')">Province is required</mat-error>
+        <mat-error *ngIf="validateControl('province') && hasError('province', 'maxlength')">Province must not exceed 20 characters</mat-error>
+      </mat-form-field> 
 
       <mat-form-field class="w-100" appearance="outline">
         <mat-label>Area</mat-label>
@@ -54,7 +61,7 @@
 
       <mat-checkbox formControlName="isActive">Active</mat-checkbox>
 
-      <button mat-flat-button color="primary" [disabled]="!dataForm.valid">
+      <button mat-flat-button color="primary" [disabled]="!dataForm.valid" style="float:right">
         Save
       </button>
     </form>

@@ -21,19 +21,21 @@ export class DialogService {
     data: {
       message: msg,
     },
+    autoFocus: false,
   });
 }
 
 openErrorDialog(msg: any) {
   return this.dialog.open(ErrorComponent, {
     width: '400px',
-    height: '270px',
+    //height: '270px',
     panelClass: 'success-dialog-container',
     disableClose: true,
     position: { top: '200px' },
     data: {
       message: msg,
     },
+    autoFocus: false,
   });
 }
 
@@ -47,6 +49,7 @@ openConfirmDialog(msg: any) {
     data: {
       message: msg,
     },
+    autoFocus: false,
   });
 }
 

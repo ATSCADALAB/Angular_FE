@@ -5,6 +5,7 @@ import { DialogService } from 'src/app/shared/services/dialog.service';
 import { FormControl } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { AreaDto } from 'src/app/_interface/area';
+import { ProductInformationDto } from 'src/app/_interface/product-information';
 
 interface ProductDailyReport {
   date: string;
@@ -61,6 +62,7 @@ interface AreaReport {
   styleUrls: ['./report.component.scss']
 })
 export class ReportComponent implements OnInit {
+
   // Product Daily
   productDailyReport: ProductDailyReport[] = [];
   productDailyColumns: string[] = ['date', 'lineName', 'productName', 'totalOrders', 'totalSensorUnits', 'totalSensorWeight'];
@@ -73,7 +75,7 @@ export class ReportComponent implements OnInit {
   vehicleNumber = new FormControl('');
 
   // Common Filters
-  startDate = new FormControl(new Date());
+  startDate = new FormControl(new Date(new Date().setDate(new Date().getDate() - 7)));
   endDate = new FormControl(new Date());
   selectedLine = new FormControl(0); // 0 = All
   selectedProduct = new FormControl(0); // 0 = All
@@ -112,17 +114,22 @@ export class ReportComponent implements OnInit {
   areaOptions: { id: number; name: string }[] = [];
 
   // Danh sách tháng
-   months = [
+  months = [
     { value: 1, name: 'January' }, { value: 2, name: 'February' }, { value: 3, name: 'March' },
     { value: 4, name: 'April' }, { value: 5, name: 'May' }, { value: 6, name: 'June' },
     { value: 7, name: 'July' }, { value: 8, name: 'August' }, { value: 9, name: 'September' },
     { value: 10, name: 'October' }, { value: 11, name: 'November' }, { value: 12, name: 'December' }
-];
+  ];
 
 
   // Danh sách năm
   years: number[] = [];
 
+  // Dữ liệu lọc
+  filteredProducts: ProductInformationDto[];
+
+  // Từ khoá lọc
+  productKeyword: string = '';
   constructor(
     private repoService: RepositoryService,
     private dialogService: DialogService,
@@ -162,6 +169,7 @@ export class ReportComponent implements OnInit {
         (res) => {
           this.products = res.map(p => ({ id: p.id, name: p.productName }));
           this.products.unshift({ id: 0, name: 'All' });
+          //this.filteredProducts = this.products;
         },
         (err) => {
         }
@@ -172,6 +180,7 @@ export class ReportComponent implements OnInit {
     this.repoService.getData<{ id: number; distributorName: string }[]>('api/distributors')
       .subscribe(
         (res) => {
+         
           this.distributorOptions = res.map(d => ({ id: d.id, name: d.distributorName }));
           this.distributorOptions.unshift({ id: 0, name: 'All' });
         },
@@ -183,6 +192,7 @@ export class ReportComponent implements OnInit {
   loadAreas(): void {
     this.repoService.getData<AreaDto[]>('api/areas').subscribe({
       next: (response) => {
+        
         this.areaOptions = response.map(area => ({ id: area.id, name: area.areaName }));
         this.areaOptions.unshift({ id: 0, name: 'All' });
       },
@@ -202,10 +212,16 @@ export class ReportComponent implements OnInit {
     this.repoService.getData<ProductDailyReport[]>('api/reports/product-daily', params)
       .subscribe(
         (res) => {
+          if (res == null) {
+            this.dialogService.openErrorDialog('No data to report');
+            return;
+          }
+          // Kiểm tra xem có dữ liệu hay không
           this.productDailyReport = res;
           this.productDailyDataSource.data = this.productDailyReport;
         },
         (err) => {
+          this.dialogService.openErrorDialog('No data to report');
         }
       );
   }
@@ -220,10 +236,15 @@ export class ReportComponent implements OnInit {
     this.repoService.getData<VehicleReport[]>('api/reports/vehicle-daily', params)
       .subscribe(
         (res) => {
+          if (res == null) {
+            this.dialogService.openErrorDialog('No data to report');
+            return;
+          }
           this.vehicleReport = res;
           this.vehicleDataSource.data = this.vehicleReport;
         },
         (err) => {
+          this.dialogService.openErrorDialog('No data to report');
         }
       );
   }
@@ -237,10 +258,15 @@ export class ReportComponent implements OnInit {
     this.repoService.getData<IncompleteOrderReport[]>('api/reports/incomplete-order-shipment', params)
       .subscribe(
         (res) => {
+          if (res == null) {
+            this.dialogService.openErrorDialog('No data to report');
+            return;
+          }
           this.incompleteOrderReport = res;
           this.incompleteOrderDataSource.data = this.incompleteOrderReport;
         },
         (err) => {
+          this.dialogService.openErrorDialog('No data to report');
         }
       );
   }
@@ -267,10 +293,15 @@ export class ReportComponent implements OnInit {
     this.repoService.getData<DistributorReport[]>('api/reports/distributor-production', params)
       .subscribe(
         (res) => {
+          if (res == null) {
+            this.dialogService.openErrorDialog('No data to report');
+            return;
+          }
           this.distributorReport = res;
           this.distributorDataSource.data = this.distributorReport;
         },
         (err) => {
+          this.dialogService.openErrorDialog('No data to report');
         }
       );
   }
@@ -296,10 +327,15 @@ export class ReportComponent implements OnInit {
 
     this.repoService.getData<AreaReport[]>('api/reports/region-production', params).subscribe(
       (res) => {
+        if (res == null) {
+          this.dialogService.openErrorDialog('No data to report');
+          return;
+        }
         this.areaReport = res;
         this.areaDataSource.data = this.areaReport;
       },
       (err) => {
+        this.dialogService.openErrorDialog('No data to report');
       }
     );
   }
@@ -315,9 +351,17 @@ export class ReportComponent implements OnInit {
     this.repoService.exportReport('api/reports/product-daily/export', params)
       .subscribe(
         (response: Blob) => {
-          this.downloadFile(response, `BaoCaoSanPham_${this.formatDate(this.startDate.value!)}_${this.formatDate(this.endDate.value!)}.xlsx`);
+          if(response){
+            this.downloadFile(response, `BaoCaoSanPham_${this.formatDate(this.startDate.value!)}_${this.formatDate(this.endDate.value!)}.xlsx`);
+          }
+          else {
+            this.dialogService.openErrorDialog('No data to export');
+          }
         },
-        (err) => {
+        (error) => {
+          // Hiển thị lỗi từ backend
+          const errorMessage = error.error?.detail || "Unexpected error occurred!";
+          this.dialogService.openErrorDialog(errorMessage);
         }
       );
   }
@@ -332,7 +376,14 @@ export class ReportComponent implements OnInit {
     this.repoService.exportReport('api/reports/vehicle-daily/export', params)
       .subscribe(
         (response: Blob) => {
-          this.downloadFile(response, `BaoCaoXe_${this.formatDate(this.startDate.value!)}_${this.formatDate(this.endDate.value!)}.xlsx`);
+          if(response){
+            this.downloadFile(response, `BaoCaoXe_${this.formatDate(this.startDate.value!)}_${this.formatDate(this.endDate.value!)}.xlsx`);
+            
+          }
+          else {
+            this.dialogService.openErrorDialog('No data to export');
+          }
+          
         },
         (err) => {
           this.dialogService.openErrorDialog('Error exporting report');
@@ -349,7 +400,14 @@ export class ReportComponent implements OnInit {
     this.repoService.exportReport('api/reports/incomplete-order-shipment/export', params)
       .subscribe(
         (response: Blob) => {
-          this.downloadFile(response, `BaoCaoDonHangChuaHoanThanh_${this.formatDate(this.startDate.value!)}_${this.formatDate(this.endDate.value!)}.xlsx`);
+          if(response){
+            this.downloadFile(response, `BaoCaoDonHangChuaHoanThanh_${this.formatDate(this.startDate.value!)}_${this.formatDate(this.endDate.value!)}.xlsx`);
+            
+          }
+          else {
+            this.dialogService.openErrorDialog('No data to export');
+          }
+          
         },
         (err) => {
           this.dialogService.openErrorDialog('Error exporting report');
@@ -379,7 +437,14 @@ export class ReportComponent implements OnInit {
     this.repoService.exportReport('api/reports/distributor-production/export', params)
       .subscribe(
         (response: Blob) => {
-          this.downloadFile(response, `BaoCaoNhaPhanPhoi_${this.fromYear.value}${this.fromMonth.value ? '-' + this.fromMonth.value : ''}_${this.toYear.value}${this.toMonth.value ? '-' + this.toMonth.value : ''}.xlsx`);
+          if(response){
+            this.downloadFile(response, `BaoCaoNhaPhanPhoi_${this.fromYear.value}${this.fromMonth.value ? '-' + this.fromMonth.value : ''}_${this.toYear.value}${this.toMonth.value ? '-' + this.toMonth.value : ''}.xlsx`);
+            
+          }
+          else {
+            this.dialogService.openErrorDialog('No data to export');
+          }
+          
         },
         (err) => {
           this.dialogService.openErrorDialog('Error exporting report');
@@ -409,7 +474,14 @@ export class ReportComponent implements OnInit {
     this.repoService.exportReport('api/reports/region-production/export', params)
       .subscribe(
         (response: Blob) => {
-          this.downloadFile(response, `BaoCaoKhuVuc_${this.fromYear.value}${this.fromMonth.value ? '-' + this.fromMonth.value : ''}_${this.toYear.value}${this.toMonth.value ? '-' + this.toMonth.value : ''}.xlsx`);
+          if(response){
+            this.downloadFile(response, `BaoCaoKhuVuc_${this.fromYear.value}${this.fromMonth.value ? '-' + this.fromMonth.value : ''}_${this.toYear.value}${this.toMonth.value ? '-' + this.toMonth.value : ''}.xlsx`);
+            
+          }
+          else {
+            this.dialogService.openErrorDialog('No data to export');
+          }
+          
         },
         (err) => {
           this.dialogService.openErrorDialog('Error exporting area report');
