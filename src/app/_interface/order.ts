@@ -15,6 +15,8 @@ export interface OrderWithDetails {
   createdAt: string;
   updatedAt: string | null;
   orderDetail: OrderDetailWithProduct;
+  createdByName:string | null;
+  updatedByName:string | null;
 }
 
 export interface OrderDetailWithProduct {

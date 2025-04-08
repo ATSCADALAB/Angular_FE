@@ -34,7 +34,6 @@ export class OrderDetailsComponent implements OnInit {
   orderId: string | null = null;
   orderDetail: OrderDetailDto;
   selectedLine: number;
-  //lines: number[] = [1, 2, 3, 4,5,6];
   lines: LineDto[] = []; // Khai báo biến lines là mảng LineDto
   isStarting: boolean = false;
   isRunning: boolean = false;
@@ -43,6 +42,7 @@ export class OrderDetailsComponent implements OnInit {
   orderLineDetails: OrderLineDetailDto[] = [];
   latestRecord: any; // Biến để lưu dòng mới nhất
   isSignalRRunning: boolean = false;
+
   private subscription: Subscription
   constructor(
     private dialog: MatDialog,

@@ -10,6 +10,8 @@ export interface SensorRecordDto {
     sensorWeight: number;
     recordTime: string;
     status:number;
+    createdByName: string;
+    updatedByName: string;
   }
   
   export interface SensorRecordCreationDto {
