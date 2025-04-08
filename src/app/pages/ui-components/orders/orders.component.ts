@@ -23,7 +23,7 @@ export class OrdersComponent implements OnInit, AfterViewInit, OnDestroy {
   displayedColumns: string[] = [
     'action', 'status', 'code',  'quantityVehicle', 'vehicleNumber','productCode','productName',
     'weightOrder', 'unitOrder','distributorName', 'area','driverName', 'driverPhoneNumber','exportDate',  'manufactureDate',
-     
+    'createdByName', 'updatedByName'
   ];
   dataSource = new MatTableDataSource<OrderWithDetails>();
   importResult: {
@@ -145,7 +145,7 @@ export class OrdersComponent implements OnInit, AfterViewInit, OnDestroy {
 
   }
 
-  // Hàm gán ID khi chọn distributor
+  // Hàm gán ID khi chọn product
   onProductInfomationSelected(event: any): void {
     const selectedProductInfo = event.option.value as ProductInformationDto;
     this.selectedProductInformationId = selectedProductInfo?.id || null;

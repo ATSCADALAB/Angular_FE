@@ -23,12 +23,24 @@
             <mat-option *ngFor="let line of lines" [value]="line.id">{{line.name}}</mat-option>
           </mat-select>
         </mat-form-field>
-        <mat-form-field appearance="fill">
+        <mat-form-field appearance="outline" class="filter-field" floatLabel="always">
+          <mat-label>Product</mat-label>
+          <input type="text" matInput [matAutocomplete]="autoProduct" [(ngModel)]="productKeyword"
+                 (input)="filterProducts()">
+        
+          <mat-autocomplete #autoProduct="matAutocomplete" [displayWith]="displayProductName" (optionSelected)="onProductInfomationSelected($event)">
+            <mat-option [value]="null">All</mat-option>
+            <mat-option *ngFor="let product of filteredProducts" [value]="product">
+              {{ product.productName }}
+            </mat-option>
+          </mat-autocomplete>
+        </mat-form-field>
+        <!-- <mat-form-field appearance="fill">
           <mat-label>Product</mat-label>
           <mat-select [formControl]="selectedProduct">
             <mat-option *ngFor="let product of products" [value]="product.id">{{product.name}}</mat-option>
           </mat-select>
-        </mat-form-field>
+        </mat-form-field> -->
         <button mat-raised-button color="primary" (click)="loadProductDailyReport()">Report</button>
         <button mat-raised-button color="accent" (click)="exportReport()">Export Report</button>
       </div>
@@ -227,11 +239,17 @@
         </mat-form-field>
 
         <!-- Product -->
-        <mat-form-field appearance="fill">
+        <mat-form-field appearance="outline" class="filter-field" floatLabel="always">
           <mat-label>Product</mat-label>
-          <mat-select [formControl]="productInformationId">
-            <mat-option *ngFor="let product of products" [value]="product.id">{{product.name}}</mat-option>
-          </mat-select>
+          <input type="text" matInput [matAutocomplete]="autoProduct" [(ngModel)]="productKeyword"
+                 (input)="filterProducts()">
+        
+          <mat-autocomplete #autoProduct="matAutocomplete" [displayWith]="displayProductName" (optionSelected)="onProductInfomationSelected($event)">
+            <mat-option [value]="null">All</mat-option>
+            <mat-option *ngFor="let product of filteredProducts" [value]="product">
+              {{ product.productName }}
+            </mat-option>
+          </mat-autocomplete>
         </mat-form-field>
 
         <button mat-raised-button color="primary" (click)="loadDistributorReport()">Report</button>
@@ -322,11 +340,17 @@
         </mat-form-field>
 
         <!-- Product -->
-        <mat-form-field appearance="fill">
+        <mat-form-field appearance="outline" class="filter-field" floatLabel="always">
           <mat-label>Product</mat-label>
-          <mat-select [formControl]="productInformationId">
-            <mat-option *ngFor="let product of products" [value]="product.id">{{product.name}}</mat-option>
-          </mat-select>
+          <input type="text" matInput [matAutocomplete]="autoProduct" [(ngModel)]="productKeyword"
+                 (input)="filterProducts()">
+        
+          <mat-autocomplete #autoProduct="matAutocomplete" [displayWith]="displayProductName" (optionSelected)="onProductInfomationSelected($event)">
+            <mat-option [value]="null">All</mat-option>
+            <mat-option *ngFor="let product of filteredProducts" [value]="product">
+              {{ product.productName }}
+            </mat-option>
+          </mat-autocomplete>
         </mat-form-field>
 
         <button mat-raised-button color="primary" (click)="loadAreaReport()">Report</button>

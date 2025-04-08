@@ -139,6 +139,7 @@
                 <th>Units</th>
                 <!-- <th>Weight</th> -->
                 <th>Time</th>
+                <th>Updated By</th>
               </tr>
             </thead>
             <tbody>
@@ -147,10 +148,11 @@
                 <td>
                   {{ item === latestRecord && dataSensorByLine?.value ? dataSensorByLine?.value : item.sensorUnits }}
                 </td>
-                <!-- <td>
-                  {{ item.sensorUnits *  orderDetail.productInformation.weightPerUnit }}
-                </td> -->
-                <td>{{ item.recordTime | date: 'HH:mm - dd/MM/yyyy' }}</td>
+                
+                <td>{{ item.recordTime | date: 'dd/MM/yyyy - HH:mm' }}</td>
+                <td>
+                  {{ item.updatedByName }}
+                </td>
               </tr>
             </tbody>
             <tfoot *ngIf="orderDetail.order.status === 2">

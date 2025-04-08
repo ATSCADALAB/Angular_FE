@@ -6,6 +6,7 @@ import { FormControl } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { AreaDto } from 'src/app/_interface/area';
 import { ProductInformationDto } from 'src/app/_interface/product-information';
+import { Subscription } from 'rxjs';
 
 interface ProductDailyReport {
   date: string;
@@ -62,7 +63,7 @@ interface AreaReport {
   styleUrls: ['./report.component.scss']
 })
 export class ReportComponent implements OnInit {
-
+  private subscriptions = new Subscription();
   // Product Daily
   productDailyReport: ProductDailyReport[] = [];
   productDailyColumns: string[] = ['date', 'lineName', 'productName', 'totalOrders', 'totalSensorUnits', 'totalSensorWeight'];
@@ -120,8 +121,9 @@ export class ReportComponent implements OnInit {
     { value: 7, name: 'July' }, { value: 8, name: 'August' }, { value: 9, name: 'September' },
     { value: 10, name: 'October' }, { value: 11, name: 'November' }, { value: 12, name: 'December' }
   ];
-
-
+  selectedProductInformationId: number | null = null;
+  productInformations: ProductInformationDto[] = [];
+  productControl = new FormControl(null);
   // Danh sách năm
   years: number[] = [];
 
@@ -134,7 +136,13 @@ export class ReportComponent implements OnInit {
     private repoService: RepositoryService,
     private dialogService: DialogService,
     private http: HttpClient
+    
   ) {
+    this.subscriptions.add(
+      this.productControl.valueChanges.subscribe(value => {
+        this.selectedProductInformationId = value;
+      })
+    );
     this.generateYears(); // Tạo danh sách năm
   }
 
@@ -142,8 +150,12 @@ export class ReportComponent implements OnInit {
     this.loadFilters();
     this.loadDistributors();
     this.loadAreas();
+    this.getProductInformations(); // Lấy danh sách sản phẩm
   }
-
+  // Utility methods
+  private handleError(type: string, err: any): void {
+    console.error(`Error fetching ${type}:`, err);
+  }
   generateYears(): void {
     const currentYear = new Date().getFullYear();
     const startYear = 2000; // Năm bắt đầu
@@ -152,7 +164,6 @@ export class ReportComponent implements OnInit {
       this.years.push(year);
     }
   }
-
   loadFilters(): void {
     this.repoService.getData<{ id: number; lineName: string }[]>('api/lines')
       .subscribe(
@@ -164,18 +175,26 @@ export class ReportComponent implements OnInit {
         }
       );
 
-    this.repoService.getData<{ id: number; productName: string }[]>('api/product-informations')
-      .subscribe(
-        (res) => {
-          this.products = res.map(p => ({ id: p.id, name: p.productName }));
-          this.products.unshift({ id: 0, name: 'All' });
-          //this.filteredProducts = this.products;
-        },
-        (err) => {
-        }
-      );
+    // this.repoService.getData<{ id: number; productName: string }[]>('api/product-informations')
+    //   .subscribe(
+    //     (res) => {
+    //       this.products = res.map(p => ({ id: p.id, name: p.productName }));
+    //       this.products.unshift({ id: 0, name: 'All' });
+    //       this.filteredProducts = this.products;
+    //     },
+    //     (err) => {
+    //     }
+    //   );
   }
-
+  private getProductInformations(): void {
+    this.repoService.getData('api/product-informations').subscribe({
+      next: (res) => {
+        this.productInformations = res as ProductInformationDto[];
+        this.filteredProducts = [...this.productInformations];
+      },
+      error: (err) => this.handleError('products', err)
+    });
+  }
   loadDistributors(): void {
     this.repoService.getData<{ id: number; distributorName: string }[]>('api/distributors')
       .subscribe(
@@ -345,7 +364,7 @@ export class ReportComponent implements OnInit {
       startDate: this.startDate.value!.toISOString().split('T')[0],
       endDate: this.endDate.value!.toISOString().split('T')[0],
       lineId: this.selectedLine.value === 0 ? null : this.selectedLine.value,
-      productInformationId: this.selectedProduct.value === 0 ? null : this.selectedProduct.value
+      productInformationId: this.selectedProductInformationId && this.selectedProductInformationId === 0 ? null : this.selectedProductInformationId,
     };
 
     this.repoService.exportReport('api/reports/product-daily/export', params)
@@ -431,7 +450,7 @@ export class ReportComponent implements OnInit {
       fromMonth: this.fromMonth.value || null,
       toMonth: this.toMonth.value || null,
       distributorId: this.distributorId.value === 0 ? null : this.distributorId.value,
-      productInformationId: this.productInformationId.value === 0 ? null : this.productInformationId.value
+      productInformationId: this.selectedProductInformationId && this.selectedProductInformationId === 0 ? null : this.selectedProductInformationId,
     };
 
     this.repoService.exportReport('api/reports/distributor-production/export', params)
@@ -461,15 +480,16 @@ export class ReportComponent implements OnInit {
       this.dialogService.openErrorDialog('Start year must be less than or equal to end year.');
       return;
     }
-
+    console.log(this.selectedProductInformationId);
     const params = {
       fromYear: this.fromYear.value,
       toYear: this.toYear.value,
       fromMonth: this.fromMonth.value || null,
       toMonth: this.toMonth.value || null,
-      productInformationId: this.productInformationId.value === 0 ? null : this.productInformationId.value,
+      productInformationId: this.selectedProductInformationId && this.selectedProductInformationId === 0 ? null : this.selectedProductInformationId,
       areaId: this.areaId.value === 0 ? null : this.areaId.value
     };
+    console.log(params);
 
     this.repoService.exportReport('api/reports/region-production/export', params)
       .subscribe(
@@ -492,7 +512,32 @@ export class ReportComponent implements OnInit {
   private formatDate(date: Date): string {
     return date.toLocaleDateString('en-GB').split('/').join('');
   }
-
+  // Hàm filter chung
+  filterOptions<T extends { distributorName?: string; productName?: string }>(
+    sourceList: T[],
+    keyword: string,
+    key: keyof T
+  ): T[] {
+    if (!keyword) {
+      return [...sourceList];
+    }
+    const lowerKeyword = keyword.toLowerCase();
+    return sourceList.filter(item =>
+      (item[key] as string)?.toLowerCase().includes(lowerKeyword)
+    );
+  }
+  // Hàm gán ID khi chọn product
+  onProductInfomationSelected(event: any): void {
+    const selectedProductInfo = event.option.value as ProductInformationDto;
+    this.selectedProductInformationId = selectedProductInfo?.id || null;
+    console.log('Selected Product ID:', this.selectedProductInformationId);
+  }
+  filterProducts(): void {
+    this.filteredProducts = this.filterOptions(this.productInformations, this.productKeyword, 'productName');
+  }
+  displayProductName(product: ProductInformationDto): string {
+      return product?.productName || '';
+    }
   private downloadFile(blob: Blob, fileName: string): void {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
