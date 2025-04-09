@@ -18,7 +18,7 @@ import { ProductDetailComponent } from './product-detail/product-detail.componen
   styleUrls: ['./products.component.scss'] 
 })
 export class ProductsComponent implements OnInit, AfterViewInit {
-  displayedColumns: string[] = ['action', 'tagID', 'distributorId', 'productInformationId', 'shipmentDate', 'productDate', 'delivery', 'stockOut'];
+  displayedColumns: string[] = ['action', 'tagID', 'distributorId', 'productInformationId', 'shipmentDate', 'productDate', ];
   public dataSource = new MatTableDataSource<ProductDto>();
 
   @ViewChild(MatPaginator) paginator: MatPaginator;

@@ -225,7 +225,7 @@ export class ReportComponent implements OnInit {
       startDate: this.startDate.value!.toISOString().split('T')[0],
       endDate: this.endDate.value!.toISOString().split('T')[0],
       lineId: this.selectedLine.value === 0 ? null : this.selectedLine.value,
-      productInformationId: this.selectedProduct.value === 0 ? null : this.selectedProduct.value
+      productInformationId: this.selectedProductInformationId && this.selectedProductInformationId === 0 ? null : this.selectedProductInformationId,
     };
 
     this.repoService.getData<ProductDailyReport[]>('api/reports/product-daily', params)
@@ -306,7 +306,7 @@ export class ReportComponent implements OnInit {
       fromMonth: this.fromMonth.value || null,
       toMonth: this.toMonth.value || null,
       distributorId: this.distributorId.value === 0 ? null : this.distributorId.value,
-      productInformationId: this.productInformationId.value === 0 ? null : this.productInformationId.value
+      productInformationId: this.selectedProductInformationId && this.selectedProductInformationId === 0 ? null : this.selectedProductInformationId,
     };
 
     this.repoService.getData<DistributorReport[]>('api/reports/distributor-production', params)
@@ -340,7 +340,7 @@ export class ReportComponent implements OnInit {
       toYear: this.toYear.value,
       fromMonth: this.fromMonth.value || null,
       toMonth: this.toMonth.value || null,
-      productInformationId: this.productInformationId.value === 0 ? null : this.productInformationId.value,
+      productInformationId: this.selectedProductInformationId && this.selectedProductInformationId === 0 ? null : this.selectedProductInformationId,
       areaId: this.areaId.value === 0 ? null : this.areaId.value
     };
 
