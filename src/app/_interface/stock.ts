@@ -8,7 +8,9 @@ export interface InboundRecordDto {
   quantityWeight: number;
   inboundDate: Date; // DateTime trong C# ánh xạ thành Date trong TS
   createdAt: Date;
+  createdByName: string;
   productInformation: ProductInformationDto;
+
 }
 
 export interface InboundRecordForCreationDto {
@@ -25,6 +27,7 @@ export interface OutboundRecordDto {
   quantityWeight: number;
   outboundDate: Date; // DateTime trong C# ánh xạ thành Date trong TS
   createdAt: Date;
+  createdByName: string;
   productInformation: ProductInformationDto;
 }
 

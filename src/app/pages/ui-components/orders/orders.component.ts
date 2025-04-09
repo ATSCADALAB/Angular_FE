@@ -34,7 +34,7 @@ export class OrdersComponent implements OnInit, AfterViewInit, OnDestroy {
   } | null = null;
   showImportResult = false; // Điều khiển hiển thị phần kết quả
   // Filters
-  startDate = new Date(new Date().setMonth(new Date().getMonth() - 1));
+  startDate = new Date();
   endDate = new Date();
   selectedDistributorId: number | null = null;
   selectedAreaId: number | null = null;
