@@ -1,7 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RepositoryService } from 'src/app/shared/services/repository.service';
-// import { OrderDto, OrderLineDetailCreationDto, OrderLineDetailDto } from 'src/app/_interface/order';
 import { OrderDetailDto, OrderDetailUpdateDto } from 'src/app/_interface/order-detail';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { WcfDataDto, WcfDataUpdateDto } from 'src/app/_interface/wcf-data-dto';
@@ -16,133 +15,109 @@ import { OrderLineDetailCreationDto, OrderLineDetailDto } from 'src/app/_interfa
 import { TimezoneService } from 'src/app/shared/services/timezone.service';
 import { LineDto } from 'src/app/_interface/line';
 
-
 @Component({
   selector: 'app-order-details',
   templateUrl: './order-details.component.html',
   styleUrls: ['./order-details.component.scss']
 })
-export class OrderDetailsComponent implements OnInit {
+export class OrderDetailsComponent implements OnInit, OnDestroy {
   totalUnits: number = 0;
   totalWeight: number = 0;
   replacedUnits: number = 0;
   replacedWeight: number = 0;
-
+  isSensorExpanded = true; // Thêm biến mới cho Sensor Record
   sensorRecord: SensorRecordDto[] = [];
   listSensorRecords: SensorRecordDto[] = [];
   isExpanded = true;
   orderId: string | null = null;
   orderDetail: OrderDetailDto;
-  selectedLine: number;
-  //lines: number[] = [1, 2, 3, 4,5,6];
-  lines: LineDto[] = []; // Khai báo biến lines là mảng LineDto
+  selectedLine: number = 0;
+  lines: LineDto[] = [];
   isStarting: boolean = false;
   isRunning: boolean = false;
-  receivedDataSensor: WcfDataDto[] = []; //Giá trị nhận dữ liệu SingnalR từ Server
-  dataSensorByLine: WcfDataDto | null = null; //Giá trị lưu trữ dữ liệu Sensor theo Line
+  receivedDataSensor: WcfDataDto[] = [];
+  dataSensorByLine: WcfDataDto | null = null;
   orderLineDetails: OrderLineDetailDto[] = [];
-  latestRecord: any; // Biến để lưu dòng mới nhất
+  latestRecord: any;
   isSignalRRunning: boolean = false;
-  private subscription: Subscription
+  isLoading: boolean = false; // Thêm biến loading
+  private subscription: Subscription;
+
   constructor(
     private dialog: MatDialog,
     private route: ActivatedRoute,
     private router: Router,
     private repoService: RepositoryService,
     private snackBar: MatSnackBar,
-    private signalrService: SignalRService, //Khai báo signalrService
+    private signalrService: SignalRService,
     private timezoneService: TimezoneService
   ) { }
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
-      this.orderId = params.get('id'); // Lấy orderId từ URL động
+      this.orderId = params.get('id');
       this.selectedLine = 0;
-      //Sự kiện back
+
+      // Thay reload bằng refresh khi quay lại tab
+      // Chỉ refresh khi order đang chạy
       document.addEventListener("visibilitychange", () => {
-        if (!document.hidden) {
-          window.location.reload(); // Tải lại trang khi quay lại tab
+        if (!document.hidden && this.isRunning) {
+          this.refreshChangedData();
         }
       });
+
       console.log("selected line khi load", this.selectedLine);
       if (this.orderId) {
-        this.getListLines(); // Load danh sách Line
-        this.loadOrderDetails(); // Load thông tin đơn hàng
-        this.getOrderLineDetail(); // Load giá trị OrderLineDetail
-        this.loadListSensorRecords(); // Load danh sách Sensor Records
-        this.loadSensorRecord(); // Load dữ liệu Sensor Record
-        this.checkSignalRStatus(); // Kiểm tra trạng thái SignalR
+        this.getListLines();
+        this.loadOrderDetails();
+        this.getOrderLineDetail();
+        this.loadListSensorRecords();
+        this.loadSensorRecord();
+        this.checkSignalRStatus();
       }
     });
   }
-  loadOrderDetails() {
-    this.repoService.getData(`api/order-details/by-order/${this.orderId}`).subscribe(
-      (res) => {
-        console.log("Data received:", res);
-        this.orderDetail = (res as OrderDetailDto[])[0]; // Gán dữ liệu vào biến orderDetail
-      },
-      (err) => {
-        console.log("Error loading order details:", err);
-      }
-    );
+  toggleSensorExpand(): void {
+    this.isSensorExpanded = !this.isSensorExpanded;
   }
-  getListLines() {
-    this.repoService.getData(`api/lines`).subscribe(
-      (res) => {
-        this.lines = (res as LineDto[]); // Gán dữ liệu vào biến orderDetail
-      },
-      (err) => {
-        console.log("Error loading lines:", err);
-      }
-    );
-  }
-  private connectToSignalR(): void {
-    if (!this.selectedLine) {
-      console.warn('No line selected. Cannot connect to SignalR.');
-      return;
-    }
-
-    this.signalrService.startConnection().then(() => {
-      console.log('SignalR connected successfully!');
-      this.isSignalRRunning = true;
-
-      // Lắng nghe dữ liệu từ SignalR
-      this.subscription = this.signalrService.dataReceived$.subscribe(data => {
-        this.receivedDataSensor = data;
-
-        // Kiểm tra dữ liệu hợp lệ trước khi truy cập index
-        if (Array.isArray(this.receivedDataSensor) && this.receivedDataSensor.length >= this.selectedLine) {
-          this.dataSensorByLine = this.receivedDataSensor[this.selectedLine - 1];
-          console.log('Data from SignalR:', this.dataSensorByLine);
-        } else {
-          console.warn('Invalid data or no data for the selected line.');
-          this.dataSensorByLine = null; // Reset nếu dữ liệu không hợp lệ
-        }
-      });
-    }).catch(err => {
-      console.error('SignalR connection error:', err);
-    });
-  }
-  private disconnectSignalR() {
-    if (this.subscription) {
-      this.subscription.unsubscribe(); // Hủy subscription
-    }
-    this.signalrService.stopConnection(); // Ngắt kết nối SignalR
-  }
-  // Ngắt kết nối SingalR khi component bị hủy
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     console.log("Component destroyed - Disconnecting SignalR...");
     this.disconnectSignalR();
   }
-  checkSignalRStatus() {
-    this.isSignalRRunning = this.signalrService.isConnected(); // `isConnected()` trả về `true` hoặc `false`
+
+  // API Calls
+  loadOrderDetails(): void {
+    this.repoService.getData(`api/order-details/by-order/${this.orderId}`).subscribe(
+      (res) => {
+        this.orderDetail = (res as OrderDetailDto[])[0];
+        console.log("Data received:", res);
+      },
+      (err) => console.error("Error loading order details:", err)
+    );
   }
-  //Hàm tính tổng giá trị đọc được từ Sensor
-  calculateTotals(): void {
-    this.totalUnits = this.sensorRecord.reduce((sum, item) => sum + item.sensorUnits, 0);
-    this.totalWeight = this.sensorRecord.reduce((sum, item) => sum + item.sensorUnits * this.orderDetail.productInformation.weightPerUnit, 0);
+
+  getListLines(): void {
+    this.repoService.getData(`api/lines`).subscribe(
+      (res) => this.lines = res as LineDto[],
+      (err) => console.error("Error loading lines:", err)
+    );
   }
-  //Hàm load danh sách Sensor Record để kiểm tra Status và chặn chọn Line
+
+  getOrderLineDetail(): void {
+    if (this.orderId) {
+      this.repoService.getData(`api/order-line-details/${this.orderId}`).subscribe(
+        (res) => {
+          this.orderLineDetails = res as OrderLineDetailDto[];
+          console.log('Order line details:', this.orderLineDetails);
+        },
+        (err) => {
+          console.error('Error loading order line details:', err);
+          this.orderLineDetails = [];
+        }
+      );
+    }
+  }
+
   loadListSensorRecords(): void {
     this.repoService.getData(`api/sensor-records`).subscribe(
       (res) => {
@@ -150,12 +125,12 @@ export class OrderDetailsComponent implements OnInit {
         console.log('List Sensor Record:', this.listSensorRecords);
       },
       (err) => {
-        console.log('Error loading sensor record:', err);
+        console.error('Error loading sensor record:', err);
         this.sensorRecord = [];
       }
     );
   }
-  // Hàm load Sensor Record theo OrderID
+
   loadSensorRecord(): void {
     if (this.orderId) {
       this.repoService.getData(`api/sensor-records/by-order/${this.orderId}`).subscribe(
@@ -163,23 +138,67 @@ export class OrderDetailsComponent implements OnInit {
           this.sensorRecord = res as SensorRecordDto[];
           this.latestRecord = this.getLatestRecord();
           console.log('Sensor Record:', this.sensorRecord);
-
-          // Nếu latestRecord có status = 1, kết nối SignalR
           if (this.latestRecord && this.latestRecord.status === 1) {
             this.isRunning = true;
-            this.selectedLine = this.latestRecord.lineId
+            this.selectedLine = this.latestRecord.lineId;
             console.log('selectedLine', this.selectedLine);
             console.log('Latest record is in progress. Connecting to SignalR...');
             this.connectToSignalR();
           }
-          this.calculateTotals(); //tính tổng các Units đếm được từ Sensor Record
+          this.calculateTotals();
         },
         (err) => {
-          console.log('Error loading sensor record:', err);
+          console.error('Error loading sensor record:', err);
           this.sensorRecord = [];
         }
       );
     }
+  }
+
+  // SignalR Management
+  private connectToSignalR(): void {
+    if (!this.selectedLine) {
+      console.warn('No line selected. Cannot connect to SignalR.');
+      return;
+    }
+    if (this.isSignalRRunning) {
+      console.log('SignalR already running.');
+      return;
+    }
+
+    this.signalrService.startConnection().then(() => {
+      console.log('SignalR connected successfully!');
+      this.isSignalRRunning = true;
+      this.subscription = this.signalrService.dataReceived$.subscribe(data => {
+        this.receivedDataSensor = data;
+        if (Array.isArray(this.receivedDataSensor) && this.receivedDataSensor.length >= this.selectedLine) {
+          this.dataSensorByLine = this.receivedDataSensor[this.selectedLine - 1];
+          console.log('Data from SignalR:', this.dataSensorByLine);
+          
+        } else {
+          console.warn('Invalid or no data for the selected line.');
+          this.dataSensorByLine = null;
+        }
+      });
+    }).catch(err => console.error('SignalR connection error:', err));
+  }
+
+  private disconnectSignalR(): void {
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
+    this.signalrService.stopConnection();
+    this.isSignalRRunning = false;
+  }
+
+  checkSignalRStatus(): void {
+    this.isSignalRRunning = this.signalrService.isConnected();
+  }
+
+  // Utility Methods
+  calculateTotals(): void {
+    this.totalUnits = this.sensorRecord.reduce((sum, item) => sum + item.sensorUnits, 0);
+    this.totalWeight = this.sensorRecord.reduce((sum, item) => sum + item.sensorUnits * (this.orderDetail?.productInformation?.weightPerUnit || 0), 0);
   }
 
   getLatestRecord(): any {
@@ -188,182 +207,122 @@ export class OrderDetailsComponent implements OnInit {
       : null;
   }
 
-
-  //Hàm cập nhật dữ liệu Sensor Record
-  updateSensorRecord(sensorRecord: SensorRecordDto) {
-    if (!sensorRecord.id) {
-      console.error('Error: Sensor Record ID is missing.');
-      return;
-    }
-    sensorRecord.status = 0;
-    sensorRecord.recordTime = this.timezoneService.getCurrentTime().toISOString(),
-      this.repoService.updateByID('api/sensor-records', sensorRecord.id.toString(), sensorRecord).subscribe(
-        (res) => {
-          console.log('Sensor Record updated successfully:', res);
-        },
-        (err) => {
-          console.error('Error updating sensor record:', err);
-        }
-      );
-    this.calculateTotals();
-  }
-
-  //Hàm thu nhỏ/phóng lớn thông tin các bảng
-  toggleExpand() {
+  toggleExpand(): void {
     this.isExpanded = !this.isExpanded;
   }
-  // Kiểm tra xem Order đã được gán Line chưa
+
   hasAssignedLine(): boolean {
     return this.orderLineDetails !== null;
   }
 
   getStatusText(status: number): string {
     switch (status) {
-      case 0:
-        return 'Not Completed';
-      case 1:
-        return 'In Progress';
-      case 2:
-        return 'Completed';
-      case 3:
-        return 'Cancel';
-      default:
-        return 'Unknown';
+      case 0: return 'Not Completed';
+      case 1: return 'In Progress';
+      case 2: return 'Completed';
+      case 3: return 'Cancel';
+      default: return 'Unknown';
     }
   }
-
 
   getStatusClass(status: number): string {
     switch (status) {
-      case 0:
-        return 'status-not-completed';
-      case 1:
-        return 'status-in-progress';
-      case 2:
-        return 'status-completed';
-      case 3:
-        return 'status-cancel';
-      default:
-        return 'status-unknown';
+      case 0: return 'status-not-completed';
+      case 1: return 'status-in-progress';
+      case 2: return 'status-completed';
+      case 3: return 'status-cancel';
+      default: return 'status-unknown';
     }
   }
-  //Sự kiện tại nút Start / Stop
-  async toggleOrder() {
+
+  // Core Logic
+  toggleOrder(): void {
     if (!this.isRunning) {
       this.isStarting = false;
       this.isRunning = true;
       this.startOrder();
-      // Khởi tạo kết nối SignalR
-      if (this.selectedLine != 0) {
-        this.signalrService.startConnection().then(() => {
-          this.isSignalRRunning = true;
-          this.subscription = this.signalrService.dataReceived$.subscribe(data => {
-            this.receivedDataSensor = data;
-            // Kiểm tra dữ liệu hợp lệ trước khi truy cập index
-            if (Array.isArray(this.receivedDataSensor) && this.receivedDataSensor.length >= this.selectedLine) {
-              //Trong chuỗi bắt đầu là 0, ID Line bắt đầu là 1 nên phải trừ đi 1 đơn vị để ra vị trí đúng trong chuỗi
-              this.dataSensorByLine = this.receivedDataSensor[this.selectedLine - 1];
-            } else {
-              console.warn("Dữ liệu không hợp lệ hoặc không có phần tử tại vị trí này.");
-              this.dataSensorByLine = null; // Reset nếu dữ liệu không hợp lệ
-            }
-          });
-        }).catch(err => {
-          console.error("SignalR connection error:", err);
-        });
+      if (this.selectedLine !== 0) {
+        this.connectToSignalR();
       }
-    }
-    else //Xử lý sự kiện STOP
-    {
-      let totalUnits = this.totalUnits + Number(this.receivedDataSensor[this.selectedLine - 1].value);
+    } else {
+      this.isLoading = true;
+      let totalUnits = this.totalUnits + Number(this.receivedDataSensor[this.selectedLine - 1]?.value || 0);
       console.log("Tổng giá trị từ sensorRecord và giá trị đang đọc:", totalUnits);
-      // Kiểm tra điều kiện 
-      if (totalUnits < this.orderDetail.requestedUnits) {
+
+      const stopOrder = () => {
+        this.isRunning = false;
+        this.selectedLine = 0;
+
+        if (this.sensorRecord.length > 0 && this.receivedDataSensor) {
+          const lastIndex = this.sensorRecord.length - 1;
+          const lastRecord = this.sensorRecord[lastIndex];
+
+          if (this.dataSensorByLine) {
+            lastRecord.sensorUnits = Number(this.dataSensorByLine.value);
+            lastRecord.sensorWeight = lastRecord.sensorUnits * (this.orderDetail?.productInformation?.weightPerUnit || 0);
+            console.log("lastRecord:", lastRecord);
+
+            this.updateSensorRecord(lastRecord);
+            this.updateLastOrderLineDetail();
+            this.updateWCFData();
+
+            // Thay reload bằng refresh
+            setTimeout(() => {
+              this.refreshChangedData();
+              this.isLoading = false;
+            }, 500); // Delay nhẹ để đảm bảo API hoàn tất
+          } else {
+            console.error("Data Sensor By Line null:", this.dataSensorByLine);
+            this.snackBar.open('Error: No sensor data available.', 'Close', { duration: 3000 });
+            this.isLoading = false;
+          }
+        } else {
+          this.isLoading = false;
+        }
+
+        this.disconnectSignalR();
+      };
+
+      if (totalUnits < this.orderDetail?.requestedUnits) {
         const dialogRef = this.dialog.open(ConfirmComponent, {
           width: '450px',
           height: '130px',
           data: { message: "The count is not complete. Are you sure you want to stop?" }
         });
 
-        dialogRef.afterClosed().subscribe(async result => {
-          if (!result) {
-            return; // Nếu người dùng chọn "Hủy", không tiếp tục STOP
-          }
-
-          // Chỉ khi người dùng chọn "Xác nhận" mới thực thi lệnh dừng
-          this.isRunning = false;
-          this.selectedLine = 0;
-          if (this.sensorRecord.length > 0 && this.receivedDataSensor) {
-            let lastIndex = this.sensorRecord.length - 1;
-            let lastRecord = this.sensorRecord[lastIndex];
-
-            if (this.dataSensorByLine != null) {
-              lastRecord.sensorUnits = Number(this.dataSensorByLine.value);
-              //lastRecord.recordTime = new Date(this.dataSensorByLine.timeStamp).toISOString();
-              console.log("lastRecord:", lastRecord);
-              this.updateSensorRecord(lastRecord); //Update record cuối cùng
-              this.updateLastOrderLineDetail();
-              this.updateWCFData();
-              await this.delay(1000); // 2000ms = 2 giây
-              // Reload lại trang sau khi dừng
-              window.location.reload();
-            }
-            else {
-              console.error("Data Sensor By Line null:", this.dataSensorByLine);
-            }
-
-          }
-
-          this.signalrService.stopConnection().catch(err => {
-            console.error("SignalR connection error:", err);
-          });
-          this.isSignalRRunning = false;
+        dialogRef.afterClosed().subscribe(result => {
+          if (result) stopOrder();
+          else this.isLoading = false;
         });
       } else {
-        // Nếu dữ liệu hợp lệ, vẫn tiếp tục dừng như bình thường
-        this.isRunning = false;
-        this.selectedLine = 0;
-        if (this.sensorRecord.length > 0 && this.receivedDataSensor) {
-          let lastIndex = this.sensorRecord.length - 1;
-          let lastRecord = this.sensorRecord[lastIndex];
-
-          if (this.dataSensorByLine != null) {
-            lastRecord.sensorUnits = Number(this.dataSensorByLine.value);
-            lastRecord.sensorWeight = lastRecord.sensorUnits * this.orderDetail.productInformation.weightPerUnit;
-            //lastRecord.recordTime = new Date(this.dataSensorByLine.timeStamp).toISOString();
-            console.log("lastRecord:", lastRecord);
-            this.updateSensorRecord(lastRecord);
-            this.updateLastOrderLineDetail();
-            this.updateWCFData();
-            await this.delay(1000); // 2000ms = 2 giây
-            // Reload lại trang sau khi dừng
-            window.location.reload();
-          }
-          else {
-            console.error("Data Sensor By Line null:", this.dataSensorByLine);
-          }
-        }
-
-        this.signalrService.stopConnection().catch(err => {
-          console.error("SignalR connection error:", err);
-        });
-        this.isSignalRRunning = false;
+        stopOrder();
       }
     }
   }
-  private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+
+  refreshChangedData(): void {
+    this.loadSensorRecord();
+    this.getOrderLineDetail();
+    this.loadOrderDetails();
   }
-  completeOrder() {
-    this.confirmForm(this.orderDetail.id);
-    console.log('Order Detail updated successfully:', this.orderDetail);
+
+  // Update Methods
+  updateSensorRecord(sensorRecord: SensorRecordDto): void {
+    if (!sensorRecord.id) {
+      console.error('Error: Sensor Record ID is missing.');
+      return;
+    }
+    sensorRecord.status = 0;
+    sensorRecord.recordTime = this.timezoneService.getCurrentTime().toISOString();
+    this.repoService.updateByID('api/sensor-records', sensorRecord.id.toString(), sensorRecord).subscribe(
+      (res) => console.log('Sensor Record updated successfully:', res),
+      (err) => console.error('Error updating sensor record:', err)
+    );
+    this.calculateTotals();
   }
-  goBack(): void {
-    this.router.navigate(['/ui-components/orders']);
-  }
-  //Hàm update OrderDetail 
+
   updateOrderDetail(): void {
-    if (this.totalUnits > this.orderDetail.requestedUnits) {
+    if (this.totalUnits > this.orderDetail?.requestedUnits) {
       const orderDetailDataUpdate: OrderDetailUpdateDto = {
         orderId: this.orderDetail.orderId,
         requestedUnits: this.orderDetail.requestedUnits,
@@ -376,16 +335,12 @@ export class OrderDetailsComponent implements OnInit {
         replacedWeight: this.orderDetail.replacedWeight,
       };
       this.repoService.updateByID('api/order-details', this.orderDetail.id.toString(), orderDetailDataUpdate).subscribe(
-        (res) => {
-          console.log('Order Detail updated successfully:', res);
-        },
-        (err) => {
-          console.error('Error updating order detail:', err);
-        }
+        (res) => console.log('Order Detail updated successfully:', res),
+        (err) => console.error('Error updating order detail:', err)
       );
     }
   }
-  //Hàm update status cho Order
+
   updateOrderStatus(status: number): void {
     if (this.orderId) {
       const orderData: OrderForManipulationDto = {
@@ -399,26 +354,62 @@ export class OrderDetailsComponent implements OnInit {
         distributorId: this.orderDetail.order.distributorId,
         exportDate: this.orderDetail.order.exportDate,
       };
-
       this.repoService.updateByID('api/orders', this.orderId, orderData).subscribe(
         (res) => {
           console.log('Order status updated successfully:', res);
-          this.ngOnInit();
+          this.refreshChangedData();
         },
-        (err) => {
-          console.error('Error updating order status:', err);
-        }
+        (err) => console.error('Error updating order status:', err)
       );
     }
   }
 
+  updateLastOrderLineDetail(): void {
+    if (this.orderLineDetails && this.orderLineDetails.length > 0) {
+      const lastOrderLineDetail = this.orderLineDetails.reduce((latest, current) =>
+        current.id > latest.id ? current : latest
+      );
+      console.log("ID cập nhật", lastOrderLineDetail.id);
+      if (lastOrderLineDetail) {
+        lastOrderLineDetail.EndTime = new Date().toISOString();
+        this.repoService.updateByID('api/order-line-details', lastOrderLineDetail.id.toString(), lastOrderLineDetail).subscribe(
+          (res) => console.log('Last Order Line Detail updated successfully:', res),
+          (err) => console.error('Error updating Order Line Detail:', err)
+        );
+      } else {
+        console.error('No valid Order Line Detail found.');
+      }
+    } else {
+      console.error('Order Line Details list is empty.');
+    }
+  }
+
+  updateWCFData(): void {
+    if (!this.dataSensorByLine) {
+      console.error('Error: Sensor Record is missing.');
+      return;
+    }
+    const sensorData: WcfDataUpdateDto[] = [{
+      name: this.dataSensorByLine.name,
+      value: "0"
+    }];
+    console.log("Write value:", sensorData);
+    this.repoService.update('api/wcf/write-value', sensorData).subscribe(
+      (res) => console.log('Sensor Record updated successfully:', res),
+      (err) => console.error('Error updating sensor record:', err)
+    );
+    this.calculateTotals();
+  }
+
+  // Action Methods
   startOrder(): void {
     if (!this.selectedLine) {
       this.snackBar.open('Please select a Line before starting.', 'Close', { duration: 3000 });
       return;
     }
     if (this.selectedLine && this.orderId) {
-      this.updateOrderStatus(1); //update thành running
+      this.isLoading = true;
+      this.updateOrderStatus(1);
       const sensorRecordData: SensorRecordCreationDto = {
         orderId: this.orderId,
         orderDetailId: this.orderDetail.id,
@@ -429,21 +420,46 @@ export class OrderDetailsComponent implements OnInit {
         status: 1,
       };
       console.log('data:', sensorRecordData);
-      this.createOrderLineDetail(); //Tạo OrderLineDetail
+      this.createOrderLineDetail();
       this.repoService.create('api/sensor-records', sensorRecordData).subscribe(
         (res) => {
           console.log('Sensor Record created successfully:', res);
           this.loadSensorRecord();
+          this.isLoading = false;
         },
         (err) => {
-          console.log('Error creating sensor record:', err);
+          console.error('Error creating sensor record:', err);
+          this.isLoading = false;
         }
       );
     }
   }
-  //Hàm mở modal AddLine
-  confirmForm(id: number) {
-    console.log("ID:", id);
+
+  createOrderLineDetail(): void {
+    if (this.orderLineDetails && this.orderId) {
+      let sequenceNumber = this.orderLineDetails.length + 1;
+      const orderLineDetailData: OrderLineDetailCreationDto = {
+        orderId: this.orderId,
+        LineId: this.selectedLine,
+        SequenceNumber: sequenceNumber,
+        StartTime: new Date().toISOString(),
+        EndTime: new Date().toISOString()
+      };
+      this.repoService.create('api/order-line-details', orderLineDetailData).subscribe(
+        (res) => {
+          this.isStarting = false;
+          this.snackBar.open('Order started successfully.', 'Close', { duration: 3000 });
+        },
+        (err) => {
+          this.isStarting = false;
+          this.snackBar.open('Failed to start order.', 'Close', { duration: 3000 });
+          console.error(err);
+        }
+      );
+    }
+  }
+
+  confirmForm(id: number): void {
     const dialogRef = this.dialog.open(OrderDetailConfirmComponent, {
       width: '500px',
       height: '400px',
@@ -459,105 +475,28 @@ export class OrderDetailsComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
+        this.isLoading = true;
         this.updateOrderDetail();
-        this.updateOrderStatus(2); // update thành completed
+        this.updateOrderStatus(2);
+        setTimeout(() => {
+          this.refreshChangedData();
+          this.isLoading = false;
+        }, 500);
       }
     });
   }
-  //Hàm lấy dữ liệu OrderLineDetail theo orderID
-  getOrderLineDetail(): void {
-    if (this.orderId) {
-      this.repoService.getData(`api/order-line-details/${this.orderId}`).subscribe(
-        (res) => {
-          this.orderLineDetails = res as OrderLineDetailDto[];
-          console.log('Order line details:', this.orderLineDetails);
-        },
-        (err) => {
-          console.log('Error loading order line details:', err);
-          this.orderLineDetails = [];
-        }
-      );
-    }
-  }
-  //Hàm tạo OrderLineDetail
-  createOrderLineDetail(): void {
-    if (this.orderLineDetails != null && this.orderId != null) {
-      let sequenceNumber = this.orderLineDetails.length + 1;
-      const orderLineDetailData: OrderLineDetailCreationDto = {
-        orderId: this.orderId,
-        LineId: this.selectedLine,
-        SequenceNumber: sequenceNumber,
-        StartTime: new Date().toISOString(),
-        EndTime: new Date().toISOString()
-      };
 
-      this.repoService.create('api/order-line-details', orderLineDetailData).subscribe(
-        (res) => {
-          this.isStarting = false;
-          this.snackBar.open('Order started successfully.', 'Close', { duration: 3000 });
-        },
-        (err) => {
-          this.isStarting = false;
-          this.snackBar.open('Failed to start order.', 'Close', { duration: 3000 });
-          console.log(err);
-        }
-      );
-    }
+  completeOrder(): void {
+    this.confirmForm(this.orderDetail?.id);
+    console.log('Order Detail updated successfully:', this.orderDetail);
   }
 
-  //Hàm update OrderLineDetail
-  updateLastOrderLineDetail(): void {
-    if (this.orderLineDetails && this.orderLineDetails.length > 0) {
-
-      // Lấy phần tử cuối cùng
-      const lastOrderLineDetail = this.orderLineDetails.reduce((latest, current) =>
-        current.id > latest.id ? current : latest
-      );
-      console.log("ID cập nhật", lastOrderLineDetail.id);
-      if (lastOrderLineDetail) {
-        lastOrderLineDetail.EndTime = new Date().toISOString(); // Cập nhật thời gian
-
-        this.repoService.updateByID('api/order-line-details', lastOrderLineDetail.id.toString(), lastOrderLineDetail)
-          .subscribe(
-            (res) => console.log('Last Order Line Detail updated successfully:', res),
-            (err) => console.error('Error updating Order Line Detail:', err)
-          );
-      } else {
-        console.error('No valid Order Line Detail found.');
-      }
-    } else {
-      console.error('Order Line Details list is empty.');
-    }
+  goBack(): void {
+    this.router.navigate(['/ui-components/orders']);
   }
-  //Hàm gọi API Write-value để reset tag trên AT
-  updateWCFData(): void {
-    if (!this.dataSensorByLine) {
-      console.error('Error: Sensor Record is missing.');
-      return;
-    }
-    const sensorData: WcfDataUpdateDto[] = [
-      {
-        name: this.dataSensorByLine.name,
-        value: "0"
-      }
-    ];
-    console.log("Write value:", sensorData);
-    this.repoService.update('api/wcf/write-value', sensorData).subscribe(
-      (res) => {
-        console.log('Sensor Record updated successfully:', res);
-      },
-      (err) => {
-        console.error('Error updating sensor record:', err);
-      }
-    );
-    this.calculateTotals();
-  }
-  selectLine(lineId: number) {
-    //console.log("selected line:", lineId);
 
-    // Kiểm tra xem Line có đang chạy không
+  selectLine(lineId: number): void {
     const activeRecord = this.listSensorRecords.find(record => record.lineId === lineId && record.status === 1);
-
     if (activeRecord) {
       const dialogRef = this.dialog.open(ConfirmComponent, {
         width: '450px',
@@ -574,18 +513,16 @@ export class OrderDetailsComponent implements OnInit {
           this.selectedLine = 0;
         }
       });
-
-      return;
+    } else {
+      this.selectedLine = lineId;
+      console.log("selected line:", this.selectedLine);
     }
-    // Nếu không có record nào đang chạy, cho phép chọn Line
-    this.selectedLine = lineId;
-    console.log("selected line:", this.selectedLine);
   }
 
-
-
-
-
-
+  calculateWeight(item: SensorRecordDto): number {
+    const weightPerUnit = this.orderDetail?.productInformation?.weightPerUnit || 0;
+    const units = item === this.latestRecord && this.dataSensorByLine?.value ? Number(this.dataSensorByLine.value) : item.sensorUnits;
+    console.log('Calculating weight:', { itemId: item.id, units, weightPerUnit });
+    return units * weightPerUnit;
+  }
 }
-

@@ -406,3 +406,145 @@ tfoot td strong:nth-child(3) {
   }
   
 }
+/* Sensor Section */
+.sensor-section {
+  border: none;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(90deg, #2a3547, #3b4a63);
+  padding: 12px 20px;
+  border-radius: 8px 8px 0 0;
+}
+
+.section-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0;
+  border-bottom: none;
+}
+
+.toggle-btn {
+  background: #ffffff;
+  color: #2a3547;
+  border: none;
+  padding: 6px 12px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.toggle-btn:hover {
+  background: #e0e0e0;
+}
+
+.info-content {
+  padding: 0;
+  transition: max-height 0.3s ease-in-out;
+}
+
+.collapsed {
+  max-height: 0;
+  overflow: hidden;
+}
+
+/* Sensor Table */
+.sensor-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+}
+
+.sensor-table th,
+.sensor-table td {
+  padding: 12px 16px;
+  text-align: center;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.sensor-table th {
+  background: #2a3547;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sensor-table td {
+  background: #ffffff;
+  color: #333;
+  font-size: 14px;
+}
+
+.sensor-table tbody tr {
+  transition: background 0.2s;
+}
+
+.sensor-table tbody tr:hover {
+  background: #f5f5f5;
+}
+
+.newest-row {
+  background: #d4edda; /* Màu xanh nhạt */
+  font-weight: 600;
+  animation: highlight 1s ease-out;
+}
+
+@keyframes highlight {
+  0% { background: #b3e5fc; }
+  100% { background: #d4edda; }
+}
+
+/* Footer */
+.sensor-table tfoot {
+  background: #fff8e1;
+  font-weight: 600;
+}
+
+.sensor-table tfoot td {
+  padding: 10px 16px;
+  border-top: 2px solid #ffd54f;
+}
+
+.defective-info {
+  color: #d32f2f;
+  margin-right: 20px;
+}
+
+.replaced-info {
+  color: #388e3c;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sensor-table th,
+  .sensor-table td {
+    padding: 8px;
+    font-size: 12px;
+  }
+
+  .sensor-table tfoot td {
+    padding: 6px;
+    font-size: 12px;
+  }
+
+  .section-title {
+    font-size: 18px;
+  }
+
+  .toggle-btn {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+}

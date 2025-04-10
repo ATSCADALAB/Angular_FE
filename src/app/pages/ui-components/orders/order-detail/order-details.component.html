@@ -127,45 +127,56 @@
         
 
       </div>
-      <div class="info-section" *ngIf="sensorRecord.length > 0">
-        <div class="section-header">
-          <h3 class="section-title">Sensor Record</h3>
-        </div>
-        <div class="info-content" >
-          <table class="table">
-            <thead >
-              <tr>
-                <th>Line</th>
-                <th>Units</th>
-                <!-- <th>Weight</th> -->
-                <th>Time</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let item of sensorRecord" [ngClass]="{'newest-row': item === latestRecord}">
-                <td>{{ item.lineId }}</td>
-                <td>
-                  {{ item === latestRecord && dataSensorByLine?.value ? dataSensorByLine?.value : item.sensorUnits }}
-                </td>
-                <!-- <td>
-                  {{ item.sensorUnits *  orderDetail.productInformation.weightPerUnit }}
-                </td> -->
-                <td>{{ item.recordTime | date: 'HH:mm - dd/MM/yyyy' }}</td>
-              </tr>
-            </tbody>
-            <tfoot *ngIf="orderDetail.order.status === 2">
-              <tr>
-                <td><strong>Total:</strong></td>
-                <td><strong>{{ totalUnits + orderDetail.replacedUnits - orderDetail.defectiveUnits }} / {{orderDetail.requestedUnits}}</strong></td>
-                <td *ngIf="orderDetail.replacedUnits">
-                  <strong style="color: red;">Defectived Units: {{orderDetail.defectiveUnits}} bags</strong> <br />
-                  <strong style="color: green;">Replaced Units: {{orderDetail.replacedUnits}} bags</strong>
-                </td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-      </div>
+      <div class="info-section sensor-section" *ngIf="sensorRecord.length > 0">
+  <div class="section-header">
+    <h3 class="section-title">Sensor Record</h3>
+    <button class="toggle-btn" (click)="toggleSensorExpand()">
+      {{ isSensorExpanded ? 'Collapse' : 'Expand' }}
+    </button>
+  </div>
+  <div class="info-content" [ngClass]="{'collapsed': !isSensorExpanded}">
+    <table class="sensor-table">
+      <thead>
+        <tr>
+          <th>Line</th>
+          <th>Units (Bags)</th>
+          <th>Weight (kg)</th>
+          <th>Record Time</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of sensorRecord" [ngClass]="{'newest-row': item === latestRecord}">
+          <td>{{ item.lineId }}</td>
+          <td>
+            {{ item === latestRecord && dataSensorByLine?.value ? dataSensorByLine?.value : item.sensorUnits }}
+          </td>
+          <td>
+            {{ calculateWeight(item) | number: '1.2-2' }}
+          </td>
+          <td>{{ item.recordTime | date: 'HH:mm - dd/MM/yyyy' }}</td>
+        </tr>
+      </tbody>
+      <tfoot *ngIf="orderDetail.order.status === 2">
+        <tr>
+          <td><strong>Total</strong></td>
+          <td><strong>{{ totalUnits + orderDetail.replacedUnits - orderDetail.defectiveUnits }} / {{ orderDetail.requestedUnits }}</strong></td>
+          <td><strong>{{ totalWeight + orderDetail.replacedWeight - orderDetail.defectiveWeight | number: '1.2-2' }}</strong></td>
+          <td></td>
+        </tr>
+        <tr *ngIf="orderDetail.replacedUnits || orderDetail.defectiveUnits">
+          <td colspan="4">
+            <span class="defective-info" *ngIf="orderDetail.defectiveUnits">
+              Defective: {{ orderDetail.defectiveUnits }} bags / {{ orderDetail.defectiveWeight | number: '1.2-2' }} kg
+            </span>
+            <span class="replaced-info" *ngIf="orderDetail.replacedUnits">
+              Replaced: {{ orderDetail.replacedUnits }} bags / {{ orderDetail.replacedWeight | number: '1.2-2' }} kg
+            </span>
+          </td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
       
     </mat-card-content>
 
