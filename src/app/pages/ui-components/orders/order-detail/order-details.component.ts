@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RepositoryService } from 'src/app/shared/services/repository.service';
 import { OrderDetailDto, OrderDetailUpdateDto } from 'src/app/_interface/order-detail';
@@ -18,14 +18,15 @@ import { LineDto } from 'src/app/_interface/line';
 @Component({
   selector: 'app-order-details',
   templateUrl: './order-details.component.html',
-  styleUrls: ['./order-details.component.scss']
+  styleUrls: ['./order-details.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class OrderDetailsComponent implements OnInit, OnDestroy {
   totalUnits: number = 0;
   totalWeight: number = 0;
   replacedUnits: number = 0;
   replacedWeight: number = 0;
-  isSensorExpanded = true; // Thêm biến mới cho Sensor Record
+  isSensorExpanded = true;
   sensorRecord: SensorRecordDto[] = [];
   listSensorRecords: SensorRecordDto[] = [];
   isExpanded = true;
@@ -40,7 +41,8 @@ export class OrderDetailsComponent implements OnInit, OnDestroy {
   orderLineDetails: OrderLineDetailDto[] = [];
   latestRecord: any;
   isSignalRRunning: boolean = false;
-  isLoading: boolean = false; // Thêm biến loading
+  isLoading: boolean = false;
+  isAssigned: boolean = false;
   private subscription: Subscription;
 
   constructor(
@@ -50,23 +52,20 @@ export class OrderDetailsComponent implements OnInit, OnDestroy {
     private repoService: RepositoryService,
     private snackBar: MatSnackBar,
     private signalrService: SignalRService,
-    private timezoneService: TimezoneService
+    private timezoneService: TimezoneService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
       this.orderId = params.get('id');
       this.selectedLine = 0;
-
-      // Thay reload bằng refresh khi quay lại tab
-      // Chỉ refresh khi order đang chạy
       document.addEventListener("visibilitychange", () => {
         if (!document.hidden && this.isRunning) {
           this.refreshChangedData();
         }
       });
 
-      console.log("selected line khi load", this.selectedLine);
       if (this.orderId) {
         this.getListLines();
         this.loadOrderDetails();
@@ -75,14 +74,18 @@ export class OrderDetailsComponent implements OnInit, OnDestroy {
         this.loadSensorRecord();
         this.checkSignalRStatus();
       }
+      this.cdr.detectChanges();
     });
   }
+
   toggleSensorExpand(): void {
     this.isSensorExpanded = !this.isSensorExpanded;
+    this.cdr.detectChanges();
   }
+
   ngOnDestroy(): void {
-    console.log("Component destroyed - Disconnecting SignalR...");
     this.disconnectSignalR();
+    this.cdr.detach();
   }
 
   // API Calls
@@ -90,16 +93,23 @@ export class OrderDetailsComponent implements OnInit, OnDestroy {
     this.repoService.getData(`api/order-details/by-order/${this.orderId}`).subscribe(
       (res) => {
         this.orderDetail = (res as OrderDetailDto[])[0];
-        console.log("Data received:", res);
+        this.cdr.detectChanges();
       },
-      (err) => console.error("Error loading order details:", err)
+      (err) => {
+        this.cdr.detectChanges();
+      }
     );
   }
 
   getListLines(): void {
     this.repoService.getData(`api/lines`).subscribe(
-      (res) => this.lines = res as LineDto[],
-      (err) => console.error("Error loading lines:", err)
+      (res) => {
+        this.lines = res as LineDto[];
+        this.cdr.detectChanges();
+      },
+      (err) => {
+        this.cdr.detectChanges();
+      }
     );
   }
 
@@ -108,11 +118,20 @@ export class OrderDetailsComponent implements OnInit, OnDestroy {
       this.repoService.getData(`api/order-line-details/${this.orderId}`).subscribe(
         (res) => {
           this.orderLineDetails = res as OrderLineDetailDto[];
-          console.log('Order line details:', this.orderLineDetails);
+          const assignedLine = this.orderLineDetails.find(detail => detail.orderId === this.orderId && detail.EndTime == undefined);
+          if (assignedLine) {
+            this.isAssigned = true;
+            this.selectedLine = assignedLine.lineId;
+          } else {
+            this.isAssigned = false;
+            this.selectedLine = 0;
+          }
+          this.cdr.detectChanges();
         },
         (err) => {
-          console.error('Error loading order line details:', err);
           this.orderLineDetails = [];
+          this.isAssigned = false;
+          this.cdr.detectChanges();
         }
       );
     }
@@ -122,11 +141,11 @@ export class OrderDetailsComponent implements OnInit, OnDestroy {
     this.repoService.getData(`api/sensor-records`).subscribe(
       (res) => {
         this.listSensorRecords = res as SensorRecordDto[];
-        console.log('List Sensor Record:', this.listSensorRecords);
+        this.cdr.detectChanges();
       },
       (err) => {
-        console.error('Error loading sensor record:', err);
         this.sensorRecord = [];
+        this.cdr.detectChanges();
       }
     );
   }
@@ -137,19 +156,17 @@ export class OrderDetailsComponent implements OnInit, OnDestroy {
         (res) => {
           this.sensorRecord = res as SensorRecordDto[];
           this.latestRecord = this.getLatestRecord();
-          console.log('Sensor Record:', this.sensorRecord);
           if (this.latestRecord && this.latestRecord.status === 1) {
             this.isRunning = true;
             this.selectedLine = this.latestRecord.lineId;
-            console.log('selectedLine', this.selectedLine);
-            console.log('Latest record is in progress. Connecting to SignalR...');
             this.connectToSignalR();
           }
           this.calculateTotals();
+          this.cdr.detectChanges();
         },
         (err) => {
-          console.error('Error loading sensor record:', err);
           this.sensorRecord = [];
+          this.cdr.detectChanges();
         }
       );
     }
@@ -158,29 +175,27 @@ export class OrderDetailsComponent implements OnInit, OnDestroy {
   // SignalR Management
   private connectToSignalR(): void {
     if (!this.selectedLine) {
-      console.warn('No line selected. Cannot connect to SignalR.');
       return;
     }
     if (this.isSignalRRunning) {
-      console.log('SignalR already running.');
       return;
     }
 
     this.signalrService.startConnection().then(() => {
-      console.log('SignalR connected successfully!');
       this.isSignalRRunning = true;
       this.subscription = this.signalrService.dataReceived$.subscribe(data => {
         this.receivedDataSensor = data;
         if (Array.isArray(this.receivedDataSensor) && this.receivedDataSensor.length >= this.selectedLine) {
           this.dataSensorByLine = this.receivedDataSensor[this.selectedLine - 1];
-          console.log('Data from SignalR:', this.dataSensorByLine);
-          
+          this.cdr.detectChanges();
         } else {
-          console.warn('Invalid or no data for the selected line.');
           this.dataSensorByLine = null;
+          this.cdr.detectChanges();
         }
       });
-    }).catch(err => console.error('SignalR connection error:', err));
+    }).catch(err => {
+      this.cdr.detectChanges();
+    });
   }
 
   private disconnectSignalR(): void {
@@ -189,16 +204,19 @@ export class OrderDetailsComponent implements OnInit, OnDestroy {
     }
     this.signalrService.stopConnection();
     this.isSignalRRunning = false;
+    this.cdr.detectChanges();
   }
 
   checkSignalRStatus(): void {
     this.isSignalRRunning = this.signalrService.isConnected();
+    this.cdr.detectChanges();
   }
 
   // Utility Methods
   calculateTotals(): void {
     this.totalUnits = this.sensorRecord.reduce((sum, item) => sum + item.sensorUnits, 0);
     this.totalWeight = this.sensorRecord.reduce((sum, item) => sum + item.sensorUnits * (this.orderDetail?.productInformation?.weightPerUnit || 0), 0);
+    this.cdr.detectChanges();
   }
 
   getLatestRecord(): any {
@@ -209,6 +227,7 @@ export class OrderDetailsComponent implements OnInit, OnDestroy {
 
   toggleExpand(): void {
     this.isExpanded = !this.isExpanded;
+    this.cdr.detectChanges();
   }
 
   hasAssignedLine(): boolean {
@@ -238,16 +257,50 @@ export class OrderDetailsComponent implements OnInit, OnDestroy {
   // Core Logic
   toggleOrder(): void {
     if (!this.isRunning) {
+      const activeRecord = this.listSensorRecords.find(record => record.lineId === this.selectedLine && record.status === 1);
+      if (activeRecord) {
+        const dialogRef = this.dialog.open(ConfirmComponent, {
+          width: '450px',
+          height: '150px',
+          disableClose: true,
+          data: { message: `Line ${this.selectedLine} is currently in use by order ${activeRecord.orderId}. Would you like to view its details?` }
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+          this.isStarting = false;
+          this.isRunning = false;
+          if (result) {
+            this.router.navigate(['/ui-components/order-details', activeRecord.orderId]);
+          } else {
+            this.selectedLine = 0;
+            this.snackBar.open('Please select another Line.', 'Close', { duration: 3000 });
+            this.cdr.detectChanges();
+          }
+        });
+        return;
+      }
       this.isStarting = false;
       this.isRunning = true;
       this.startOrder();
       if (this.selectedLine !== 0) {
         this.connectToSignalR();
       }
+      console.log(this.selectLine.toString())
+      const settings: WcfDataUpdateDto[] = [{
+      name: this.selectedLine.toString(),
+      valueToWrite: this.orderDetail.order.vehicleNumber+"/"+this.orderDetail.productInformation.productCode+"/"+this.orderDetail.requestedUnits+"/"+this.orderDetail.productInformation.weightPerUnit
+    }];
+    this.repoService.update('api/wcf/write-setting', settings).subscribe(
+      (res) => {
+        this.cdr.detectChanges();
+      },
+      (err) => {
+        this.cdr.detectChanges();
+      }
+    );
     } else {
       this.isLoading = true;
       let totalUnits = this.totalUnits + Number(this.receivedDataSensor[this.selectedLine - 1]?.value || 0);
-      console.log("Tổng giá trị từ sensorRecord và giá trị đang đọc:", totalUnits);
 
       const stopOrder = () => {
         this.isRunning = false;
@@ -260,24 +313,24 @@ export class OrderDetailsComponent implements OnInit, OnDestroy {
           if (this.dataSensorByLine) {
             lastRecord.sensorUnits = Number(this.dataSensorByLine.value);
             lastRecord.sensorWeight = lastRecord.sensorUnits * (this.orderDetail?.productInformation?.weightPerUnit || 0);
-            console.log("lastRecord:", lastRecord);
 
             this.updateSensorRecord(lastRecord);
             this.updateLastOrderLineDetail();
             this.updateWCFData();
 
-            // Thay reload bằng refresh
             setTimeout(() => {
               this.refreshChangedData();
               this.isLoading = false;
-            }, 500); // Delay nhẹ để đảm bảo API hoàn tất
+              this.cdr.detectChanges();
+            }, 500);
           } else {
-            console.error("Data Sensor By Line null:", this.dataSensorByLine);
             this.snackBar.open('Error: No sensor data available.', 'Close', { duration: 3000 });
             this.isLoading = false;
+            this.cdr.detectChanges();
           }
         } else {
           this.isLoading = false;
+          this.cdr.detectChanges();
         }
 
         this.disconnectSignalR();
@@ -292,7 +345,10 @@ export class OrderDetailsComponent implements OnInit, OnDestroy {
 
         dialogRef.afterClosed().subscribe(result => {
           if (result) stopOrder();
-          else this.isLoading = false;
+          else {
+            this.isLoading = false;
+            this.cdr.detectChanges();
+          }
         });
       } else {
         stopOrder();
@@ -304,19 +360,23 @@ export class OrderDetailsComponent implements OnInit, OnDestroy {
     this.loadSensorRecord();
     this.getOrderLineDetail();
     this.loadOrderDetails();
+    this.cdr.detectChanges();
   }
 
   // Update Methods
   updateSensorRecord(sensorRecord: SensorRecordDto): void {
     if (!sensorRecord.id) {
-      console.error('Error: Sensor Record ID is missing.');
       return;
     }
     sensorRecord.status = 0;
     sensorRecord.recordTime = this.timezoneService.getCurrentTime().toISOString();
     this.repoService.updateByID('api/sensor-records', sensorRecord.id.toString(), sensorRecord).subscribe(
-      (res) => console.log('Sensor Record updated successfully:', res),
-      (err) => console.error('Error updating sensor record:', err)
+      (res) => {
+        this.cdr.detectChanges();
+      },
+      (err) => {
+        this.cdr.detectChanges();
+      }
     );
     this.calculateTotals();
   }
@@ -335,8 +395,12 @@ export class OrderDetailsComponent implements OnInit, OnDestroy {
         replacedWeight: this.orderDetail.replacedWeight,
       };
       this.repoService.updateByID('api/order-details', this.orderDetail.id.toString(), orderDetailDataUpdate).subscribe(
-        (res) => console.log('Order Detail updated successfully:', res),
-        (err) => console.error('Error updating order detail:', err)
+        (res) => {
+          this.cdr.detectChanges();
+        },
+        (err) => {
+          this.cdr.detectChanges();
+        }
       );
     }
   }
@@ -356,10 +420,12 @@ export class OrderDetailsComponent implements OnInit, OnDestroy {
       };
       this.repoService.updateByID('api/orders', this.orderId, orderData).subscribe(
         (res) => {
-          console.log('Order status updated successfully:', res);
           this.refreshChangedData();
+          this.cdr.detectChanges();
         },
-        (err) => console.error('Error updating order status:', err)
+        (err) => {
+          this.cdr.detectChanges();
+        }
       );
     }
   }
@@ -369,72 +435,41 @@ export class OrderDetailsComponent implements OnInit, OnDestroy {
       const lastOrderLineDetail = this.orderLineDetails.reduce((latest, current) =>
         current.id > latest.id ? current : latest
       );
-      console.log("ID cập nhật", lastOrderLineDetail.id);
       if (lastOrderLineDetail) {
         lastOrderLineDetail.EndTime = new Date().toISOString();
         this.repoService.updateByID('api/order-line-details', lastOrderLineDetail.id.toString(), lastOrderLineDetail).subscribe(
-          (res) => console.log('Last Order Line Detail updated successfully:', res),
-          (err) => console.error('Error updating Order Line Detail:', err)
+          (res) => {
+            this.cdr.detectChanges();
+          },
+          (err) => {
+            this.cdr.detectChanges();
+          }
         );
-      } else {
-        console.error('No valid Order Line Detail found.');
       }
-    } else {
-      console.error('Order Line Details list is empty.');
     }
   }
 
   updateWCFData(): void {
     if (!this.dataSensorByLine) {
-      console.error('Error: Sensor Record is missing.');
       return;
     }
     const sensorData: WcfDataUpdateDto[] = [{
       name: this.dataSensorByLine.name,
-      value: "0"
-    }];
-    console.log("Write value:", sensorData);
+      valueToWrite: "0"
+    }
+    ];
     this.repoService.update('api/wcf/write-value', sensorData).subscribe(
-      (res) => console.log('Sensor Record updated successfully:', res),
-      (err) => console.error('Error updating sensor record:', err)
+      (res) => {
+        this.cdr.detectChanges();
+      },
+      (err) => {
+        this.cdr.detectChanges();
+      }
     );
     this.calculateTotals();
   }
 
   // Action Methods
-  startOrder(): void {
-    if (!this.selectedLine) {
-      this.snackBar.open('Please select a Line before starting.', 'Close', { duration: 3000 });
-      return;
-    }
-    if (this.selectedLine && this.orderId) {
-      this.isLoading = true;
-      this.updateOrderStatus(1);
-      const sensorRecordData: SensorRecordCreationDto = {
-        orderId: this.orderId,
-        orderDetailId: this.orderDetail.id,
-        lineId: this.selectedLine,
-        sensorUnits: 0,
-        sensorWeight: 0,
-        recordTime: this.timezoneService.getCurrentTime().toISOString(),
-        status: 1,
-      };
-      console.log('data:', sensorRecordData);
-      this.createOrderLineDetail();
-      this.repoService.create('api/sensor-records', sensorRecordData).subscribe(
-        (res) => {
-          console.log('Sensor Record created successfully:', res);
-          this.loadSensorRecord();
-          this.isLoading = false;
-        },
-        (err) => {
-          console.error('Error creating sensor record:', err);
-          this.isLoading = false;
-        }
-      );
-    }
-  }
-
   createOrderLineDetail(): void {
     if (this.orderLineDetails && this.orderId) {
       let sequenceNumber = this.orderLineDetails.length + 1;
@@ -449,11 +484,12 @@ export class OrderDetailsComponent implements OnInit, OnDestroy {
         (res) => {
           this.isStarting = false;
           this.snackBar.open('Order started successfully.', 'Close', { duration: 3000 });
+          this.cdr.detectChanges();
         },
         (err) => {
           this.isStarting = false;
           this.snackBar.open('Failed to start order.', 'Close', { duration: 3000 });
-          console.error(err);
+          this.cdr.detectChanges();
         }
       );
     }
@@ -478,9 +514,11 @@ export class OrderDetailsComponent implements OnInit, OnDestroy {
         this.isLoading = true;
         this.updateOrderDetail();
         this.updateOrderStatus(2);
+        this.updateLastOrderLineDetail();
         setTimeout(() => {
           this.refreshChangedData();
           this.isLoading = false;
+          this.cdr.detectChanges();
         }, 500);
       }
     });
@@ -488,41 +526,185 @@ export class OrderDetailsComponent implements OnInit, OnDestroy {
 
   completeOrder(): void {
     this.confirmForm(this.orderDetail?.id);
-    console.log('Order Detail updated successfully:', this.orderDetail);
+    this.cdr.detectChanges();
   }
 
   goBack(): void {
     this.router.navigate(['/ui-components/orders']);
+    this.cdr.detectChanges();
   }
 
   selectLine(lineId: number): void {
-    const activeRecord = this.listSensorRecords.find(record => record.lineId === lineId && record.status === 1);
-    if (activeRecord) {
-      const dialogRef = this.dialog.open(ConfirmComponent, {
-        width: '450px',
-        height: '150px',
-        disableClose: true,
-        data: { message: `Line ${lineId} is currently in use by another order. Would you like to view its details?` }
-      });
-
-      dialogRef.afterClosed().subscribe(result => {
-        if (result) {
-          this.selectedLine = 0;
-          window.location.href = `/ui-components/order-details/${activeRecord.orderId}`;
-        } else {
-          this.selectedLine = 0;
-        }
-      });
-    } else {
-      this.selectedLine = lineId;
-      console.log("selected line:", this.selectedLine);
+    if (!this.lines.some(line => line.id === lineId)) {
+      this.snackBar.open('Invalid Line selected.', 'Close', { duration: 3000 });
+      this.selectedLine = 0;
+      this.cdr.detectChanges();
+      return;
     }
+    this.selectedLine = lineId;
+    this.cdr.detectChanges();
   }
 
   calculateWeight(item: SensorRecordDto): number {
     const weightPerUnit = this.orderDetail?.productInformation?.weightPerUnit || 0;
     const units = item === this.latestRecord && this.dataSensorByLine?.value ? Number(this.dataSensorByLine.value) : item.sensorUnits;
-    console.log('Calculating weight:', { itemId: item.id, units, weightPerUnit });
     return units * weightPerUnit;
+  }
+  calculateRemainingUnits(item: SensorRecordDto): number {
+  if (!this.orderDetail || !this.sensorRecord) {
+    return 0;
+  }
+
+  // Tìm chỉ số của bản ghi hiện tại
+  const currentIndex = this.sensorRecord.findIndex(record => record.id === item.id);
+  if (currentIndex === -1) {
+    return this.orderDetail.requestedUnits;
+  }
+
+  // Tính tổng số units đã đếm đến bản ghi hiện tại
+  let totalUnitsCounted = 0;
+  for (let i = 0; i <= currentIndex; i++) {
+    const record = this.sensorRecord[i];
+    // Nếu là bản ghi mới nhất và có dữ liệu SignalR, sử dụng dataSensorByLine.value
+    totalUnitsCounted += (record === this.latestRecord && this.dataSensorByLine?.value)
+      ? Number(this.dataSensorByLine.value)
+      : record.sensorUnits;
+  }
+
+  // Trả về số lượng còn lại
+  const remainingUnits = this.orderDetail.requestedUnits - totalUnitsCounted;
+  return remainingUnits >= 0 ? remainingUnits : 0; // Đảm bảo không trả về số âm
+}
+
+  assignLine(): void {
+    if (!this.selectedLine || !this.orderId) {
+      this.snackBar.open('Please select a Line to assign.', 'Close', { duration: 3000 });
+      this.cdr.detectChanges();
+      return;
+    }
+
+    const alreadyAssigned = this.orderLineDetails.some(detail => detail.lineId === this.selectedLine);
+    if (alreadyAssigned) {
+      this.snackBar.open('This line has already been assigned.', 'Close', { duration: 3000 });
+      this.cdr.detectChanges();
+      return;
+    }
+
+    const orderLineDetail: OrderLineDetailCreationDto = {
+      orderId: this.orderId,
+      LineId: this.selectedLine,
+      SequenceNumber: this.orderLineDetails.length + 1,
+      StartTime: new Date().toISOString(),
+      EndTime: new Date().toISOString()
+    };
+
+    this.repoService.create('api/order-line-details', orderLineDetail).subscribe(
+      () => {
+        this.snackBar.open('Line assigned successfully.', 'Close', { duration: 3000 });
+        this.getOrderLineDetail();
+        this.isAssigned = true;
+        this.cdr.detectChanges();
+      },
+      (err) => {
+        this.snackBar.open('Failed to assign line.', 'Close', { duration: 3000 });
+        this.cdr.detectChanges();
+      }
+    );
+  }
+
+  startOrder(): void {
+    if (!this.selectedLine) {
+      this.snackBar.open('Please select a Line before starting.', 'Close', { duration: 3000 });
+      this.cdr.detectChanges();
+      return;
+    }
+    const activeRecord = this.listSensorRecords.find(record => record.lineId === this.selectedLine && record.status === 1);
+    if (activeRecord) {
+      const dialogRef = this.dialog.open(ConfirmComponent, {
+        width: '450px',
+        height: '150px',
+        disableClose: true,
+        data: { message: `Line ${this.selectedLine} is currently in use by order ${activeRecord.orderId}. Would you like to view its details?` }
+      });
+
+      dialogRef.afterClosed().subscribe(result => {
+        this.isStarting = false;
+        this.isRunning = false;
+        if (result) {
+          this.router.navigate(['/ui-components/order-details', activeRecord.orderId]);
+        } else {
+          this.selectedLine = 0;
+          this.snackBar.open('Please select another Line.', 'Close', { duration: 3000 });
+          this.cdr.detectChanges();
+        }
+      });
+      return;
+    }
+    this.updateWCFData();
+    if (this.selectedLine && this.orderId) {
+      this.isLoading = true;
+      this.updateOrderStatus(1);
+      const sensorRecordData: SensorRecordCreationDto = {
+        orderId: this.orderId,
+        orderDetailId: this.orderDetail.id,
+        lineId: this.selectedLine,
+        sensorUnits: 0,
+        sensorWeight: 0,
+        recordTime: this.timezoneService.getCurrentTime().toISOString(),
+        status: 1,
+      };
+      this.repoService.create('api/sensor-records', sensorRecordData).subscribe(
+        (res) => {
+          this.loadSensorRecord();
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        },
+        (err) => {
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        }
+      );
+    }
+  }
+
+  unassignLine(): void {
+    if (!this.orderId || !this.selectedLine) {
+      this.snackBar.open('No Line assigned to unassign.', 'Close', { duration: 3000 });
+      this.cdr.detectChanges();
+      return;
+    }
+
+    const assignedDetail = this.orderLineDetails.find(detail => detail.orderId === this.orderId && detail.lineId === this.selectedLine && detail.EndTime === undefined);
+    if (!assignedDetail) {
+      this.snackBar.open('No active assignment found for this Line.', 'Close', { duration: 3000 });
+      this.cdr.detectChanges();
+      return;
+    }
+
+    const dialogRef = this.dialog.open(ConfirmComponent, {
+      width: '450px',
+      height: '150px',
+      disableClose: true,
+      data: { message: `Are you sure you want to unassign Line ${this.selectedLine}?` }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        assignedDetail.EndTime = new Date().toISOString();
+        this.repoService.updateByID('api/order-line-details', assignedDetail.id.toString(), assignedDetail).subscribe(
+          () => {
+            this.snackBar.open('Line unassigned successfully.', 'Close', { duration: 3000 });
+            this.isAssigned = false;
+            this.selectedLine = 0;
+            this.getOrderLineDetail();
+            this.cdr.detectChanges();
+          },
+          (err) => {
+            this.snackBar.open('Failed to unassign line.', 'Close', { duration: 3000 });
+            this.cdr.detectChanges();
+          }
+        );
+      }
+    });
   }
 }

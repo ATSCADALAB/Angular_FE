@@ -111,7 +111,7 @@ mat-card-subtitle {
   display: flex;
   justify-content: space-between; /* Giữ khoảng cách giữa dropdown và button */
   align-items: center;
-  width: 100%; 
+  width: 100%;
 }
 
 .line-select {
@@ -245,6 +245,7 @@ tfoot td strong:nth-child(3) {
 .newest-row {
   background-color: #d4edda; /* Màu nền xanh nhạt */
   font-weight: bold; /* Chữ đậm */
+  font-size: 26px;
 }
 .sensor-group {
   margin-bottom: 20px;
@@ -320,13 +321,24 @@ tfoot td strong:nth-child(3) {
 .running-text {
   margin-left: auto; /* Đẩy sang phải */
   font-weight: bold;
-  color: #ffffff; /* Màu vàng */
-  font-size: large;
+  color: #ffffff; /* Màu trắng */
+  font-size: 24px; /* Tăng kích thước chữ */
+}
+.quantity-highlight {
+  font-size: 40px; /* Kích thước chữ lớn hơn */
+  font-weight: 700; /* Đậm hơn */
+  color: #ffff00; /* Màu vàng nổi bật */
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* Thêm đổ bóng để nổi bật */
 }
 
-.running-bg {
+.running-bg-good {
   background: yellowgreen; /* Màu vàng khi đang chạy */
   color: white;
+}
+.running-bg-bad {
+  background: rgb(255, 0, 0); /* Màu vàng khi đang chạy */
+  color: white;
+  animation: flash 1s infinite; /* Apply flashing animation */
 }
 .table {
   width: 95%;
@@ -384,6 +396,11 @@ tfoot td strong:nth-child(3) {
     width: 100%;
     text-align: left; /* Căn trái cho đẹp hơn */
     margin-top: 4px; /* Tạo khoảng cách với tiêu đề */
+    font-size: 20px; /* Giảm kích thước chữ một chút trên mobile nhưng vẫn lớn hơn mặc định */
+  }
+
+  .quantity-highlight {
+    font-size: 24px; /* Giảm kích thước chữ trên mobile nhưng vẫn lớn hơn text xung quanh */
   }
   .header-content {
     margin-left: 0; /* Xóa margin trên mobile */
@@ -404,7 +421,7 @@ tfoot td strong:nth-child(3) {
     justify-content: flex-start; /* Căn lề trái */
     margin-top: 8px; /* Tạo khoảng cách với dropdown */
   }
-  
+
 }
 /* Sensor Section */
 .sensor-section {
@@ -493,12 +510,6 @@ tfoot td strong:nth-child(3) {
 
 .sensor-table tbody tr:hover {
   background: #f5f5f5;
-}
-
-.newest-row {
-  background: #d4edda; /* Màu xanh nhạt */
-  font-weight: 600;
-  animation: highlight 1s ease-out;
 }
 
 @keyframes highlight {

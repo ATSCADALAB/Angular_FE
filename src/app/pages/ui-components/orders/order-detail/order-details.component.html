@@ -1,21 +1,25 @@
 <div class="bg-page">
   <mat-card class="order-card" *ngIf="orderDetail">
     <!-- Header -->
-    <mat-card-header class="order-header" [ngClass]="{ 'running-bg': isRunning }">
-
+    <mat-card-header
+      class="order-header"
+      [ngClass]="{
+        'running-bg-good': isRunning && dataSensorByLine?.status === 'Good',
+        'running-bg-bad': isRunning && dataSensorByLine?.status === 'Bad'
+      }"
+    >
       <mat-card-title class="order-title">
         {{ orderDetail.order.orderCode }}
       </mat-card-title>
       <div *ngIf="isRunning" class="header-content">
         <span *ngIf="dataSensorByLine" class="running-text">
-          Running on Line {{ selectedLine }} | Qty (Bags): {{ dataSensorByLine.value }} / {{ orderDetail.requestedUnits - totalUnits }}
+          Running on Line {{ selectedLine }} | Qty (Bags): <span class="quantity-highlight">{{ dataSensorByLine.value }} / {{ orderDetail.requestedUnits - totalUnits }}</span>
         </span>
       </div>
     </mat-card-header>
 
     <!-- Sensor -->
     <mat-card-content class="order-content">
-
       <!-- General Information -->
       <div class="info-section">
         <div class="section-header">
@@ -24,7 +28,6 @@
             {{ isExpanded ? 'Collapse' : 'Expand' }}
           </button>
         </div>
-
         <div class="info-content" *ngIf="isExpanded">
           <div class="info-grid">
             <div class="info-item">
@@ -71,12 +74,6 @@
         </div>
       </div>
 
-      <!-- Driver Information -->
-      <!-- <div class="info-section">
-        <h3 class="section-title">Driver Information</h3>
-        
-      </div> -->
-
       <!-- Product Information -->
       <div class="info-section">
         <div class="section-header">
@@ -110,107 +107,110 @@
               <span class="value">{{ orderDetail.order.distributor.distributorName }}</span>
             </div>
           </div>
-          
           <div class="info-grid">
             <div class="info-item">
               <span class="label">Province:</span>
-              <span class="value">{{orderDetail.order.distributor.province }}</span>
+              <span class="value">{{ orderDetail.order.distributor.province }}</span>
             </div>
           </div>
           <div class="info-grid">
             <div class="info-item">
               <span class="label">Area:</span>
-              <span class="value">{{orderDetail.order.distributor.area.areaName }}</span>
+              <span class="value">{{ orderDetail.order.distributor.area.areaName }}</span>
             </div>
           </div>
         </div>
-        
-
       </div>
+
+      <!-- Sensor Record -->
       <div class="info-section sensor-section" *ngIf="sensorRecord.length > 0">
-  <div class="section-header">
-    <h3 class="section-title">Sensor Record</h3>
-    <button class="toggle-btn" (click)="toggleSensorExpand()">
-      {{ isSensorExpanded ? 'Collapse' : 'Expand' }}
-    </button>
-  </div>
-  <div class="info-content" [ngClass]="{'collapsed': !isSensorExpanded}">
-    <table class="sensor-table">
-      <thead>
-        <tr>
-          <th>Line</th>
-          <th>Units (Bags)</th>
-          <th>Weight (kg)</th>
-          <th>Record Time</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let item of sensorRecord" [ngClass]="{'newest-row': item === latestRecord}">
-          <td>{{ item.lineId }}</td>
-          <td>
-            {{ item === latestRecord && dataSensorByLine?.value ? dataSensorByLine?.value : item.sensorUnits }}
-          </td>
-          <td>
-            {{ calculateWeight(item) | number: '1.2-2' }}
-          </td>
-          <td>{{ item.recordTime | date: 'HH:mm - dd/MM/yyyy' }}</td>
-        </tr>
-      </tbody>
-      <tfoot *ngIf="orderDetail.order.status === 2">
-        <tr>
-          <td><strong>Total</strong></td>
-          <td><strong>{{ totalUnits + orderDetail.replacedUnits - orderDetail.defectiveUnits }} / {{ orderDetail.requestedUnits }}</strong></td>
-          <td><strong>{{ totalWeight + orderDetail.replacedWeight - orderDetail.defectiveWeight | number: '1.2-2' }}</strong></td>
-          <td></td>
-        </tr>
-        <tr *ngIf="orderDetail.replacedUnits || orderDetail.defectiveUnits">
-          <td colspan="4">
-            <span class="defective-info" *ngIf="orderDetail.defectiveUnits">
-              Defective: {{ orderDetail.defectiveUnits }} bags / {{ orderDetail.defectiveWeight | number: '1.2-2' }} kg
-            </span>
-            <span class="replaced-info" *ngIf="orderDetail.replacedUnits">
-              Replaced: {{ orderDetail.replacedUnits }} bags / {{ orderDetail.replacedWeight | number: '1.2-2' }} kg
-            </span>
-          </td>
-        </tr>
-      </tfoot>
-    </table>
-  </div>
-</div>
-      
+        <div class="section-header">
+          <h3 class="section-title">Sensor Record</h3>
+          <button class="toggle-btn" (click)="toggleSensorExpand()">
+            {{ isSensorExpanded ? 'Collapse' : 'Expand' }}
+          </button>
+        </div>
+        <div class="info-content" [ngClass]="{'collapsed': !isSensorExpanded}">
+          <table class="sensor-table">
+            <thead>
+              <tr>
+                <th>Line</th>
+                <th>Units (Bags)</th>
+                <th>Weight (kg)</th>
+                <th>Remaining Units</th>
+                <th>Record Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of sensorRecord" [ngClass]="{'newest-row': item === latestRecord}">
+                <td>{{ item.lineId }}</td>
+                <td>
+                  {{ item === latestRecord && dataSensorByLine?.value ? dataSensorByLine?.value : item.sensorUnits }}
+                </td>
+                <td>
+                  {{ calculateWeight(item) | number: '1.2-2' }}
+                </td>
+                <td>
+                  {{ calculateRemainingUnits(item) }} <!-- Gọi hàm tính số lượng còn lại -->
+                </td>
+                <td>{{ item.recordTime | date: 'HH:mm - dd/MM/yyyy' }}</td>
+              </tr>
+            </tbody>
+            <tfoot *ngIf="orderDetail.order.status === 2">
+              <tr>
+                <td><strong>Total</strong></td>
+                <td><strong>{{ totalUnits + orderDetail.replacedUnits - orderDetail.defectiveUnits }} / {{ orderDetail.requestedUnits }}</strong></td>
+                <td><strong>{{ totalWeight + orderDetail.replacedWeight - orderDetail.defectiveWeight | number: '1.2-2' }}</strong></td>
+                <td></td>
+              </tr>
+              <tr *ngIf="orderDetail.replacedUnits || orderDetail.defectiveUnits">
+                <td colspan="4">
+                  <span class="defective-info" *ngIf="orderDetail.defectiveUnits">
+                    Defective: {{ orderDetail.defectiveUnits }} bags / {{ orderDetail.defectiveWeight | number: '1.2-2' }} kg
+                  </span>
+                  <span class="replaced-info" *ngIf="orderDetail.replacedUnits">
+                    Replaced: {{ orderDetail.replacedUnits }} bags / {{ orderDetail.replacedWeight | number: '1.2-2' }} kg
+                  </span>
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
     </mat-card-content>
 
-    
     <!-- Actions -->
     <mat-card-actions class="order-actions" *ngIf="orderDetail.order.status !== 2">
       <div class="container">
         <!-- Select Line (Bên trái trên desktop, trên cùng ở mobile) -->
         <mat-form-field appearance="outline" class="line-select">
           <mat-label>Select line to start counting products</mat-label>
-          <mat-select [(ngModel)]="selectedLine" [disabled]="orderDetail.order.status === 2 || isRunning" 
-          (selectionChange)="selectLine($event.value)" >
+          <mat-select [(ngModel)]="selectedLine" [disabled]="orderDetail.order.status === 2 || isRunning || isAssigned"
+                      (selectionChange)="selectLine($event.value)">
             <mat-option *ngFor="let line of lines" [value]="line.id">{{ line.lineName }}</mat-option>
           </mat-select>
         </mat-form-field>
-    
+
         <!-- Nhóm Button (Bên phải trên desktop, xuống hàng ở mobile) -->
         <div class="button-group">
           <button mat-raised-button color="warn" (click)="goBack()">Back</button>
-    
-          <button mat-raised-button [color]="isRunning ? 'warn' : 'accent'" (click)="toggleOrder()"
-            [disabled]="orderDetail.order.status === 2 || isStarting || !selectedLine">
+          <button mat-raised-button [color]="isRunning ? 'warn' : 'accent'"
+                  (click)="toggleOrder()"
+                  [disabled]="orderDetail.order.status === 2 || isStarting || !selectedLine || !isAssigned">
             <mat-progress-spinner *ngIf="isStarting" mode="indeterminate" diameter="20"></mat-progress-spinner>
             {{ isRunning ? 'Stop' : (isStarting ? 'Starting...' : 'Start') }}
           </button>
-    
-          <button mat-raised-button color="primary" (click)="completeOrder()" 
-          [disabled]="isSignalRRunning">
+          <button mat-raised-button color="primary"
+                  (click)="isAssigned ? unassignLine() : assignLine()"
+                  [disabled]="orderDetail.order.status === 2 || (!selectedLine && !isAssigned) || isRunning">
+            {{ isAssigned ? 'Unassign' : 'Assign' }}
+          </button>
+          <button mat-raised-button color="primary" (click)="completeOrder()"
+                  [disabled]="isSignalRRunning">
             Complete
           </button>
         </div>
       </div>
     </mat-card-actions>
-    
-    
-    
   </mat-card>
+</div>

@@ -83,9 +83,26 @@
   <div class="col-lg-12">
     <mat-card class="cardWithShadow">
       <mat-card-content class="p-24">
-        <mat-card-title>Orders by Production Line</mat-card-title>
+        <mat-card-title>The Order is Currently Running in Line.</mat-card-title>
         <div class="orders-by-line-container">
           <div class="line-card" *ngFor="let item of ordersByLine; let i = index" [style.backgroundColor]="getLineColor(i)" [routerLink]="['/ui-components/order-details', item.orderID]">
+            <div class="line-name">{{ item.lineName }}</div>
+            <div class="line-orders">{{ item.totalOrders | number }} orders</div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
+
+<!-- Order Line Details -->
+<div class="row">
+  <div class="col-lg-12">
+    <mat-card class="cardWithShadow">
+      <mat-card-content class="p-24">
+        <mat-card-title>Order Assigned to Production Line.</mat-card-title>
+        <div class="orders-by-line-container">
+          <div class="line-card" *ngFor="let item of groupedLineData; let i = index" [style.backgroundColor]="getLineColor(i)" (click)="openLineDetails(item)" style="cursor: pointer;">
             <div class="line-name">{{ item.lineName }}</div>
             <div class="line-orders">{{ item.totalOrders | number }} orders</div>
           </div>

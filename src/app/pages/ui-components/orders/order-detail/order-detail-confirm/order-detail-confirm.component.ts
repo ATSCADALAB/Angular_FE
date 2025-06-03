@@ -6,7 +6,8 @@ import { RepositoryService } from 'src/app/shared/services/repository.service';
 import { DialogService } from 'src/app/shared/services/dialog.service';
 import { DataService } from 'src/app/shared/services/data.service';
 import { OrderDetailDto } from 'src/app/_interface/order-detail';
-
+import { takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
 @Component({
   selector: 'app-order-detail-confirm',
   templateUrl: './order-detail-confirm.component.html',
@@ -17,6 +18,7 @@ export class OrderDetailConfirmComponent implements OnInit {
   dataForm!: FormGroup;
   orderDetail: OrderDetailDto;
   totalUnits: number;
+  private destroy$ = new Subject<void>();
   constructor(
     private repoService: RepositoryService,
     private dataService: DataService,
@@ -29,34 +31,23 @@ export class OrderDetailConfirmComponent implements OnInit {
   }
 
   ngOnInit() {
-
     this.dataForm = new FormGroup({
       defectiveUnits: new FormControl(0, [Validators.required, Validators.min(0)]),
-      replaceUnits: new FormControl({ value: '', disabled: true }, [
-        Validators.required,
-        Validators.min(0),
-      ]),
-    });
-    // Khi người dùng nhập số lượng lỗi
-    this.dataForm.get('defectiveUnits')?.valueChanges.subscribe(value => {
-      const replaceUnitsControl = this.dataForm.get('replaceUnits');
-      if (value && value > 0) {
-        replaceUnitsControl?.enable();
-      } else {
-        replaceUnitsControl?.disable();
-        replaceUnitsControl?.setValue('');
-      }
+      replaceUnits: new FormControl(0, [Validators.required, Validators.min(0)]),
     });
 
     // Kiểm tra khi nhập số lượng bổ sung
-    this.dataForm.get('replaceUnits')?.valueChanges.subscribe(value => {
+    this.dataForm.get('replaceUnits')?.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(value => {
       const defectiveValue = this.dataForm.get('defectiveUnits')?.value;
-      if (value && defectiveValue && (value < defectiveValue || value > defectiveValue)) {
-        this.confirmMessage = `The number replace unit(s) does not equal the defective unit(s). Are you sure?`;
+      if (defectiveValue === 0 && value > 0) {
+        this.confirmMessage = `No defective units specified, but ${value} replace unit(s) entered. Are you sure?`;
+      } else if (value !== defectiveValue) {
+        this.confirmMessage = `The number of replace unit(s) (${value}) does not equal the defective unit(s) (${defectiveValue}). Are you sure?`;
       } else {
-        this.confirmMessage = null; // Ẩn thông báo nếu hợp lệ
+        this.confirmMessage = null;
       }
     });
+
     this.getOrderDetailToAddReplace();
   }
 

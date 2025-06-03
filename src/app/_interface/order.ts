@@ -2,6 +2,7 @@ import { DistributorDto } from "./distributor";
 
 export interface OrderWithDetails {
   id: string; // Guid trong C# là string trong TypeScript
+  lineID:string;
   orderCode: string;
   exportDate: string; // DateTime từ backend sẽ là string ở frontend
   vehicleNumber: string;

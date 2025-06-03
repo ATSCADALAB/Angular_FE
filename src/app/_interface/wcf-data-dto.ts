@@ -7,5 +7,5 @@ export interface WcfDataDto {
 
   export interface WcfDataUpdateDto {
     name: string;
-    value: string;
+    valueToWrite: string;
   }

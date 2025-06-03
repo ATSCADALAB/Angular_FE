@@ -78,4 +78,15 @@ export class RepositoryService {
       responseType: 'blob' // Đặt responseType là 'blob' để tải file
     });
   }
+  public postData<T>(route: string, body: any): Observable<T> {
+    return this.http.post<T>(this.createCompleteRoute(route, environment.apiUrl), body, this.generateHeaders());
+  }
+  public postExportReport(route: string, body: any): Observable<Blob> {
+    return this.http.post(this.createCompleteRoute(route, environment.apiUrl), body, {
+      responseType: 'blob',
+      headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+    });
+  }
+  
+  
 }

@@ -1,44 +1,136 @@
-/* Ngăn tiêu đề xuống dòng */
+/* Style cho tiêu đề bảng */
 .mat-header-cell {
-    white-space: nowrap; /* Ngăn xuống dòng */
-    overflow: hidden; /* Ẩn phần nội dung vượt quá */
-    text-overflow: ellipsis; /* Hiển thị dấu "..." nếu nội dung bị cắt */
-    text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 0 8px;
+}
+
+/* Style cho ô trong bảng */
+.mat-cell {
+  text-align: center;
+  padding: 8px;
+  font-size: 14px;
+}
+
+/* Kích thước cột */
+.mat-column-action {
+  width: 120px;
+  min-width: 100px;
+}
+
+.mat-column-tagID {
+  width: 100px;
+  min-width: 80px;
+}
+
+.mat-column-distributorName {
+  width: 150px;
+  min-width: 120px;
+}
+
+.mat-column-productName {
+  width: 150px;
+  min-width: 120px;
+}
+
+.mat-column-productCode {
+  width: 100px;
+  min-width: 80px;
+}
+
+.mat-column-shipmentDate {
+  width: 120px;
+  min-width: 100px;
+}
+
+.mat-column-groupedPeriod {
+  width: 120px;
+  min-width: 100px;
+}
+
+/* Style cho bộ lọc */
+.filters {
+  padding: 0 16px;
+}
+
+.filter-field {
+  font-size: 14px;
+}
+
+.filter-button {
+  width: 100%;
+  padding: 10px 16px;
+  font-size: 14px;
+}
+
+/* Responsive cho điện thoại */
+@media (max-width: 576px) {
+  .mat-header-cell {
+    font-size: 12px;
+    padding: 0 4px;
   }
-  
-  /* Tùy chỉnh kích thước cột nếu cần */
+
+  .mat-cell {
+    font-size: 12px;
+    padding: 4px;
+  }
+
   .mat-column-action {
-    width: 150px; /* Tùy chỉnh chiều rộng cột Action */
+    width: 80px;
+    min-width: 70px;
   }
-  
+
   .mat-column-tagID {
-    width: 120px;
+    width: 80px;
+    min-width: 60px;
   }
-  
-  .mat-column-shipmentDate {
-    width: 150px;
-  }
-  
-  .mat-column-productDate {
-    width: 150px;
-  }
-  
-  .mat-column-delivery {
-    width: 150px;
-  }
-  
-  .mat-column-stockOut {
-    width: 150px;
-  }
-  
-  .mat-column-isActive {
+
+  .mat-column-distributorName {
     width: 100px;
+    min-width: 90px;
   }
-  
-  .mat-column-distributorId {
-    width: 150px;
+
+  .mat-column-productName {
+    width: 100px;
+    min-width: 90px;
   }
-  
-  .mat-column-productInformationId {
-    width: 200px;
+
+  .mat-column-productCode {
+    width: 80px;
+    min-width: 60px;
   }
+
+  .mat-column-shipmentDate {
+    width: 100px;
+    min-width: 80px;
+  }
+
+  .mat-column-groupedPeriod {
+    width: 100px;
+    min-width: 80px;
+  }
+
+  .filter-button {
+    padding: 8px;
+    font-size: 13px;
+  }
+}
+
+/* Responsive cho tablet */
+@media (min-width: 577px) and (max-width: 768px) {
+  .mat-header-cell {
+    font-size: 13px;
+  }
+
+  .mat-cell {
+    font-size: 13px;
+  }
+
+  .filter-button {
+    padding: 8px;
+  }
+}

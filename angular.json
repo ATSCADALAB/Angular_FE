@@ -39,19 +39,24 @@
           },
           "configurations": {
             "production": {
+              "optimization": true, 
+              "buildOptimizer": true, 
+              "sourceMap": false, 
+              "vendorChunk": false, 
+              "extractLicenses": true, 
+              "outputHashing": "all", 
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "12mb",
-                  "maximumError": "12mb"
+                  "maximumWarning": "2mb",
+                  "maximumError": "5mb"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "12mb",
-                  "maximumError": "12mb"
+                  "maximumWarning": "500kb",
+                  "maximumError": "1mb"
                 }
-              ],
-              "outputHashing": "all"
+              ]
             },
             "development": {
               "buildOptimizer": false,

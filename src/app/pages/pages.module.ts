@@ -9,9 +9,10 @@ import { TablerIconsModule } from 'angular-tabler-icons';
 import * as TablerIcons from 'angular-tabler-icons/icons';
 import { AppDashboardComponent } from './dashboard/dashboard.component';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
+import { LineDetailsDialogComponent } from './dashboard/popup/line-details-dialog.component';
 
 @NgModule({
-  declarations: [AppDashboardComponent],
+  declarations: [AppDashboardComponent,LineDetailsDialogComponent],
   imports: [
     CommonModule,
     MaterialModule,

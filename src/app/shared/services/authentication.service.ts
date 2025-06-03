@@ -41,9 +41,9 @@ export class AuthenticationService {
     return this.http.post<TokenDto>(this.createCompleteRoute(route, environment.apiUrl), body);
   }
 
-  public isUserAuthenticated = (): boolean | any => {
+  public isUserAuthenticated(): boolean {
     const token = localStorage.getItem("token");
-    return token;
+    return token != null && !this.jwtHelper.isTokenExpired(token);
   }
 
   public logout = () => {

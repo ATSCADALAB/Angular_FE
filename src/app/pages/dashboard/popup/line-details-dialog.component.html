@@ -1,0 +1,24 @@
+<h2 mat-dialog-title class="dialog-title">{{ data.lineName }} - Order Details</h2>
+<mat-dialog-content class="dialog-content">
+  <table class="line-details-table">
+    <thead>
+      <tr>
+        <th>Order Code</th>
+        <th>Product Name</th>
+        <th>Requested Units</th>
+        <th>Distributor</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let order of data.orders" (click)="navigateToOrder(order.orderId)">
+        <td>{{ order.orderCode }}</td>
+        <td>{{ order.productName }}</td>
+        <td>{{ order.requestedUnits | number }}</td>
+        <td>{{ order.distributorName }}</td>
+      </tr>
+    </tbody>
+  </table>
+</mat-dialog-content>
+<mat-dialog-actions class="dialog-actions">
+  <button mat-flat-button color="primary" mat-dialog-close class="close-button">Close</button>
+</mat-dialog-actions>

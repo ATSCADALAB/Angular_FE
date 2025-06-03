@@ -1,4 +1,5 @@
-import { Component, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { salesOverviewChart } from 'src/app/_interface/chart';
 import {
   DashboardSummaryDto,
@@ -10,18 +11,37 @@ import {
   RecentCompletedOrderDto
 } from 'src/app/_interface/dashboard';
 import { RepositoryService } from 'src/app/shared/services/repository.service';
+import { LineDetailsDialogComponent } from './popup/line-details-dialog.component';
+
+// Interface for OrderLineDetailDto
+export interface OrderLineDetailDto {
+  lineNumber: number;
+  lineName: string;
+  orderId: string;
+  orderCode: string;
+  productName: string;
+  requestedUnits: number;
+  distributorName: string;
+}
+
+// Interface for grouped line data
+export interface GroupedLineData {
+  lineName: string;
+  totalOrders: number;
+  orders: OrderLineDetailDto[];
+}
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.scss'] 
+  styleUrls: ['./dashboard.component.scss']
 })
-export class AppDashboardComponent {
+export class AppDashboardComponent implements OnInit {
   public errorMessage: string = '';
   public showError?: boolean;
   public salesOverviewChart!: Partial<salesOverviewChart> | any;
 
-  // Biến cho dashboard
+  // Dashboard variables
   summary: DashboardSummaryDto | null = null;
   ordersByLine: OrdersByLineDto[] = [];
   orderStatusTrend: OrderStatusTrendDto[] = [];
@@ -29,17 +49,23 @@ export class AppDashboardComponent {
   incompleteOrders: IncompleteOrderDto[] = [];
   processingOrders: ProcessingOrderDto[] = [];
   recentCompletedOrders: RecentCompletedOrderDto[] = [];
-  // Danh sách màu cho các line
+  groupedLineData: GroupedLineData[] = []; // Store grouped data
+
+  // Line colors
   lineColors: string[] = [
-    '#5D87FF', // Xanh dương
-    '#FF5733', // Cam
-    '#33FF57', // Xanh lá
-    '#FFC107', // Vàng
-    '#FF33A1', // Hồng
-    '#7B33FF', // Tím
-    '#33FFF5', // Xanh ngọc
+    '#5D87FF', // Blue
+    '#FF5733', // Orange
+    '#33FF57', // Green
+    '#FFC107', // Yellow
+    '#FF33A1', // Pink
+    '#7B33FF', // Purple
+    '#33FFF5', // Cyan
   ];
-  constructor(private repoService: RepositoryService) { }
+
+  constructor(
+    private repoService: RepositoryService,
+    private dialog: MatDialog
+  ) {}
 
   ngOnInit() {
     this.initializeChart();
@@ -50,16 +76,20 @@ export class AppDashboardComponent {
     this.getIncompleteOrders();
     this.getProcessingOrders();
     this.getRecentCompletedOrders();
+    this.getOrderLineDetails();
   }
-  // Hàm lấy màu dựa trên index
+
+  // Get color based on index
   getLineColor(index: number): string {
-    return this.lineColors[index % this.lineColors.length]; // Lặp lại màu nếu vượt quá số lượng
+    return this.lineColors[index % this.lineColors.length];
   }
+
+  // Fetch dashboard summary
   public getDashboardSummary() {
     this.repoService.getData('api/dashboard/summary').subscribe(
       (res) => {
         this.summary = res as DashboardSummaryDto;
-        this.updateChartWithSummary(); // Cập nhật chart với summary
+        this.updateChartWithSummary();
       },
       (err) => {
         console.log(err);
@@ -67,6 +97,7 @@ export class AppDashboardComponent {
     );
   }
 
+  // Fetch orders by line
   public getOrdersByLine() {
     this.repoService.getData('api/dashboard/orders-by-line').subscribe(
       (res) => {
@@ -78,12 +109,11 @@ export class AppDashboardComponent {
     );
   }
 
+  // Fetch order status trend
   public getOrderStatusTrend() {
     this.repoService.getData('api/dashboard/order-status-trend').subscribe(
       (res) => {
         this.orderStatusTrend = res as OrderStatusTrendDto[];
-        // Nếu muốn dùng trend thay vì summary cho chart, uncomment dòng dưới
-        // this.updateChartWithTrend();
       },
       (err) => {
         console.log(err);
@@ -91,6 +121,7 @@ export class AppDashboardComponent {
     );
   }
 
+  // Fetch top products
   public getTopProducts() {
     this.repoService.getData('api/dashboard/top-products').subscribe(
       (res) => {
@@ -102,6 +133,7 @@ export class AppDashboardComponent {
     );
   }
 
+  // Fetch incomplete orders
   public getIncompleteOrders() {
     this.repoService.getData('api/dashboard/incomplete-orders').subscribe(
       (res) => {
@@ -113,6 +145,7 @@ export class AppDashboardComponent {
     );
   }
 
+  // Fetch processing orders
   public getProcessingOrders() {
     this.repoService.getData('api/dashboard/processing-orders').subscribe(
       (res) => {
@@ -124,6 +157,7 @@ export class AppDashboardComponent {
     );
   }
 
+  // Fetch recent completed orders
   public getRecentCompletedOrders() {
     this.repoService.getData('api/dashboard/recent-completed-orders').subscribe(
       (res) => {
@@ -135,7 +169,50 @@ export class AppDashboardComponent {
     );
   }
 
-  // Cập nhật chart với dữ liệu từ summary (hoàn thành vs chưa hoàn thành)
+  // Fetch and group order line details
+  public getOrderLineDetails() {
+    this.repoService.getData('api/order-line-details/grouped-by-line').subscribe(
+      (res) => {
+        const orderLineDetails = res as OrderLineDetailDto[];
+        // Group data by lineName
+        this.groupedLineData = this.groupByLine(orderLineDetails);
+      },
+      (err) => {
+        console.log(err);
+      }
+    );
+  }
+
+  // Group orders by line
+  private groupByLine(orders: OrderLineDetailDto[]): GroupedLineData[] {
+    const grouped = orders.reduce((acc, order) => {
+      const lineName = order.lineName;
+      if (!acc[lineName]) {
+        acc[lineName] = {
+          lineName,
+          totalOrders: 0,
+          orders: []
+        };
+      }
+      acc[lineName].totalOrders += 1;
+      acc[lineName].orders.push(order);
+      return acc;
+    }, {} as { [key: string]: GroupedLineData });
+
+    return Object.values(grouped);
+  }
+
+  // Open dialog with line details
+  openLineDetails(line: GroupedLineData) {
+    this.dialog.open(LineDetailsDialogComponent, {
+      width: '1200px', // Doubled from 600px for PC
+      maxWidth: '90vw', // Responsive for smaller screens
+      panelClass: 'custom-dialog-container',
+      data: line
+    });
+  }
+
+  // Update chart with summary data
   private updateChartWithSummary() {
     if (!this.summary) return;
 
@@ -152,42 +229,12 @@ export class AppDashboardComponent {
       },
     ];
 
-
     this.salesOverviewChart.xaxis = {
       categories: ['Today'],
     };
   }
 
-  // Nếu muốn dùng trend thay vì summary
-  private updateChartWithTrend() {
-    this.salesOverviewChart.series = [
-      {
-        name: 'Chưa xử lý',
-        data: this.orderStatusTrend.map((trend) => trend.pending),
-        color: '#FF5733',
-      },
-      {
-        name: 'Đang xử lý',
-        data: this.orderStatusTrend.map((trend) => trend.processing),
-        color: '#33FF57',
-      },
-      {
-        name: 'Dở dang',
-        data: this.orderStatusTrend.map((trend) => trend.incomplete),
-        color: '#FFC107',
-      },
-      {
-        name: 'Hoàn thành',
-        data: this.orderStatusTrend.map((trend) => trend.completed),
-        color: '#5D87FF',
-      },
-    ];
-
-    this.salesOverviewChart.xaxis = {
-      categories: this.orderStatusTrend.map((trend) => trend.date),
-    };
-  }
-
+  // Initialize chart
   private initializeChart() {
     this.salesOverviewChart = {
       series: [],

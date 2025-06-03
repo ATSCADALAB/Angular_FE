@@ -21,7 +21,7 @@ import { ProductInformationDto } from 'src/app/_interface/product-information';
 })
 export class OrdersComponent implements OnInit, AfterViewInit, OnDestroy {
   displayedColumns: string[] = [
-    'action', 'status', 'code',  'quantityVehicle', 'vehicleNumber','productCode','productName',
+    'action', 'status','lineID', 'code',  'quantityVehicle', 'vehicleNumber','productCode','productName',
     'weightOrder', 'unitOrder','distributorName', 'area','driverName', 'driverPhoneNumber','exportDate',  'manufactureDate',
     'createdByName', 'updatedByName'
   ];
