@@ -1,4 +1,3 @@
-
 .order-card {
   width: 100%;
   // margin: 24px 16px;
@@ -12,6 +11,50 @@
   background-color: #2a3547;
   color: white;
   padding: 16px 24px;
+}
+
+/* New Running Status Banner Styles */
+.running-status-banner {
+  background: #4CAF50;
+  padding: 20px;
+  margin: 0;
+}
+
+.running-status-content {
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.running-label {
+  display: block;
+  font-size: 28px;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 12px;
+}
+
+.quantity-display {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.quantity-label {
+  font-size: 32px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.quantity-value {
+  font-size: 48px;
+  font-weight: 900;
+  color: #FFD700;
+  //background: rgba(0, 0, 0, 0.2);
+  padding: 8px 16px;
+  border-radius: 8px;
 }
 
 mat-card-title {
@@ -315,31 +358,26 @@ tfoot td strong:nth-child(3) {
   align-items: center;
   justify-content: space-between; /* Cách đều hai phần */
 }
+
+/* Remove old running header styles */
 .header-content {
-  margin-left: auto;
-}
-.running-text {
-  margin-left: auto; /* Đẩy sang phải */
-  font-weight: bold;
-  color: #ffffff; /* Màu trắng */
-  font-size: 24px; /* Tăng kích thước chữ */
-}
-.quantity-highlight {
-  font-size: 40px; /* Kích thước chữ lớn hơn */
-  font-weight: 700; /* Đậm hơn */
-  color: #ffff00; /* Màu vàng nổi bật */
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* Thêm đổ bóng để nổi bật */
+  display: none; /* Hide old header content */
 }
 
-.running-bg-good {
-  background: yellowgreen; /* Màu vàng khi đang chạy */
-  color: white;
+.running-text {
+  display: none; /* Hide old running text */
 }
+
+.quantity-highlight {
+  display: none; /* Hide old quantity highlight */
+}
+
+.running-bg-good,
 .running-bg-bad {
-  background: rgb(255, 0, 0); /* Màu vàng khi đang chạy */
-  color: white;
-  animation: flash 1s infinite; /* Apply flashing animation */
+  background-color: #2a3547; /* Keep header normal color */
+  animation: none; /* Remove flashing animation */
 }
+
 .table {
   width: 95%;
   border-collapse: collapse;
@@ -357,6 +395,7 @@ tfoot td strong:nth-child(3) {
   background-color: #2a3547;
   color: white;
 }
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .info-grid {
@@ -391,20 +430,31 @@ tfoot td strong:nth-child(3) {
     height: 40px;
     font-size: 14px;
   }
-  .running-text {
-    display: block;
-    width: 100%;
-    text-align: left; /* Căn trái cho đẹp hơn */
-    margin-top: 4px; /* Tạo khoảng cách với tiêu đề */
-    font-size: 20px; /* Giảm kích thước chữ một chút trên mobile nhưng vẫn lớn hơn mặc định */
+  
+  /* Mobile styles for running status banner */
+  .running-status-banner {
+    padding: 15px;
+  }
+  
+  .running-label {
+    font-size: 22px;
+    margin-bottom: 10px;
+  }
+  
+  .quantity-display {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .quantity-label {
+    font-size: 24px;
+  }
+  
+  .quantity-value {
+    font-size: 36px;
+    padding: 6px 12px;
   }
 
-  .quantity-highlight {
-    font-size: 24px; /* Giảm kích thước chữ trên mobile nhưng vẫn lớn hơn text xung quanh */
-  }
-  .header-content {
-    margin-left: 0; /* Xóa margin trên mobile */
-  }
   .order-actions {
     margin:auto;
   }

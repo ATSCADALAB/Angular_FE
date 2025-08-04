@@ -22,6 +22,17 @@
     >
       <mat-icon>upload_file</mat-icon> <span fxHide.xs>Import from Excel</span>
     </button>
+    <!-- Nút Export mới -->
+    <button
+      mat-flat-button
+      color="warn"
+      matTooltipPosition="left"
+      class="m-l-8"
+      matTooltipHideDelay="100000"
+      (click)="exportDistributors()"
+    >
+      <mat-icon>download</mat-icon> <span fxHide.xs>Export to Excel</span>
+    </button>
     <!-- Thêm input file ẩn -->
     <input
       type="file"
@@ -104,7 +115,6 @@
           <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14" mat-sort-header>Province</th>
           <td mat-cell *matCellDef="let element" class="mat-body-1">{{ element.province }}</td>
         </ng-container>
-
 
         <ng-container matColumnDef="area">
           <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14" mat-sort-header>Area</th>

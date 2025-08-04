@@ -10,6 +10,7 @@ import { UpdateProductInformationComponent } from './update-product-information/
 import { RepositoryService } from 'src/app/shared/services/repository.service';
 import { DialogService } from 'src/app/shared/services/dialog.service';
 import { DataService } from 'src/app/shared/services/data.service';
+import { HttpClient } from '@angular/common/http'; // Thêm HttpClient
 
 @Component({
   selector: 'app-product-informations',
@@ -19,6 +20,15 @@ import { DataService } from 'src/app/shared/services/data.service';
 export class ProductInformationsComponent implements OnInit, AfterViewInit {
   displayedColumns: string[] = ['action', 'productCode', 'productName', 'unit', 'weightPerUnit', 'isActive', 'createdAt', 'updatedAt'];
   public dataSource = new MatTableDataSource<ProductInformationDto>();
+  
+  // Thêm properties cho import result
+  importResult: {
+    successCount: number;
+    skippedCount: number;
+    skippedRows: string[];
+    errors: string[];
+  } | null = null;
+  showImportResult = false; // Điều khiển hiển thị phần kết quả
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -29,7 +39,8 @@ export class ProductInformationsComponent implements OnInit, AfterViewInit {
     private repoService: RepositoryService,
     private dialog: MatDialog,
     private dialogService: DialogService,
-    private dataService: DataService
+    private dataService: DataService,
+    private http: HttpClient // Thêm HttpClient vào constructor
   ) {
     this.refreshSubscription = this.dataService.refreshTab1$.subscribe(() => {
       this.getProductInformations();
@@ -111,7 +122,7 @@ export class ProductInformationsComponent implements OnInit, AfterViewInit {
     this.fileInput.nativeElement.click();
   }
 
-  // Xử lý khi người dùng chọn file Excel và gửi file lên API
+  // Xử lý khi người dùng chọn file Excel và gửi file lên API - CẬP NHẬT
   onFileChange(event: any) {
     const file = event.target.files[0];
     if (!file) return;
@@ -128,6 +139,14 @@ export class ProductInformationsComponent implements OnInit, AfterViewInit {
 
     this.repoService.upload('api/product-informations/import', formData).subscribe(
       (res) => {
+        // Lưu kết quả import
+        this.importResult = res as {
+          successCount: number;
+          skippedCount: number;
+          skippedRows: string[];
+          errors: string[];
+        };
+        this.showImportResult = true;
         this.dialogService.openSuccessDialog('Product informations imported successfully.')
           .afterClosed()
           .subscribe(() => {
@@ -135,7 +154,8 @@ export class ProductInformationsComponent implements OnInit, AfterViewInit {
           });
       },
       (error) => {
-        this.dialogService.openErrorDialog(`Error importing product informations: ${error.message}`);
+        // Xử lý lỗi khi import
+        this.dialogService.openErrorDialog(`Error importing product informations`);
       }
     );
 
@@ -158,5 +178,40 @@ export class ProductInformationsComponent implements OnInit, AfterViewInit {
         this.dialogService.openErrorDialog('Error downloading template: ' + error.message);
       }
     );
+  }
+
+  // THÊM MỚI: Function export ProductInformations
+  exportProductInformations() {
+    this.repoService.download('api/product-informations/export').subscribe(
+      (response: Blob) => {
+        const url = window.URL.createObjectURL(response);
+        const a = document.createElement('a');
+        a.href = url;
+        
+        // Tạo tên file với timestamp
+        const now = new Date();
+        const timestamp = now.getFullYear().toString() + 
+                         (now.getMonth() + 1).toString().padStart(2, '0') + 
+                         now.getDate().toString().padStart(2, '0') + '_' +
+                         now.getHours().toString().padStart(2, '0') + 
+                         now.getMinutes().toString().padStart(2, '0') + 
+                         now.getSeconds().toString().padStart(2, '0');
+        
+        a.download = `ProductInformations_Export_${timestamp}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      },
+      (error) => {
+        this.dialogService.openErrorDialog('Error exporting product informations: ' + error.message);
+      }
+    );
+  }
+
+  // THÊM MỚI: Hàm để reset kết quả import nếu cần
+  resetImportResult(): void {
+    this.importResult = null;
+    this.showImportResult = false;
   }
 }

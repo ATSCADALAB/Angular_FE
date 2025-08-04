@@ -51,6 +51,8 @@ import { StockReportComponent } from './stock-report/stock-report.component';
 import { AddInboundComponent } from './inbound/add-inbound/add-inbound.component';
 import { AddOutboundComponent } from './outbound/add-outbound/add-outbound.component';
 import { OrderDetailConfirmComponent } from './orders/order-detail/order-detail-confirm/order-detail-confirm.component';
+import { BagWeightComponent } from './bagweight/bagweight.component';
+import { UpdateBagWeightComponent } from './bagweight/update-bagweight/update-bagweight.component';
 
 @NgModule({
   imports: [
@@ -114,6 +116,8 @@ import { OrderDetailConfirmComponent } from './orders/order-detail/order-detail-
     OutboundComponent,
     AddOutboundComponent,
     StockReportComponent,
+    BagWeightComponent,
+    UpdateBagWeightComponent
   ],
 })
 export class UicomponentsModule {}

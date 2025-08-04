@@ -1,0 +1,50 @@
+<mat-card class="cardWithShadow theme-card modal-card">
+  <mat-card-header>
+    <mat-card-title class="m-b-0">Update Configure Sensor</mat-card-title>
+    <span class="flex-1-auto"></span>
+    <button mat-flat-button matTooltipPosition="left" class="m-l-8" matTooltipHideDelay="100000" (click)="closeModal()">
+      <span color="warn">Close</span>
+    </button>
+  </mat-card-header>
+  <mat-card-content class="b-t-1">
+    <form [formGroup]="dataForm" autocomplete="off" novalidate (ngSubmit)="updateData(dataForm.value)">
+      <mat-form-field class="w-100" appearance="outline">
+        <mat-label>Weight</mat-label>
+        <input matInput type="number" formControlName="weight" />
+        <mat-error *ngIf="validateControl('weight') && hasError('weight', 'required')">Weight is required</mat-error>
+        <mat-error *ngIf="validateControl('weight') && hasError('weight', 'min')">Weight must be greater than or equal to 0</mat-error>
+      </mat-form-field>
+
+      <mat-form-field class="w-100" appearance="outline">
+        <mat-label>Bag 1</mat-label>
+        <input matInput type="number" formControlName="bag1" />
+        <mat-error *ngIf="validateControl('bag1') && hasError('bag1', 'required')">Bag 1 is required</mat-error>
+        <mat-error *ngIf="validateControl('bag1') && hasError('bag1', 'min')">Bag 1 must be greater than or equal to 0</mat-error>
+      </mat-form-field>
+
+      <mat-form-field class="w-100" appearance="outline">
+        <mat-label>Bag 2</mat-label>
+        <input matInput type="number" formControlName="bag2" />
+        <mat-error *ngIf="validateControl('bag2') && hasError('bag2', 'required')">Bag 2 is required</mat-error>
+        <mat-error *ngIf="validateControl('bag2') && hasError('bag2', 'min')">Bag 2 must be greater than or equal to 0</mat-error>
+      </mat-form-field>
+
+      <mat-form-field class="w-100" appearance="outline">
+        <mat-label>Bag 3</mat-label>
+        <input matInput type="number" formControlName="bag3" />
+        <mat-error *ngIf="validateControl('bag3') && hasError('bag3', 'required')">Bag 3 is required</mat-error>
+        <mat-error *ngIf="validateControl('bag3') && hasError('bag3', 'min')">Bag 3 must be greater than or equal to 0</mat-error>
+      </mat-form-field>
+
+      <mat-form-field class="w-100" appearance="outline">
+        <mat-label>Bag 4</mat-label>
+        <input matInput type="number" formControlName="bag4" />
+        <mat-error *ngIf="validateControl('bag4') && hasError('bag4', 'required')">Bag 4 is required</mat-error>
+        <mat-error *ngIf="validateControl('bag4') && hasError('bag4', 'min')">Bag 4 must be greater than or equal to 0</mat-error>
+      </mat-form-field>
+      <button mat-flat-button color="primary" [disabled]="!dataForm.valid">
+        Save
+      </button>
+    </form>
+  </mat-card-content>
+</mat-card>

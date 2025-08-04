@@ -1,37 +1,128 @@
+/* Existing CSS */
 .mat-header-cell {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  
-  .mat-column-action {
-    width: 150px;
-  }
-  
-  .mat-column-productCode {
-    width: 150px;
-  }
-  
-  .mat-column-productName {
-    width: 250px;
-  }
-  
-  .mat-column-unit {
-    width: 100px;
-  }
-  
-  .mat-column-weightPerUnit {
-    width: 150px;
-  }
-  
-  .mat-column-isActive {
-    width: 100px;
-  }
-  
-  .mat-column-createdAt {
-    width: 150px;
-  }
-  
-  .mat-column-updatedAt {
-    width: 150px;
-  }
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mat-column-action {
+  width: 150px;
+}
+
+.mat-column-productCode {
+  width: 150px;
+}
+
+.mat-column-productName {
+  width: 250px;
+}
+
+.mat-column-unit {
+  width: 100px;
+}
+
+.mat-column-weightPerUnit {
+  width: 150px;
+}
+
+.mat-column-isActive {
+  width: 100px;
+}
+
+.mat-column-createdAt {
+  width: 150px;
+}
+
+.mat-column-updatedAt {
+  width: 150px;
+}
+
+/* THÊM MỚI: Import Result Styles */
+.import-result-container {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.import-result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e0e0e0;
+  background-color: #f5f5f5;
+  border-radius: 8px 8px 0 0;
+}
+
+.import-result-header h4 {
+  margin: 0;
+  font-weight: 600;
+  color: #333;
+}
+
+.close-btn {
+  color: #666;
+}
+
+.import-result-body {
+  padding: 16px;
+}
+
+.result-item {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  padding: 8px;
+  border-radius: 4px;
+}
+
+.result-item:last-child {
+  margin-bottom: 0;
+}
+
+.result-item mat-icon {
+  margin-right: 8px;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.result-item.success {
+  background-color: #e8f5e8;
+  color: #2e7d32;
+}
+
+.result-item.success mat-icon {
+  color: #4caf50;
+}
+
+.result-item.warning {
+  background-color: #fff3e0;
+  color: #ef6c00;
+}
+
+.result-item.warning mat-icon {
+  color: #ff9800;
+}
+
+.result-item.error {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+.result-item.error mat-icon {
+  color: #f44336;
+}
+
+.details-list {
+  margin: 8px 0 0 28px;
+  padding: 0;
+  list-style-type: disc;
+}
+
+.details-list li {
+  margin-bottom: 4px;
+  font-size: 13px;
+}

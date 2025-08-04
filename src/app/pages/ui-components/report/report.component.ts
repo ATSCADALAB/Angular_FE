@@ -533,10 +533,23 @@ export class ReportComponent implements OnInit {
     console.log('Selected Product ID:', this.selectedProductInformationId);
   }
   filterProducts(): void {
-    this.filteredProducts = this.filterOptions(this.productInformations, this.productKeyword, 'productName');
+    this.filteredProducts = this.filterProductOptions(this.productInformations, this.productKeyword);
   }
+
+  // Hàm filter riêng cho products để tìm kiếm theo cả productCode và productName
+  filterProductOptions(sourceList: ProductInformationDto[], keyword: string): ProductInformationDto[] {
+    if (!keyword) {
+      return [...sourceList];
+    }
+    const lowerKeyword = keyword.toLowerCase();
+    return sourceList.filter(item =>
+      item.productCode?.toLowerCase().includes(lowerKeyword) ||
+      item.productName?.toLowerCase().includes(lowerKeyword)
+    );
+  }
+
   displayProductName(product: ProductInformationDto): string {
-      return product?.productName || '';
+      return product ? `${product.productCode} - ${product.productName}` : '';
     }
   private downloadFile(blob: Blob, fileName: string): void {
     const url = window.URL.createObjectURL(blob);

@@ -31,7 +31,7 @@
           <mat-autocomplete #autoProduct="matAutocomplete" [displayWith]="displayProductName" (optionSelected)="onProductInfomationSelected($event)">
             <mat-option [value]="null">All</mat-option>
             <mat-option *ngFor="let product of filteredProducts" [value]="product">
-              {{ product.productName }}
+              {{ product.productCode }} - {{ product.productName }}
             </mat-option>
           </mat-autocomplete>
         </mat-form-field>
@@ -247,7 +247,7 @@
           <mat-autocomplete #autoProduct="matAutocomplete" [displayWith]="displayProductName" (optionSelected)="onProductInfomationSelected($event)">
             <mat-option [value]="null">All</mat-option>
             <mat-option *ngFor="let product of filteredProducts" [value]="product">
-              {{ product.productName }}
+              {{ product.productCode }} - {{ product.productName }}
             </mat-option>
           </mat-autocomplete>
         </mat-form-field>
@@ -348,7 +348,7 @@
           <mat-autocomplete #autoProduct="matAutocomplete" [displayWith]="displayProductName" (optionSelected)="onProductInfomationSelected($event)">
             <mat-option [value]="null">All</mat-option>
             <mat-option *ngFor="let product of filteredProducts" [value]="product">
-              {{ product.productName }}
+              {{ product.productCode }} - {{ product.productName }}
             </mat-option>
           </mat-autocomplete>
         </mat-form-field>

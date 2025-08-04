@@ -307,13 +307,25 @@ export class OrdersComponent implements OnInit, AfterViewInit, OnDestroy {
     );
   }
 
+  // Hàm filter riêng cho products để tìm kiếm theo cả productCode và productName
+  filterProductOptions(sourceList: ProductInformationDto[], keyword: string): ProductInformationDto[] {
+    if (!keyword) {
+      return [...sourceList];
+    }
+    const lowerKeyword = keyword.toLowerCase();
+    return sourceList.filter(item =>
+      item.productCode?.toLowerCase().includes(lowerKeyword) ||
+      item.productName?.toLowerCase().includes(lowerKeyword)
+    );
+  }
+
   // Hàm gọi filter cho Distributor và ProductInfo
   filterDistributors(): void {
     this.filteredDistributors = this.filterOptions(this.distributors, this.distributorKeyword, 'distributorName');
   }
 
   filterProducts(): void {
-    this.filteredProducts = this.filterOptions(this.productInformations, this.productKeyword, 'productName');
+    this.filteredProducts = this.filterProductOptions(this.productInformations, this.productKeyword);
   }
 
   // Hàm hiển thị tên Distributor
@@ -321,7 +333,7 @@ export class OrdersComponent implements OnInit, AfterViewInit, OnDestroy {
     return distributor ? distributor.distributorName : '';
   }
   displayProductName(product: ProductInformationDto): string {
-    return product?.productName || '';
+    return product ? `${product.productCode} - ${product.productName}` : '';
   }
 
 

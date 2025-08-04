@@ -15,6 +15,18 @@ import { OrderLineDetailCreationDto, OrderLineDetailDto } from 'src/app/_interfa
 import { TimezoneService } from 'src/app/shared/services/timezone.service';
 import { LineDto } from 'src/app/_interface/line';
 
+// Enums cho status
+enum OrderStatus {
+  NOT_COMPLETED = 0,
+  IN_PROGRESS = 1,
+  COMPLETED = 2,
+  CANCELLED = 3
+}
+enum LineStatus {
+  GOOD = 'good',
+  BAD = 'bad'
+}
+
 @Component({
   selector: 'app-order-details',
   templateUrl: './order-details.component.html',
@@ -22,29 +34,49 @@ import { LineDto } from 'src/app/_interface/line';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class OrderDetailsComponent implements OnInit, OnDestroy {
+
+  // ===========================================
+  // PROPERTIES & STATE MANAGEMENT
+  // ===========================================
+  
+  // Order related properties
+  orderId: string | null = null;
+  orderDetail: OrderDetailDto;
+  orderLineDetails: OrderLineDetailDto[] = [];
+  
+  // Line management
+  selectedLine: number = 0;
+  lines: LineDto[] = [];
+  isAssigned: boolean = false;
+  
+  // Sensor data
+  sensorRecord: SensorRecordDto[] = [];
+  listSensorRecords: SensorRecordDto[] = [];
+  receivedDataSensor: WcfDataDto[] = [];
+  dataSensorByLine: WcfDataDto | null = null;
+  latestRecord: any;
+  
+  // Calculations
   totalUnits: number = 0;
   totalWeight: number = 0;
   replacedUnits: number = 0;
   replacedWeight: number = 0;
-  isSensorExpanded = true;
-  sensorRecord: SensorRecordDto[] = [];
-  listSensorRecords: SensorRecordDto[] = [];
+  
+  // UI States
   isExpanded = true;
-  orderId: string | null = null;
-  orderDetail: OrderDetailDto;
-  selectedLine: number = 0;
-  lines: LineDto[] = [];
+  isSensorExpanded = true;
   isStarting: boolean = false;
   isRunning: boolean = false;
-  receivedDataSensor: WcfDataDto[] = [];
-  dataSensorByLine: WcfDataDto | null = null;
-  orderLineDetails: OrderLineDetailDto[] = [];
-  latestRecord: any;
-  isSignalRRunning: boolean = false;
   isLoading: boolean = false;
-  isAssigned: boolean = false;
+  
+  // SignalR management
+  isSignalRRunning: boolean = false;
   private subscription: Subscription;
 
+  private wcfSettingsInterval: any = null;
+  private wcfSettingsTimeout: any = null;
+  private readonly WCF_SETTINGS_INTERVAL_MS = 2000;
+  private readonly WCF_SETTINGS_DURATION_MS = 60000;
   constructor(
     private dialog: MatDialog,
     private route: ActivatedRoute,
@@ -56,146 +88,192 @@ export class OrderDetailsComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef
   ) { }
 
+  // ===========================================
+  // LIFECYCLE HOOKS
+  // ===========================================
+  
   ngOnInit(): void {
-    this.route.paramMap.subscribe(params => {
-      this.orderId = params.get('id');
-      this.selectedLine = 0;
-      document.addEventListener("visibilitychange", () => {
-        if (!document.hidden && this.isRunning) {
-          this.refreshChangedData();
-        }
-      });
-
-      if (this.orderId) {
-        this.getListLines();
-        this.loadOrderDetails();
-        this.getOrderLineDetail();
-        this.loadListSensorRecords();
-        this.loadSensorRecord();
-        this.checkSignalRStatus();
-      }
-      this.cdr.detectChanges();
-    });
-  }
-
-  toggleSensorExpand(): void {
-    this.isSensorExpanded = !this.isSensorExpanded;
-    this.cdr.detectChanges();
+    this.initializeComponent();
+    this.setupVisibilityChangeListener();
   }
 
   ngOnDestroy(): void {
-    this.disconnectSignalR();
-    this.cdr.detach();
+    this.cleanup();
   }
 
-  // API Calls
-  loadOrderDetails(): void {
+  private initializeComponent(): void {
+    this.route.paramMap.subscribe(params => {
+      this.orderId = params.get('id');
+      this.selectedLine = 0;
+
+      if (this.orderId) {
+        this.loadAllData();
+      }
+      this.detectChanges();
+    });
+  }
+
+  private setupVisibilityChangeListener(): void {
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden && this.isRunning) {
+        this.refreshAllData();
+      }
+    });
+  }
+
+  private cleanup(): void {
+    console.log('Cleaning up OrderDetailsComponent...');
+    
+    // Stop tất cả intervals và timers
+    this.stopPeriodicWCFSettingsWriter();
+    
+    // Disconnect SignalR
+    this.disconnectSignalR();
+    
+    // Unsubscribe tất cả subscriptions
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
+    
+    // Clear tất cả timeouts (nếu có)
+    // Reset states
+    this.isRunning = false;
+    this.isSignalRRunning = false;
+    this.isLoading = false;
+    
+    // Detach change detector
+    this.cdr.detach();
+    
+    console.log('OrderDetailsComponent cleanup completed');
+  }
+
+  // ===========================================
+  // DATA LOADING & API CALLS
+  // ===========================================
+  
+  private loadAllData(): void {
+    this.loadOrderDetails();
+    this.loadLines();
+    this.loadOrderLineDetails();
+    this.loadSensorData();
+    this.checkSignalRStatus();
+  }
+
+  private loadOrderDetails(): void {
     this.repoService.getData(`api/order-details/by-order/${this.orderId}`).subscribe(
       (res) => {
         this.orderDetail = (res as OrderDetailDto[])[0];
-        this.cdr.detectChanges();
+        this.detectChanges();
       },
-      (err) => {
-        this.cdr.detectChanges();
-      }
+      (err) => this.handleError('Failed to load order details', err)
     );
   }
 
-  getListLines(): void {
+  private loadLines(): void {
     this.repoService.getData(`api/lines`).subscribe(
       (res) => {
         this.lines = res as LineDto[];
-        this.cdr.detectChanges();
+        this.detectChanges();
+      },
+      (err) => this.handleError('Failed to load lines', err)
+    );
+  }
+
+  private loadOrderLineDetails(): void {
+    if (!this.orderId) return;
+
+    this.repoService.getData(`api/order-line-details/${this.orderId}`).subscribe(
+      (res) => {
+        this.orderLineDetails = res as OrderLineDetailDto[];
+        this.updateLineAssignmentStatus();
+        this.detectChanges();
       },
       (err) => {
-        this.cdr.detectChanges();
+        this.orderLineDetails = [];
+        this.isAssigned = false;
+        this.handleError('Failed to load order line details', err);
       }
     );
   }
 
-  getOrderLineDetail(): void {
-    if (this.orderId) {
-      this.repoService.getData(`api/order-line-details/${this.orderId}`).subscribe(
-        (res) => {
-          this.orderLineDetails = res as OrderLineDetailDto[];
-          const assignedLine = this.orderLineDetails.find(detail => detail.orderId === this.orderId && detail.EndTime == undefined);
-          if (assignedLine) {
-            this.isAssigned = true;
-            this.selectedLine = assignedLine.lineId;
-          } else {
-            this.isAssigned = false;
-            this.selectedLine = 0;
-          }
-          this.cdr.detectChanges();
-        },
-        (err) => {
-          this.orderLineDetails = [];
-          this.isAssigned = false;
-          this.cdr.detectChanges();
-        }
-      );
-    }
+  private loadSensorData(): void {
+    this.loadAllSensorRecords();
+    this.loadOrderSensorRecords();
   }
 
-  loadListSensorRecords(): void {
+  private loadAllSensorRecords(): void {
     this.repoService.getData(`api/sensor-records`).subscribe(
       (res) => {
         this.listSensorRecords = res as SensorRecordDto[];
-        this.cdr.detectChanges();
+        this.detectChanges();
       },
       (err) => {
         this.sensorRecord = [];
-        this.cdr.detectChanges();
+        this.handleError('Failed to load sensor records', err);
       }
     );
   }
 
-  loadSensorRecord(): void {
-    if (this.orderId) {
-      this.repoService.getData(`api/sensor-records/by-order/${this.orderId}`).subscribe(
-        (res) => {
-          this.sensorRecord = res as SensorRecordDto[];
-          this.latestRecord = this.getLatestRecord();
-          if (this.latestRecord && this.latestRecord.status === 1) {
-            this.isRunning = true;
-            this.selectedLine = this.latestRecord.lineId;
-            this.connectToSignalR();
-          }
-          this.calculateTotals();
-          this.cdr.detectChanges();
-        },
-        (err) => {
-          this.sensorRecord = [];
-          this.cdr.detectChanges();
-        }
-      );
-    }
+  private loadOrderSensorRecords(): void {
+    if (!this.orderId) return;
+
+    this.repoService.getData(`api/sensor-records/by-order/${this.orderId}`).subscribe(
+      (res) => {
+        this.sensorRecord = res as SensorRecordDto[];
+        this.processOrderSensorData();
+        this.detectChanges();
+      },
+      (err) => {
+        this.sensorRecord = [];
+        this.handleError('Failed to load order sensor records', err);
+      }
+    );
   }
 
-  // SignalR Management
-  private connectToSignalR(): void {
-    if (!this.selectedLine) {
-      return;
+  private processOrderSensorData(): void {
+    this.latestRecord = this.getLatestRecord();
+    if (this.latestRecord && this.latestRecord.status === OrderStatus.IN_PROGRESS) {
+      this.isRunning = true;
+      this.selectedLine = this.latestRecord.lineId;
+      this.connectToSignalR();
     }
-    if (this.isSignalRRunning) {
+    this.calculateTotals();
+  }
+
+  refreshAllData(): void {
+    this.loadOrderSensorRecords();
+    this.loadOrderLineDetails();
+    this.loadOrderDetails();
+    this.detectChanges();
+  }
+
+  // ===========================================
+  // SIGNALR MANAGEMENT
+  // ===========================================
+  
+  private connectToSignalR(): void {
+    if (!this.selectedLine || this.isSignalRRunning) {
       return;
     }
 
     this.signalrService.startConnection().then(() => {
       this.isSignalRRunning = true;
       this.subscription = this.signalrService.dataReceived$.subscribe(data => {
-        this.receivedDataSensor = data;
-        if (Array.isArray(this.receivedDataSensor) && this.receivedDataSensor.length >= this.selectedLine) {
-          this.dataSensorByLine = this.receivedDataSensor[this.selectedLine - 1];
-          this.cdr.detectChanges();
-        } else {
-          this.dataSensorByLine = null;
-          this.cdr.detectChanges();
-        }
+        this.handleSignalRData(data);
       });
     }).catch(err => {
-      this.cdr.detectChanges();
+      this.handleError('Failed to connect to SignalR', err);
     });
+  }
+
+  private handleSignalRData(data: WcfDataDto[]): void {
+    this.receivedDataSensor = data;
+    if (Array.isArray(this.receivedDataSensor) && this.receivedDataSensor.length >= this.selectedLine) {
+      this.dataSensorByLine = this.receivedDataSensor[this.selectedLine - 1];
+    } else {
+      this.dataSensorByLine = null;
+    }
+    this.detectChanges();
   }
 
   private disconnectSignalR(): void {
@@ -204,305 +282,245 @@ export class OrderDetailsComponent implements OnInit, OnDestroy {
     }
     this.signalrService.stopConnection();
     this.isSignalRRunning = false;
-    this.cdr.detectChanges();
+    this.detectChanges();
   }
 
-  checkSignalRStatus(): void {
+  private checkSignalRStatus(): void {
     this.isSignalRRunning = this.signalrService.isConnected();
-    this.cdr.detectChanges();
+    this.detectChanges();
   }
 
-  // Utility Methods
-  calculateTotals(): void {
-    this.totalUnits = this.sensorRecord.reduce((sum, item) => sum + item.sensorUnits, 0);
-    this.totalWeight = this.sensorRecord.reduce((sum, item) => sum + item.sensorUnits * (this.orderDetail?.productInformation?.weightPerUnit || 0), 0);
-    this.cdr.detectChanges();
+  // ===========================================
+  // LINE MANAGEMENT
+  // ===========================================
+  
+  selectLine(lineId: number): void {
+    if (!this.isValidLine(lineId)) {
+      this.showMessage('Invalid Line selected.');
+      this.selectedLine = 0;
+      return;
+    }
+    this.selectedLine = lineId;
+    this.detectChanges();
   }
 
-  getLatestRecord(): any {
-    return this.sensorRecord?.length > 0
-      ? this.sensorRecord.reduce((latest, item) => new Date(item.recordTime) > new Date(latest.recordTime) ? item : latest)
-      : null;
+  assignLine(): void {
+    if (!this.selectedLine || !this.orderId) {
+      this.showMessage('Please select a Line to assign.');
+      return;
+    }
+
+    if (this.isLineAlreadyAssigned()) {
+      this.showMessage('This line has already been assigned.');
+      return;
+    }
+
+    const orderLineDetail = this.createOrderLineDetailDto();
+    this.repoService.create('api/order-line-details', orderLineDetail).subscribe(
+      () => {
+        this.showMessage('Line assigned successfully.');
+        this.loadOrderLineDetails();
+        this.isAssigned = true;
+        this.detectChanges();
+      },
+      (err) => this.handleError('Failed to assign line', err)
+    );
   }
 
-  toggleExpand(): void {
-    this.isExpanded = !this.isExpanded;
-    this.cdr.detectChanges();
+  unassignLine(): void {
+    if (!this.orderId || !this.selectedLine) {
+      this.showMessage('No Line assigned to unassign.');
+      return;
+    }
+
+    const assignedDetail = this.findAssignedDetail();
+    if (!assignedDetail) {
+      this.showMessage('No active assignment found for this Line.');
+      return;
+    }
+
+    this.showConfirmDialog(
+      `Are you sure you want to unassign Line ${this.selectedLine}?`,
+      () => this.performUnassign(assignedDetail)
+    );
   }
 
-  hasAssignedLine(): boolean {
-    return this.orderLineDetails !== null;
-  }
-
-  getStatusText(status: number): string {
-    switch (status) {
-      case 0: return 'Not Completed';
-      case 1: return 'In Progress';
-      case 2: return 'Completed';
-      case 3: return 'Cancel';
-      default: return 'Unknown';
+  private updateLineAssignmentStatus(): void {
+    const assignedLine = this.orderLineDetails.find(
+      detail => detail.orderId === this.orderId && detail.EndTime == undefined
+    );
+    
+    if (assignedLine) {
+      this.isAssigned = true;
+      this.selectedLine = assignedLine.lineId;
+    } else {
+      this.isAssigned = false;
+      this.selectedLine = 0;
     }
   }
 
-  getStatusClass(status: number): string {
-    switch (status) {
-      case 0: return 'status-not-completed';
-      case 1: return 'status-in-progress';
-      case 2: return 'status-completed';
-      case 3: return 'status-cancel';
-      default: return 'status-unknown';
+  private isValidLine(lineId: number): boolean {
+    return this.lines.some(line => line.id === lineId);
+  }
+
+  private isLineAlreadyAssigned(): boolean {
+    return this.orderLineDetails.some(detail => detail.lineId === this.selectedLine);
+  }
+
+  private findAssignedDetail(): OrderLineDetailDto | undefined {
+    return this.orderLineDetails.find(
+      detail => detail.orderId === this.orderId && 
+               detail.lineId === this.selectedLine && 
+               detail.EndTime === undefined
+    );
+  }
+
+  private performUnassign(assignedDetail: OrderLineDetailDto): void {
+    assignedDetail.EndTime = new Date().toISOString();
+    this.repoService.updateByID('api/order-line-details', assignedDetail.id.toString(), assignedDetail).subscribe(
+      () => {
+        this.showMessage('Line unassigned successfully.');
+        this.isAssigned = false;
+        this.selectedLine = 0;
+        this.loadOrderLineDetails();
+        this.detectChanges();
+      },
+      (err) => this.handleError('Failed to unassign line', err)
+    );
+  }
+
+  // ===========================================
+  // ORDER OPERATIONS
+  // ===========================================
+  
+  async startOrder(): Promise<void> {
+    if (!this.selectedLine) {
+      this.showMessage('Please select a Line before starting.');
+      return;
+    }
+  
+    // Kiểm tra line có đang được sử dụng không
+    if (this.isLineCurrentlyInUse()) {
+      return;
+    }
+  
+    // Kiểm tra trạng thái line từ SignalR
+    this.isLoading = true;
+    const isLineStatusGood = await this.validateLineStatusWithSignalR();
+    
+    if (!isLineStatusGood) {
+      this.isLoading = false;
+      return;
+    }
+  
+    // Nếu line status good, tiếp tục start order
+    this.performOrderStart();
+  }
+
+  private performOrderStart(): void {
+    this.updateWCFData();
+    if (this.selectedLine && this.orderId) {
+      this.isLoading = true;
+      this.updateOrderStatus(OrderStatus.IN_PROGRESS);
+      
+      const sensorRecordData = this.createSensorRecordDto();
+      this.repoService.create('api/sensor-records', sensorRecordData).subscribe(
+        (res) => {
+          this.loadOrderSensorRecords();
+          this.isLoading = false;
+          this.detectChanges();
+        },
+        (err) => {
+          this.isLoading = false;
+          this.handleError('Failed to start order', err);
+        }
+      );
     }
   }
 
-  // Core Logic
-  toggleOrder(): void {
+  stopOrder(): void {
+    this.isLoading = true;
+    const totalUnits = this.calculateCurrentTotalUnits();
+
+    if (totalUnits < (this.orderDetail?.requestedUnits || 0)) {
+      this.showConfirmDialog(
+        "The count is not complete. Are you sure you want to stop?",
+        () => this.performOrderStop(),
+        () => {
+          this.isLoading = false;
+          this.detectChanges();
+        }
+      );
+    } else {
+      this.performOrderStop();
+    }
+  }
+
+  private performOrderStop(): void {
+    this.isRunning = false;
+    this.selectedLine = 0;
+
+    if (this.sensorRecord.length > 0 && this.receivedDataSensor) {
+      this.updateLastSensorRecord();
+      this.updateLastOrderLineDetail();
+      this.updateWCFData();
+
+      setTimeout(() => {
+        this.refreshAllData();
+        this.isLoading = false;
+        this.detectChanges();
+      }, 500);
+    } else {
+      this.showMessage('Error: No sensor data available.');
+      this.isLoading = false;
+      this.detectChanges();
+    }
+
+    this.disconnectSignalR();
+  }
+
+  async toggleOrder(): Promise<void> {
     if (!this.isRunning) {
-      const activeRecord = this.listSensorRecords.find(record => record.lineId === this.selectedLine && record.status === 1);
-      if (activeRecord) {
-        const dialogRef = this.dialog.open(ConfirmComponent, {
-          width: '450px',
-          height: '150px',
-          disableClose: true,
-          data: { message: `Line ${this.selectedLine} is currently in use by order ${activeRecord.orderId}. Would you like to view its details?` }
-        });
-
-        dialogRef.afterClosed().subscribe(result => {
-          this.isStarting = false;
-          this.isRunning = false;
-          if (result) {
-            this.router.navigate(['/ui-components/order-details', activeRecord.orderId]);
-          } else {
-            this.selectedLine = 0;
-            this.snackBar.open('Please select another Line.', 'Close', { duration: 3000 });
-            this.cdr.detectChanges();
-          }
-        });
+      if (this.isLineCurrentlyInUse()) {
         return;
       }
+      
+      // Kiểm tra line status trước khi start
+      this.isLoading = false;
+      const isLineStatusGood = await this.validateLineStatusWithSignalR();
+      
+      if (!isLineStatusGood) {
+        this.isLoading = false;
+        return;
+      }
+      
       this.isStarting = false;
       this.isRunning = true;
       this.startOrder();
+      
       if (this.selectedLine !== 0) {
         this.connectToSignalR();
       }
-      console.log(this.selectLine.toString())
-      const settings: WcfDataUpdateDto[] = [{
-      name: this.selectedLine.toString(),
-      valueToWrite: this.orderDetail.order.vehicleNumber+"/"+this.orderDetail.productInformation.productCode+"/"+this.orderDetail.requestedUnits+"/"+this.orderDetail.productInformation.weightPerUnit
-    }];
-    this.repoService.update('api/wcf/write-setting', settings).subscribe(
-      (res) => {
-        this.cdr.detectChanges();
-      },
-      (err) => {
-        this.cdr.detectChanges();
-      }
-    );
+      
+      this.startPeriodicWCFSettingsWriter();
+       this.isLoading = false;
+      this.detectChanges();
     } else {
-      this.isLoading = true;
-      let totalUnits = this.totalUnits + Number(this.receivedDataSensor[this.selectedLine - 1]?.value || 0);
-
-      const stopOrder = () => {
-        this.isRunning = false;
-        this.selectedLine = 0;
-
-        if (this.sensorRecord.length > 0 && this.receivedDataSensor) {
-          const lastIndex = this.sensorRecord.length - 1;
-          const lastRecord = this.sensorRecord[lastIndex];
-
-          if (this.dataSensorByLine) {
-            lastRecord.sensorUnits = Number(this.dataSensorByLine.value);
-            lastRecord.sensorWeight = lastRecord.sensorUnits * (this.orderDetail?.productInformation?.weightPerUnit || 0);
-
-            this.updateSensorRecord(lastRecord);
-            this.updateLastOrderLineDetail();
-            this.updateWCFData();
-
-            setTimeout(() => {
-              this.refreshChangedData();
-              this.isLoading = false;
-              this.cdr.detectChanges();
-            }, 500);
-          } else {
-            this.snackBar.open('Error: No sensor data available.', 'Close', { duration: 3000 });
-            this.isLoading = false;
-            this.cdr.detectChanges();
-          }
-        } else {
-          this.isLoading = false;
-          this.cdr.detectChanges();
-        }
-
-        this.disconnectSignalR();
-      };
-
-      if (totalUnits < this.orderDetail?.requestedUnits) {
-        const dialogRef = this.dialog.open(ConfirmComponent, {
-          width: '450px',
-          height: '130px',
-          data: { message: "The count is not complete. Are you sure you want to stop?" }
-        });
-
-        dialogRef.afterClosed().subscribe(result => {
-          if (result) stopOrder();
-          else {
-            this.isLoading = false;
-            this.cdr.detectChanges();
-          }
-        });
-      } else {
-        stopOrder();
-      }
+      this.stopPeriodicWCFSettingsWriter();
+      this.stopOrder();
     }
   }
 
-  refreshChangedData(): void {
-    this.loadSensorRecord();
-    this.getOrderLineDetail();
-    this.loadOrderDetails();
-    this.cdr.detectChanges();
-  }
-
-  // Update Methods
-  updateSensorRecord(sensorRecord: SensorRecordDto): void {
-    if (!sensorRecord.id) {
-      return;
-    }
-    sensorRecord.status = 0;
-    sensorRecord.recordTime = this.timezoneService.getCurrentTime().toISOString();
-    this.repoService.updateByID('api/sensor-records', sensorRecord.id.toString(), sensorRecord).subscribe(
-      (res) => {
-        this.cdr.detectChanges();
-      },
-      (err) => {
-        this.cdr.detectChanges();
-      }
-    );
-    this.calculateTotals();
-  }
-
-  updateOrderDetail(): void {
-    if (this.totalUnits > this.orderDetail?.requestedUnits) {
-      const orderDetailDataUpdate: OrderDetailUpdateDto = {
-        orderId: this.orderDetail.orderId,
-        requestedUnits: this.orderDetail.requestedUnits,
-        requestedWeight: this.orderDetail.requestedWeight,
-        manufactureDate: this.orderDetail.manufactureDate,
-        productInformationId: this.orderDetail.productInformationId,
-        defectiveUnits: this.orderDetail.defectiveUnits,
-        defectiveWeight: this.orderDetail.defectiveWeight,
-        replacedUnits: this.orderDetail.replacedUnits,
-        replacedWeight: this.orderDetail.replacedWeight,
-      };
-      this.repoService.updateByID('api/order-details', this.orderDetail.id.toString(), orderDetailDataUpdate).subscribe(
-        (res) => {
-          this.cdr.detectChanges();
-        },
-        (err) => {
-          this.cdr.detectChanges();
-        }
-      );
-    }
-  }
-
-  updateOrderStatus(status: number): void {
-    if (this.orderId) {
-      const orderData: OrderForManipulationDto = {
-        id: this.orderId,
-        status: status,
-        orderCode: this.orderDetail.order.orderCode,
-        vehicleNumber: this.orderDetail.order.vehicleNumber,
-        driverNumber: this.orderDetail.order.driverNumber,
-        driverName: this.orderDetail.order.driverName,
-        driverPhoneNumber: this.orderDetail.order.driverPhoneNumber,
-        distributorId: this.orderDetail.order.distributorId,
-        exportDate: this.orderDetail.order.exportDate,
-      };
-      this.repoService.updateByID('api/orders', this.orderId, orderData).subscribe(
-        (res) => {
-          this.refreshChangedData();
-          this.cdr.detectChanges();
-        },
-        (err) => {
-          this.cdr.detectChanges();
-        }
-      );
-    }
-  }
-
-  updateLastOrderLineDetail(): void {
-    if (this.orderLineDetails && this.orderLineDetails.length > 0) {
-      const lastOrderLineDetail = this.orderLineDetails.reduce((latest, current) =>
-        current.id > latest.id ? current : latest
-      );
-      if (lastOrderLineDetail) {
-        lastOrderLineDetail.EndTime = new Date().toISOString();
-        this.repoService.updateByID('api/order-line-details', lastOrderLineDetail.id.toString(), lastOrderLineDetail).subscribe(
-          (res) => {
-            this.cdr.detectChanges();
-          },
-          (err) => {
-            this.cdr.detectChanges();
-          }
-        );
-      }
-    }
-  }
-
-  updateWCFData(): void {
-    if (!this.dataSensorByLine) {
-      return;
-    }
-    const sensorData: WcfDataUpdateDto[] = [{
-      name: this.dataSensorByLine.name,
-      valueToWrite: "0"
-    }
-    ];
-    this.repoService.update('api/wcf/write-value', sensorData).subscribe(
-      (res) => {
-        this.cdr.detectChanges();
-      },
-      (err) => {
-        this.cdr.detectChanges();
-      }
-    );
-    this.calculateTotals();
-  }
-
-  // Action Methods
-  createOrderLineDetail(): void {
-    if (this.orderLineDetails && this.orderId) {
-      let sequenceNumber = this.orderLineDetails.length + 1;
-      const orderLineDetailData: OrderLineDetailCreationDto = {
-        orderId: this.orderId,
-        LineId: this.selectedLine,
-        SequenceNumber: sequenceNumber,
-        StartTime: new Date().toISOString(),
-        EndTime: new Date().toISOString()
-      };
-      this.repoService.create('api/order-line-details', orderLineDetailData).subscribe(
-        (res) => {
-          this.isStarting = false;
-          this.snackBar.open('Order started successfully.', 'Close', { duration: 3000 });
-          this.cdr.detectChanges();
-        },
-        (err) => {
-          this.isStarting = false;
-          this.snackBar.open('Failed to start order.', 'Close', { duration: 3000 });
-          this.cdr.detectChanges();
-        }
-      );
-    }
-  }
-
-  confirmForm(id: number): void {
+  completeOrder(): void {
+    if (!this.orderDetail?.id) return;
+    
     const dialogRef = this.dialog.open(OrderDetailConfirmComponent, {
       width: '500px',
       height: '400px',
       enterAnimationDuration: '100ms',
       exitAnimationDuration: '100ms',
       data: {
-        id,
+        id: this.orderDetail.id,
         totalUnits: this.totalUnits,
         updateOrderDetail: this.updateOrderDetail.bind(this),
         updateOrderStatus: this.updateOrderStatus.bind(this)
@@ -511,200 +529,552 @@ export class OrderDetailsComponent implements OnInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.isLoading = true;
-        this.updateOrderDetail();
-        this.updateOrderStatus(2);
-        this.updateLastOrderLineDetail();
-        setTimeout(() => {
-          this.refreshChangedData();
-          this.isLoading = false;
-          this.cdr.detectChanges();
-        }, 500);
+        this.performOrderCompletion();
       }
     });
   }
 
-  completeOrder(): void {
-    this.confirmForm(this.orderDetail?.id);
-    this.cdr.detectChanges();
+  private performOrderCompletion(): void {
+    this.isLoading = true;
+    this.updateOrderDetail();
+    this.updateOrderStatus(OrderStatus.COMPLETED);
+    this.updateLastOrderLineDetail();
+    
+    setTimeout(() => {
+      this.refreshAllData();
+      this.isLoading = false;
+      this.detectChanges();
+    }, 500);
   }
 
-  goBack(): void {
-    this.router.navigate(['/ui-components/orders']);
-    this.cdr.detectChanges();
+  // ===========================================
+  // UPDATE OPERATIONS
+  // ===========================================
+  
+  private updateOrderDetail(): void {
+    if (this.totalUnits <= (this.orderDetail?.requestedUnits || 0)) return;
+
+    const orderDetailDataUpdate: OrderDetailUpdateDto = {
+      orderId: this.orderDetail.orderId,
+      requestedUnits: this.orderDetail.requestedUnits,
+      requestedWeight: this.orderDetail.requestedWeight,
+      manufactureDate: this.orderDetail.manufactureDate,
+      productInformationId: this.orderDetail.productInformationId,
+      defectiveUnits: this.orderDetail.defectiveUnits,
+      defectiveWeight: this.orderDetail.defectiveWeight,
+      replacedUnits: this.orderDetail.replacedUnits,
+      replacedWeight: this.orderDetail.replacedWeight,
+    };
+    
+    this.repoService.updateByID('api/order-details', this.orderDetail.id.toString(), orderDetailDataUpdate).subscribe(
+      (res) => this.detectChanges(),
+      (err) => this.handleError('Failed to update order detail', err)
+    );
   }
 
-  selectLine(lineId: number): void {
-    if (!this.lines.some(line => line.id === lineId)) {
-      this.snackBar.open('Invalid Line selected.', 'Close', { duration: 3000 });
-      this.selectedLine = 0;
-      this.cdr.detectChanges();
+  private updateOrderStatus(status: OrderStatus): void {
+    if (!this.orderId) return;
+
+    const orderData: OrderForManipulationDto = {
+      id: this.orderId,
+      status: status,
+      orderCode: this.orderDetail.order.orderCode,
+      vehicleNumber: this.orderDetail.order.vehicleNumber,
+      driverNumber: this.orderDetail.order.driverNumber,
+      driverName: this.orderDetail.order.driverName,
+      driverPhoneNumber: this.orderDetail.order.driverPhoneNumber,
+      distributorId: this.orderDetail.order.distributorId,
+      exportDate: this.orderDetail.order.exportDate,
+    };
+    
+    this.repoService.updateByID('api/orders', this.orderId, orderData).subscribe(
+      (res) => {
+        this.refreshAllData();
+        this.detectChanges();
+      },
+      (err) => this.handleError('Failed to update order status', err)
+    );
+  }
+
+  private updateLastSensorRecord(): void {
+    if (!this.sensorRecord.length || !this.dataSensorByLine) {
+      this.showMessage('Error: No sensor data available.');
       return;
     }
-    this.selectedLine = lineId;
-    this.cdr.detectChanges();
+
+    const lastRecord = this.sensorRecord[this.sensorRecord.length - 1];
+    lastRecord.sensorUnits = Number(this.dataSensorByLine.value);
+    lastRecord.sensorWeight = lastRecord.sensorUnits * (this.orderDetail?.productInformation?.weightPerUnit || 0);
+    lastRecord.status = OrderStatus.NOT_COMPLETED;
+    lastRecord.recordTime = this.timezoneService.getCurrentTime().toISOString();
+
+    if (!lastRecord.id) return;
+
+    this.repoService.updateByID('api/sensor-records', lastRecord.id.toString(), lastRecord).subscribe(
+      (res) => {
+        this.calculateTotals();
+        this.detectChanges();
+      },
+      (err) => this.handleError('Failed to update sensor record', err)
+    );
+  }
+
+  private updateLastOrderLineDetail(): void {
+    if (!this.orderLineDetails?.length) return;
+
+    const lastOrderLineDetail = this.orderLineDetails.reduce((latest, current) =>
+      current.id > latest.id ? current : latest
+    );
+    
+    if (lastOrderLineDetail) {
+      lastOrderLineDetail.EndTime = new Date().toISOString();
+      this.repoService.updateByID('api/order-line-details', lastOrderLineDetail.id.toString(), lastOrderLineDetail).subscribe(
+        (res) => this.detectChanges(),
+        (err) => this.handleError('Failed to update order line detail', err)
+      );
+    }
+  }
+
+  private updateWCFData(): void {
+    if (!this.dataSensorByLine) return;
+
+    const sensorData: WcfDataUpdateDto[] = [{
+      name: this.dataSensorByLine.name,
+      valueToWrite: "0"
+    }];
+    
+    this.repoService.update('api/wcf/write-value', sensorData).subscribe(
+      (res) => {
+        this.calculateTotals();
+        this.detectChanges();
+      },
+      (err) => this.handleError('Failed to update WCF data', err)
+    );
+  }
+
+  private writeSettingsToWCF(): void {
+    if (!this.selectedLine) return;
+
+    const settings: WcfDataUpdateDto[] = [{
+      name: this.selectedLine.toString(),
+      valueToWrite: `${this.orderDetail.order.vehicleNumber}/${this.orderDetail.productInformation.productCode}/${this.orderDetail.requestedUnits}/${this.orderDetail.productInformation.weightPerUnit}`
+    }];
+    
+    this.repoService.update('api/wcf/write-setting', settings).subscribe(
+      (res) => {
+        this.detectChanges();
+      },
+      (err) => this.handleError('Failed to write settings to WCF', err)
+    );
+  }
+
+  // ===========================================
+  // CALCULATIONS & UTILITIES
+  // ===========================================
+  
+  private calculateTotals(): void {
+    this.totalUnits = this.sensorRecord.reduce((sum, item) => sum + item.sensorUnits, 0);
+    this.totalWeight = this.sensorRecord.reduce((sum, item) => 
+      sum + item.sensorUnits * (this.orderDetail?.productInformation?.weightPerUnit || 0), 0);
+    this.detectChanges();
+  }
+
+  private calculateCurrentTotalUnits(): number {
+    return this.totalUnits + Number(this.receivedDataSensor[this.selectedLine - 1]?.value || 0);
   }
 
   calculateWeight(item: SensorRecordDto): number {
     const weightPerUnit = this.orderDetail?.productInformation?.weightPerUnit || 0;
-    const units = item === this.latestRecord && this.dataSensorByLine?.value ? Number(this.dataSensorByLine.value) : item.sensorUnits;
+    const units = item === this.latestRecord && this.dataSensorByLine?.value ? 
+      Number(this.dataSensorByLine.value) : item.sensorUnits;
     return units * weightPerUnit;
   }
+
   calculateRemainingUnits(item: SensorRecordDto): number {
-  if (!this.orderDetail || !this.sensorRecord) {
-    return 0;
-  }
-
-  // Tìm chỉ số của bản ghi hiện tại
-  const currentIndex = this.sensorRecord.findIndex(record => record.id === item.id);
-  if (currentIndex === -1) {
-    return this.orderDetail.requestedUnits;
-  }
-
-  // Tính tổng số units đã đếm đến bản ghi hiện tại
-  let totalUnitsCounted = 0;
-  for (let i = 0; i <= currentIndex; i++) {
-    const record = this.sensorRecord[i];
-    // Nếu là bản ghi mới nhất và có dữ liệu SignalR, sử dụng dataSensorByLine.value
-    totalUnitsCounted += (record === this.latestRecord && this.dataSensorByLine?.value)
-      ? Number(this.dataSensorByLine.value)
-      : record.sensorUnits;
-  }
-
-  // Trả về số lượng còn lại
-  const remainingUnits = this.orderDetail.requestedUnits - totalUnitsCounted;
-  return remainingUnits >= 0 ? remainingUnits : 0; // Đảm bảo không trả về số âm
-}
-
-  assignLine(): void {
-    if (!this.selectedLine || !this.orderId) {
-      this.snackBar.open('Please select a Line to assign.', 'Close', { duration: 3000 });
-      this.cdr.detectChanges();
-      return;
+    if (!this.orderDetail || !this.sensorRecord) {
+      return 0;
     }
 
-    const alreadyAssigned = this.orderLineDetails.some(detail => detail.lineId === this.selectedLine);
-    if (alreadyAssigned) {
-      this.snackBar.open('This line has already been assigned.', 'Close', { duration: 3000 });
-      this.cdr.detectChanges();
-      return;
+    const currentIndex = this.sensorRecord.findIndex(record => record.id === item.id);
+    if (currentIndex === -1) {
+      return this.orderDetail.requestedUnits;
     }
 
-    const orderLineDetail: OrderLineDetailCreationDto = {
-      orderId: this.orderId,
+    let totalUnitsCounted = 0;
+    for (let i = 0; i <= currentIndex; i++) {
+      const record = this.sensorRecord[i];
+      totalUnitsCounted += (record === this.latestRecord && this.dataSensorByLine?.value)
+        ? Number(this.dataSensorByLine.value)
+        : record.sensorUnits;
+    }
+
+    const remainingUnits = this.orderDetail.requestedUnits - totalUnitsCounted;
+    return remainingUnits >= 0 ? remainingUnits : 0;
+  }
+
+  private getLatestRecord(): any {
+    return this.sensorRecord?.length > 0
+      ? this.sensorRecord.reduce((latest, item) => 
+          new Date(item.recordTime) > new Date(latest.recordTime) ? item : latest)
+      : null;
+  }
+
+  // ===========================================
+  // STATUS & DISPLAY UTILITIES
+  // ===========================================
+  
+  getStatusText(status: number): string {
+    switch (status) {
+      case OrderStatus.NOT_COMPLETED: return 'Not Completed';
+      case OrderStatus.IN_PROGRESS: return 'In Progress';
+      case OrderStatus.COMPLETED: return 'Completed';
+      case OrderStatus.CANCELLED: return 'Cancel';
+      default: return 'Unknown';
+    }
+  }
+
+  getStatusClass(status: number): string {
+    switch (status) {
+      case OrderStatus.NOT_COMPLETED: return 'status-not-completed';
+      case OrderStatus.IN_PROGRESS: return 'status-in-progress';
+      case OrderStatus.COMPLETED: return 'status-completed';
+      case OrderStatus.CANCELLED: return 'status-cancel';
+      default: return 'status-unknown';
+    }
+  }
+
+  // ===========================================
+  // UI INTERACTIONS
+  // ===========================================
+  
+  toggleExpand(): void {
+    this.isExpanded = !this.isExpanded;
+    this.detectChanges();
+  }
+
+  toggleSensorExpand(): void {
+    this.isSensorExpanded = !this.isSensorExpanded;
+    this.detectChanges();
+  }
+
+  goBack(): void {
+    this.router.navigate(['/ui-components/orders']);
+    this.detectChanges();
+  }
+
+  // ===========================================
+  // HELPER METHODS
+  // ===========================================
+  
+  private isLineCurrentlyInUse(): boolean {
+    this.loadAllSensorRecords();
+    const activeRecord = this.listSensorRecords.find(
+      record => record.lineId === this.selectedLine && record.status === OrderStatus.IN_PROGRESS
+    );
+    
+    if (activeRecord) {
+      this.showLineInUseDialog(activeRecord);
+      return true;
+    }
+    return false;
+  }
+
+  private showLineInUseDialog(activeRecord: any): void {
+    const dialogRef = this.dialog.open(ConfirmComponent, {
+      width: '450px',
+      height: '150px',
+      disableClose: true,
+      data: { 
+        message: `Line ${this.selectedLine} is currently in use by order ${activeRecord.orderId}. Do you want to stop that order?` 
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      this.isStarting = false;
+      this.isRunning = false;
+      if (result) {
+        this.resetLineStatus(this.selectedLine);
+      } else {
+        this.selectedLine = 0;
+        this.showMessage('Please select another Line.');
+      }
+    });
+  }
+  private resetLineStatus(lineId: number): void {
+    if (!lineId) {
+      this.showMessage('Invalid Line ID for reset operation.');
+      return;
+    }
+    console.log(lineId);
+
+    this.isLoading = true;
+    this.showMessage('Resetting line status...');
+
+    // Gọi API reset status
+    this.repoService.update(`api/sensor-records/reset-status-by-line/${lineId}`, {}).subscribe(
+      (response: any) => {
+        this.isLoading = false;
+        setTimeout(() => {
+        window.location.reload();
+      }, 1500); // Delay 1.5 giây
+        this.detectChanges();
+      },
+      (error) => {
+        this.isLoading = false;
+        this.handleError(`Failed to reset status for Line ${lineId}`, error);
+        
+        // Nếu reset thất bại, clear selection
+        this.selectedLine = 0;
+        this.detectChanges();
+      }
+    );
+  }
+  private showConfirmDialog(message: string, onConfirm: () => void, onCancel?: () => void): void {
+    const dialogRef = this.dialog.open(ConfirmComponent, {
+      width: '450px',
+      height: '150px',
+      disableClose: true,
+      data: { message }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        onConfirm();
+      } else if (onCancel) {
+        onCancel();
+      }
+    });
+  }
+
+  private createOrderLineDetailDto(): OrderLineDetailCreationDto {
+    return {
+      orderId: this.orderId!,
       LineId: this.selectedLine,
       SequenceNumber: this.orderLineDetails.length + 1,
       StartTime: new Date().toISOString(),
       EndTime: new Date().toISOString()
     };
-
-    this.repoService.create('api/order-line-details', orderLineDetail).subscribe(
-      () => {
-        this.snackBar.open('Line assigned successfully.', 'Close', { duration: 3000 });
-        this.getOrderLineDetail();
-        this.isAssigned = true;
-        this.cdr.detectChanges();
-      },
-      (err) => {
-        this.snackBar.open('Failed to assign line.', 'Close', { duration: 3000 });
-        this.cdr.detectChanges();
-      }
-    );
   }
 
-  startOrder(): void {
-    if (!this.selectedLine) {
-      this.snackBar.open('Please select a Line before starting.', 'Close', { duration: 3000 });
-      this.cdr.detectChanges();
-      return;
-    }
-    const activeRecord = this.listSensorRecords.find(record => record.lineId === this.selectedLine && record.status === 1);
-    if (activeRecord) {
-      const dialogRef = this.dialog.open(ConfirmComponent, {
-        width: '450px',
-        height: '150px',
-        disableClose: true,
-        data: { message: `Line ${this.selectedLine} is currently in use by order ${activeRecord.orderId}. Would you like to view its details?` }
-      });
+  private createSensorRecordDto(): SensorRecordCreationDto {
+    return {
+      orderId: this.orderId!,
+      orderDetailId: this.orderDetail.id,
+      lineId: this.selectedLine,
+      sensorUnits: 0,
+      sensorWeight: 0,
+      recordTime: this.timezoneService.getCurrentTime().toISOString(),
+      status: OrderStatus.IN_PROGRESS,
+    };
+  }
 
-      dialogRef.afterClosed().subscribe(result => {
-        this.isStarting = false;
-        this.isRunning = false;
-        if (result) {
-          this.router.navigate(['/ui-components/order-details', activeRecord.orderId]);
-        } else {
-          this.selectedLine = 0;
-          this.snackBar.open('Please select another Line.', 'Close', { duration: 3000 });
-          this.cdr.detectChanges();
+  private showMessage(message: string): void {
+    this.snackBar.open(message, 'Close', { duration: 3000 });
+    this.detectChanges();
+  }
+
+  private handleError(message: string, error: any): void {
+    console.error(message, error);
+    this.showMessage(message);
+    this.detectChanges();
+  }
+
+  private detectChanges(): void {
+    this.cdr.detectChanges();
+  }
+
+  // ===========================================
+  // LEGACY METHODS (for backward compatibility)
+  // ===========================================
+  
+  hasAssignedLine(): boolean {
+    return this.orderLineDetails !== null;
+  }
+
+  createOrderLineDetail(): void {
+    // This method is kept for backward compatibility
+    // Logic has been moved to assignLine()
+    this.assignLine();
+  }
+
+  confirmForm(id: number): void {
+    // This method is kept for backward compatibility  
+    // Logic has been moved to completeOrder()
+    this.completeOrder();
+  }
+  // ===========================================
+// LINE STATUS VALIDATION
+// ===========================================
+
+/**
+ * Kiểm tra trạng thái line từ SignalR data
+ */
+private checkLineStatus(): boolean {
+  if (!this.selectedLine) {
+    this.showMessage('Please select a Line first.');
+    return false;
+  }
+
+  // Kiểm tra xem có dữ liệu SignalR không và đã nhận được data
+  if (!this.receivedDataSensor || 
+      this.receivedDataSensor.length === 0 || 
+      !this.receivedDataSensor[this.selectedLine - 1]) {
+    this.showMessage('No SignalR data available for the selected line.');
+    return false;
+  }
+
+  // Lấy data của line được chọn
+  const lineData = this.receivedDataSensor[this.selectedLine - 1];
+  
+  // Kiểm tra status của line
+  const lineStatus = lineData.status?.toLowerCase();
+  
+  if (lineStatus === LineStatus.BAD) {
+    this.showMessage(`Line ${this.selectedLine} is in BAD status. Cannot start order.`);
+    return false;
+  }
+
+  if (lineStatus !== LineStatus.GOOD) {
+    this.showMessage(`Line ${this.selectedLine} status is unknown (${lineStatus}). Cannot start order.`);
+    return false;
+  }
+
+  return true;
+}
+  /**
+ * Kiểm tra trạng thái line với SignalR connection
+ */
+  private async validateLineStatusWithSignalR(): Promise<boolean> {
+    try {
+      // Nếu chưa có SignalR connection, tạo connection
+      if (!this.isSignalRRunning) {
+        await this.signalrService.startConnection();
+        this.isSignalRRunning = true;
+        
+        // Subscribe để nhận data
+        this.subscription = this.signalrService.dataReceived$.subscribe(data => {
+          this.handleSignalRData(data);
+        });
+      }
+      
+      // Đợi để nhận được data từ SignalR
+      const maxWaitTime = 5000; // 5 seconds
+      const checkInterval = 100; // 100ms
+      let waitTime = 0;
+      
+      while (waitTime < maxWaitTime) {
+        // Kiểm tra xem đã nhận được data chưa
+        if (this.receivedDataSensor && 
+            this.receivedDataSensor.length > 0 && 
+            this.receivedDataSensor[this.selectedLine - 1]) {
+          
+          // Đã có data, kiểm tra status
+          return this.checkLineStatus();
         }
-      });
-      return;
+        
+        // Chưa có data, đợi thêm
+        await new Promise(resolve => setTimeout(resolve, checkInterval));
+        waitTime += checkInterval;
+      }
+      
+      // Timeout - không nhận được data
+      this.showMessage('Timeout waiting for SignalR data. Please try again.');
+      return false;
+      
+    } catch (error) {
+      this.handleError('Failed to connect to SignalR for status check', error);
+      return false;
     }
-    this.updateWCFData();
-    if (this.selectedLine && this.orderId) {
-      this.isLoading = true;
-      this.updateOrderStatus(1);
-      const sensorRecordData: SensorRecordCreationDto = {
-        orderId: this.orderId,
-        orderDetailId: this.orderDetail.id,
-        lineId: this.selectedLine,
-        sensorUnits: 0,
-        sensorWeight: 0,
-        recordTime: this.timezoneService.getCurrentTime().toISOString(),
-        status: 1,
-      };
-      this.repoService.create('api/sensor-records', sensorRecordData).subscribe(
-        (res) => {
-          this.loadSensorRecord();
-          this.isLoading = false;
-          this.cdr.detectChanges();
-        },
-        (err) => {
-          this.isLoading = false;
-          this.cdr.detectChanges();
-        }
-      );
+  }
+// ===========================================
+// UTILITY METHODS FOR LINE STATUS
+// ===========================================
+
+/**
+ * Lấy trạng thái hiện tại của line đã chọn
+ */
+getCurrentLineStatus(): string | null {
+  if (!this.selectedLine || !this.receivedDataSensor) {
+    return null;
+  }
+
+  const lineData = this.receivedDataSensor[this.selectedLine - 1];
+  return lineData?.status || null;
+}
+
+/**
+ * Kiểm tra xem có thể start order với line hiện tại không
+ */
+canStartOrderWithCurrentLine(): boolean {
+  const status = this.getCurrentLineStatus();
+  return status?.toLowerCase() === LineStatus.GOOD;
+}
+
+/**
+ * Lấy text hiển thị cho line status
+ */
+getLineStatusText(status: string): string {
+  switch (status?.toLowerCase()) {
+    case LineStatus.GOOD:
+      return 'Good';
+    case LineStatus.BAD:
+      return 'Bad';
+    default:
+      return 'Unknown';
+  }
+}
+
+/**
+ * Lấy CSS class cho line status
+ */
+  getLineStatusClass(status: string): string {
+    switch (status?.toLowerCase()) {
+      case LineStatus.GOOD:
+        return 'line-status-good';
+      case LineStatus.BAD:
+        return 'line-status-bad';
+      default:
+        return 'line-status-unknown';
+    }
+  }
+  private startPeriodicWCFSettingsWriter(): void {
+    // Nếu đã có interval đang chạy thì clear trước
+    this.stopPeriodicWCFSettingsWriter();
+    
+    console.log('Starting periodic WCF settings writer...');
+    
+    // Gọi lần đầu ngay lập tức
+    this.writeSettingsToWCF();
+    
+    // Sau đó gọi định kỳ mỗi 1 giây
+    this.wcfSettingsInterval = setInterval(() => {
+      if (this.isRunning && this.selectedLine && this.orderDetail) {
+        this.writeSettingsToWCF();
+      } else {
+        this.stopPeriodicWCFSettingsWriter();
+      }
+    }, this.WCF_SETTINGS_INTERVAL_MS);
+    this.wcfSettingsTimeout = setTimeout(() => {
+      this.stopPeriodicWCFSettingsWriter();
+      console.log('Stopped periodic WCF settings writer after 30 seconds.');
+    }, this.WCF_SETTINGS_DURATION_MS);
+  }
+  private stopPeriodicWCFSettingsWriter(): void {
+    if (this.wcfSettingsInterval) {
+      console.log('Stopping periodic WCF settings writer...');
+      clearInterval(this.wcfSettingsInterval);
+      this.wcfSettingsInterval = null;
+    }
+    if (this.wcfSettingsTimeout) {
+      clearTimeout(this.wcfSettingsTimeout);
+      this.wcfSettingsTimeout = null;
     }
   }
 
-  unassignLine(): void {
-    if (!this.orderId || !this.selectedLine) {
-      this.snackBar.open('No Line assigned to unassign.', 'Close', { duration: 3000 });
-      this.cdr.detectChanges();
-      return;
-    }
-
-    const assignedDetail = this.orderLineDetails.find(detail => detail.orderId === this.orderId && detail.lineId === this.selectedLine && detail.EndTime === undefined);
-    if (!assignedDetail) {
-      this.snackBar.open('No active assignment found for this Line.', 'Close', { duration: 3000 });
-      this.cdr.detectChanges();
-      return;
-    }
-
-    const dialogRef = this.dialog.open(ConfirmComponent, {
-      width: '450px',
-      height: '150px',
-      disableClose: true,
-      data: { message: `Are you sure you want to unassign Line ${this.selectedLine}?` }
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        assignedDetail.EndTime = new Date().toISOString();
-        this.repoService.updateByID('api/order-line-details', assignedDetail.id.toString(), assignedDetail).subscribe(
-          () => {
-            this.snackBar.open('Line unassigned successfully.', 'Close', { duration: 3000 });
-            this.isAssigned = false;
-            this.selectedLine = 0;
-            this.getOrderLineDetail();
-            this.cdr.detectChanges();
-          },
-          (err) => {
-            this.snackBar.open('Failed to unassign line.', 'Close', { duration: 3000 });
-            this.cdr.detectChanges();
-          }
-        );
-      }
-    });
+  /**
+   * Kiểm tra xem periodic writer có đang chạy không
+   */
+  private isPeriodicWCFWriterRunning(): boolean {
+    return this.wcfSettingsInterval !== null;
   }
 }

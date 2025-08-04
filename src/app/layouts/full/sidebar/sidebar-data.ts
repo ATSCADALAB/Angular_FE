@@ -43,6 +43,11 @@ export const navItems: NavItem[] = [
     route: '/ui-components/lines',
   },
   {
+    displayName: 'ConfigureSensor',
+    iconName: 'line',
+    route: '/ui-components/bagweight',
+  },
+  {
     displayName: 'Areas',
     iconName: 'chart-area',
     route: '/ui-components/areas',

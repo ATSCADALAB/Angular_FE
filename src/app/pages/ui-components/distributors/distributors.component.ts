@@ -52,6 +52,33 @@ export class DistributorsComponent implements OnInit, AfterViewInit {
     this.dataSource.sort = this.sort;
     this.dataSource.paginator = this.paginator;
   }
+  exportDistributors() {
+    this.repoService.download('api/distributors/export').subscribe(
+      (response: Blob) => {
+        const url = window.URL.createObjectURL(response);
+        const a = document.createElement('a');
+        a.href = url;
+        
+        // Tạo tên file với timestamp
+        const now = new Date();
+        const timestamp = now.getFullYear().toString() + 
+                         (now.getMonth() + 1).toString().padStart(2, '0') + 
+                         now.getDate().toString().padStart(2, '0') + '_' +
+                         now.getHours().toString().padStart(2, '0') + 
+                         now.getMinutes().toString().padStart(2, '0') + 
+                         now.getSeconds().toString().padStart(2, '0');
+        
+        a.download = `Distributors_Export_${timestamp}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      },
+      (error) => {
+        this.dialogService.openErrorDialog('Error exporting distributors: ' + error.message);
+      }
+    );
+  }
 
   public getDistributors() {
     this.repoService.getData('api/distributors')

@@ -17,6 +17,7 @@ import { InboundComponent } from './inbound/inbound.component';
 import { OutboundComponent } from './outbound/outbound.component';
 import { StockReportComponent } from './stock-report/stock-report.component';
 import { AuthGuard } from 'src/app/guards/auth.guard';
+import { BagWeightComponent } from './bagweight/bagweight.component';
 export const UiComponentsRoutes: Routes = [
   {
     path: '',
@@ -44,6 +45,11 @@ export const UiComponentsRoutes: Routes = [
       {
         path: 'lines',
         component: LinesComponent,
+        canActivate: [AuthGuard],
+      },
+      {
+        path: 'bagweight',
+        component: BagWeightComponent,
         canActivate: [AuthGuard],
       },
       {

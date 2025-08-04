@@ -1,0 +1,67 @@
+<mat-card class="cardWithShadow theme-card">
+  <mat-card-header>
+    <mat-card-title class="m-b-0">Configure Sensor</mat-card-title>
+    <span class="flex-1-auto"></span>
+  </mat-card-header>
+
+  <mat-card-content class="b-t-1">
+    <div class="table-responsive m-t-16">
+      <mat-form-field class="w-100" appearance="outline">
+        <input matInput type="text" (keyup)="doFilter($any($event).target.value)" placeholder="Search....">
+      </mat-form-field>
+
+      <table mat-table [dataSource]="dataSource" class="w-100" matSort>
+        <ng-container matColumnDef="action">
+          <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14">Action</th>
+          <td mat-cell *matCellDef="let element" class="mat-body-1">
+            <button
+              mat-flat-button
+              color="primary"
+              [matMenuTriggerFor]="actions"
+              class="m-t-8"
+            >
+              Action<mat-icon>arrow_drop_down</mat-icon>
+            </button>
+            <mat-menu class="cardWithShadow" #actions="matMenu">
+              <button mat-menu-item (click)="updateBagWeight(element.id)">Edit</button>
+            </mat-menu>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="weight">
+          <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14" mat-sort-header>Weight (Kg)</th>
+          <td mat-cell *matCellDef="let element" class="mat-body-1">{{ element.weight }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="bag1">
+          <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14" mat-sort-header>Bag 1 (ms/10)</th>
+          <td mat-cell *matCellDef="let element" class="mat-body-1">{{ element.bag1 }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="bag2">
+          <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14" mat-sort-header>Bag 2 (ms/10)</th>
+          <td mat-cell *matCellDef="let element" class="mat-body-1">{{ element.bag2 }}</td>
+        </ng-container>
+s
+        <ng-container matColumnDef="bag3">
+          <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14" mat-sort-header>Bag 3 (ms/10)</th>
+          <td mat-cell *matCellDef="let element" class="mat-body-1">{{ element.bag3 }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="bag4">
+          <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14" mat-sort-header>Bag 4 (ms/10)</th>
+          <td mat-cell *matCellDef="let element" class="mat-body-1">{{ element.bag4 }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="lineID">
+          <th mat-header-cell *matHeaderCellDef class="f-w-600 mat-subtitle-1 f-s-14" mat-sort-header>Line</th>
+          <td mat-cell *matCellDef="let element" class="mat-body-1">{{ element.lineID }}</td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+    </div>
+
+    <mat-paginator [pageSize]="10" [pageSizeOptions]="[4, 6, 10, 20]"></mat-paginator>
+  </mat-card-content>
+</mat-card>

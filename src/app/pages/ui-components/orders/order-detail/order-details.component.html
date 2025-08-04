@@ -11,12 +11,17 @@
       <mat-card-title class="order-title">
         {{ orderDetail.order.orderCode }}
       </mat-card-title>
-      <div *ngIf="isRunning" class="header-content">
-        <span *ngIf="dataSensorByLine" class="running-text">
-          Running on Line {{ selectedLine }} | Qty (Bags): <span class="quantity-highlight">{{ dataSensorByLine.value }} / {{ orderDetail.requestedUnits - totalUnits }}</span>
-        </span>
-      </div>
     </mat-card-header>
+
+    <!-- Running Status Banner - Moved to center -->
+    <div *ngIf="isRunning" class="running-status-banner">
+      <div class="running-status-content">
+        <span class="running-label">Running on Line {{ selectedLine }}</span>
+        <div class="quantity-display">
+          <span class="quantity-value">{{ dataSensorByLine?.value }} / {{ orderDetail.requestedUnits - totalUnits }}</span>
+        </div>
+      </div>
+    </div>
 
     <!-- Sensor -->
     <mat-card-content class="order-content">

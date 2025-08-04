@@ -22,15 +22,26 @@
     >
       <mat-icon>upload_file</mat-icon> <span fxHide.xs>Import from Excel</span>
     </button>
+    <!-- THÊM MỚI: Nút Export -->
     <button
       mat-flat-button
-      color="accent"
+      color="warn"
+      matTooltipPosition="left"
+      class="m-l-8"
+      matTooltipHideDelay="100000"
+      (click)="exportProductInformations()"
+    >
+      <mat-icon>download</mat-icon> <span fxHide.xs>Export to Excel</span>
+    </button>
+    <button
+      mat-flat-button
+      color="basic"
       matTooltipPosition="left"
       class="m-l-8"
       matTooltipHideDelay="100000"
       (click)="downloadTemplate()"
     >
-      <mat-icon>download</mat-icon> <span fxHide.xs>Download Template</span>
+      <mat-icon>description</mat-icon> <span fxHide.xs>Download Template</span>
     </button>
     <input
       type="file"
@@ -43,6 +54,36 @@
 
   <mat-card-content class="b-t-1">
     <div class="table-responsive m-t-16">
+      <!-- THÊM MỚI: Import Result Display -->
+      <div class="import-result-container m-t-16" *ngIf="showImportResult && importResult">
+        <div class="import-result-header">
+          <h4>Import Result</h4>
+          <button mat-icon-button class="close-btn" (click)="resetImportResult()">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+        <div class="import-result-body">
+          <div class="result-item success">
+            <mat-icon>check_circle</mat-icon>
+            <span>Successful rows: {{ importResult.successCount }}</span>
+          </div>
+          <div class="result-item warning">
+            <mat-icon>warning</mat-icon>
+            <span>Skipped rows: {{ importResult.skippedCount }}</span>
+            <ul class="details-list" *ngIf="importResult.skippedRows && importResult.skippedRows.length > 0">
+              <li *ngFor="let row of importResult.skippedRows">{{ row }}</li>
+            </ul>
+          </div>
+          <div class="result-item error">
+            <mat-icon>error</mat-icon>
+            <span>Errors: {{ importResult.errors?.length || 0 }}</span>
+            <ul class="details-list" *ngIf="importResult.errors && importResult.errors.length > 0">
+              <li *ngFor="let error of importResult.errors">{{ error }}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      
       <mat-form-field class="w-100" appearance="outline">
         <input matInput type="text" (keyup)="doFilter($any($event).target.value)" placeholder="Search....">
       </mat-form-field>
