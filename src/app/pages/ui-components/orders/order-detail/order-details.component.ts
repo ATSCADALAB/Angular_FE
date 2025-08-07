@@ -61,7 +61,7 @@ export class OrderDetailsComponent implements OnInit, OnDestroy {
   totalWeight: number = 0;
   replacedUnits: number = 0;
   replacedWeight: number = 0;
-  
+  private isCleanupInProgress: boolean = false;
   // UI States
   isExpanded = true;
   isSensorExpanded = true;
@@ -123,7 +123,7 @@ export class OrderDetailsComponent implements OnInit, OnDestroy {
 
   private cleanup(): void {
     console.log('Cleaning up OrderDetailsComponent...');
-    
+     this.isCleanupInProgress = true;
     // Stop tất cả intervals và timers
     this.stopPeriodicWCFSettingsWriter();
     
@@ -135,9 +135,9 @@ export class OrderDetailsComponent implements OnInit, OnDestroy {
       this.subscription.unsubscribe();
     }
     
-    // Clear tất cả timeouts (nếu có)
+    // Clear tất cả timeouts (nếu có)fupdateWCFData
     // Reset states
-    this.isRunning = false;
+    //this.isRunning = false;
     this.isSignalRRunning = false;
     this.isLoading = false;
     
@@ -455,29 +455,63 @@ export class OrderDetailsComponent implements OnInit, OnDestroy {
       this.performOrderStop();
     }
   }
-
   private performOrderStop(): void {
-    this.isRunning = false;
-    this.selectedLine = 0;
+    console.log('🛑 Stopping order...');
+  
+  this.isRunning = false;
+  this.selectedLine = 0;
 
-    if (this.sensorRecord.length > 0 && this.receivedDataSensor) {
-      this.updateLastSensorRecord();
-      this.updateLastOrderLineDetail();
+  if (this.sensorRecord.length > 0 && this.receivedDataSensor) {
+    this.updateLastSensorRecord();
+    this.updateLastOrderLineDetail();
+    
+    // 🔥 CHỈ ghi WCF khi thực sự stop order, KHÔNG phải cleanup
+    if (!this.isCleanupInProgress) {
+      console.log('📝 Order stopped manually - updating WCF');
       this.updateWCFData();
-
-      setTimeout(() => {
-        this.refreshAllData();
-        this.isLoading = false;
-        this.detectChanges();
-      }, 500);
     } else {
-      this.showMessage('Error: No sensor data available.');
-      this.isLoading = false;
-      this.detectChanges();
+      console.log('⚠️ Order stopped due to cleanup - skipping WCF update');
     }
 
-    this.disconnectSignalR();
+    setTimeout(() => {
+      this.refreshAllData();
+      this.isLoading = false;
+      this.detectChanges();
+    }, 500);
+  } else {
+    this.showMessage('Error: No sensor data available.');
+    this.isLoading = false;
+    this.detectChanges();
   }
+
+  this.disconnectSignalR();
+}
+  private resetCleanupFlag(): void {
+    this.isCleanupInProgress = false;
+    console.log('🔄 Cleanup flag reset - WCF updates enabled');
+  }
+  // private performOrderStop(): void {
+  //   this.isRunning = false;
+  //   this.selectedLine = 0;
+
+  //   if (this.sensorRecord.length > 0 && this.receivedDataSensor) {
+  //     this.updateLastSensorRecord();
+  //     this.updateLastOrderLineDetail();
+  //     this.updateWCFData();
+
+  //     setTimeout(() => {
+  //       this.refreshAllData();
+  //       this.isLoading = false;
+  //       this.detectChanges();
+  //     }, 500);
+  //   } else {
+  //     this.showMessage('Error: No sensor data available.');
+  //     this.isLoading = false;
+  //     this.detectChanges();
+  //   }
+
+  //   this.disconnectSignalR();
+  // }
 
   async toggleOrder(): Promise<void> {
     if (!this.isRunning) {
@@ -637,7 +671,10 @@ export class OrderDetailsComponent implements OnInit, OnDestroy {
 
   private updateWCFData(): void {
     if (!this.dataSensorByLine) return;
-
+    if (this.isCleanupInProgress) {
+        console.log('⚠️ Skipping WCF update - cleanup in progress (screen turned off)');
+        return;
+      }
     const sensorData: WcfDataUpdateDto[] = [{
       name: this.dataSensorByLine.name,
       valueToWrite: "0"
